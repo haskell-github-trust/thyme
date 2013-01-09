@@ -1,0 +1,59 @@
+name:           thyme
+version:        0.1.0.0
+synopsis:       A faster time library
+description:
+    A faster time library
+homepage:       https://github.com/liyang/thyme
+license:        BSD3
+license-file:   LICENSE
+author:         Liyang HU
+maintainer:     thyme@liyang.hu
+copyright:      © 2013 Liyang HU
+category:       Data, System
+build-type:     Simple
+cabal-version:  >=1.8
+stability:      experimental
+
+source-repository head
+    type:       git
+    location:   http://github.com/liyang/thyme
+
+flag instance-num
+    description: instance Num (Nominal)DiffTime
+    default: True
+
+flag show-internal
+    description: instance Show of internal representation
+    default: False
+
+library
+    exposed-modules:
+        Data.Thyme
+        Data.Thyme.Calendar
+        Data.Thyme.Calendar.MonthDay
+        Data.Thyme.Calendar.OrdinalDate
+        Data.Thyme.Calendar.WeekDate
+        Data.Thyme.Clock
+        Data.Thyme.Clock.POSIX
+        Data.Thyme.LocalTime
+    other-modules:
+        Data.Micro
+        Data.Thyme.Calendar.Day
+        Data.Thyme.Clock.Scale
+        Data.Thyme.Clock.UTC
+        Data.Thyme.TH
+    build-depends:
+        base >= 4.6 && < 5,
+        deepseq >= 1.2,
+        vector-space >= 0.8,
+        lens >= 3.7,
+        template-haskell >= 2.6,
+        time >= 1.4
+    ghc-options: -Wall
+    if flag(instance-num)
+        cpp-options: -DINSTANCE_NUM=1
+    if flag(show-internal)
+        cpp-options: -DSHOW_INTERNAL=1
+
+-- vim: et sw=4 ts=4 sts=4:
+
