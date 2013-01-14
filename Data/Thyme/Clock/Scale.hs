@@ -45,7 +45,9 @@ instance HasBasis DiffTime where
 
 #if INSTANCE_NUM
 deriving instance Num DiffTime
+deriving instance Real DiffTime
 deriving instance Fractional DiffTime
+deriving instance RealFrac DiffTime
 #endif
 
 {-# INLINE microsecondsToDiffTime #-}

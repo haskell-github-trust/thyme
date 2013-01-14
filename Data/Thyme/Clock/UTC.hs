@@ -49,7 +49,9 @@ instance HasBasis NominalDiffTime where
 
 #if INSTANCE_NUM
 deriving instance Num NominalDiffTime
+deriving instance Real NominalDiffTime
 deriving instance Fractional NominalDiffTime
+deriving instance RealFrac NominalDiffTime
 #endif
 
 {-# INLINE posixDayLength #-}

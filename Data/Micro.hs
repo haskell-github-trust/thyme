@@ -52,6 +52,10 @@ instance Num Micro where
     signum (Micro a) = Micro (signum a * 1000000)
     fromInteger a = Micro (fromInteger a * 1000000)
 
+instance Real Micro where
+    {-# INLINE toRational #-}
+    toRational (Micro a) = toInteger a % 1000000
+
 instance Fractional Micro where
     {-# INLINE (/) #-}
     {-# INLINE recip #-}
@@ -60,10 +64,13 @@ instance Fractional Micro where
     recip (Micro a) = Micro (quot 1000000 a)
     fromRational = toMicro
 
--- TODO: instance Real Micro
--- TODO: instance RealFrac Micro
+instance RealFrac Micro where
+    {-# INLINE properFraction #-}
+    properFraction a = (fromIntegral q, r) where
+        (q, r) = microQuotRem a (Micro 1000000)
 #endif
 
+{-# INLINE microQuotRem #-}
 microQuotRem :: Micro -> Micro -> (Int64, Micro)
 microQuotRem (Micro a) (Micro b) = (n, Micro f) where
     (n, f) = quotRem a b
