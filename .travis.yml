@@ -1,0 +1,4 @@
+language: haskell
+install:
+  - cabal configure --flag -instance-num
+  - cabal install --haddock-hyperlink-source
