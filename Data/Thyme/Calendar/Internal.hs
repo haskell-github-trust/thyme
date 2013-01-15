@@ -56,7 +56,8 @@ isLeapYear y = mod y 4 == 0 && (mod y 400 == 0 || mod y 100 /= 0)
 type DayOfYear = Int
 data OrdinalDate = OrdinalDate
     { odYear :: {-# UNPACK #-}!Year
-    , odDay :: {-# UNPACK #-}!DayOfYear }
+    , odDay :: {-# UNPACK #-}!DayOfYear
+    } deriving (Eq, Ord, Data, Typeable, Show)
 
 instance NFData OrdinalDate
 
