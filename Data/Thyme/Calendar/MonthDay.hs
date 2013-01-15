@@ -14,7 +14,7 @@ import Control.Lens
 import Control.Monad
 import Data.Data
 import qualified Data.Time.Calendar.MonthDay as T
-import Data.Thyme.Calendar.Day
+import Data.Thyme.Calendar.Internal
 import Data.Thyme.TH
 
 data MonthDay = MonthDay

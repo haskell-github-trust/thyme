@@ -9,7 +9,7 @@ import Data.AdditiveGroup
 import Data.AffineSpace
 import Data.Micro
 import qualified Data.Time.Clock.POSIX as T
-import Data.Thyme.Calendar.Day
+import Data.Thyme.Calendar.Internal
 import Data.Thyme.Clock.Scale
 import Data.Thyme.Clock.UTC
 

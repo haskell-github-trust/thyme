@@ -38,7 +38,7 @@ library
         Data.Thyme.LocalTime
     other-modules:
         Data.Micro
-        Data.Thyme.Calendar.Day
+        Data.Thyme.Calendar.Internal
         Data.Thyme.Clock.Scale
         Data.Thyme.Clock.UTC
         Data.Thyme.TH

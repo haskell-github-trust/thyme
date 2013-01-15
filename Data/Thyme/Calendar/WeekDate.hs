@@ -2,26 +2,20 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 -- | ISO 8601 Week Date format
-module Data.Thyme.Calendar.WeekDate where
+module Data.Thyme.Calendar.WeekDate
+    ( WeekDate (..)
+    , module Data.Thyme.Calendar.WeekDate
+    ) where
 
 import Prelude
 import Control.Applicative
 import Control.Lens
 import Control.Monad
-import Data.Data
 import Data.Int
-import Data.Thyme.Calendar.Day
 import Data.Thyme.Calendar.OrdinalDate
+import Data.Thyme.Calendar.Internal
 import Data.Thyme.TH
 import Text.Printf
-
-type Week = Int
-type DayOfWeek = Int
-data WeekDate = WeekDate
-    { wdYear :: {-# UNPACK #-}!Year
-    , wdWeek :: {-# UNPACK #-}!Week
-    , wdDay :: {-# UNPACK #-}!DayOfWeek
-    } deriving (Eq, Ord, Data, Typeable, Show)
 
 {-# INLINE weekDate #-}
 weekDate :: Simple Iso Day WeekDate

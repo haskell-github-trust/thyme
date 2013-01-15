@@ -11,7 +11,7 @@ import Prelude
 import Control.Applicative
 import Control.Lens
 import Control.Monad
-import Data.Thyme.Calendar.Day
+import Data.Thyme.Calendar.Internal
 import Data.Thyme.TH
 
 data OrdinalDate = OrdinalDate

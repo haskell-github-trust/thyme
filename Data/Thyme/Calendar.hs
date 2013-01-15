@@ -1,23 +1,23 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module Data.Thyme.Calendar (
     -- * Days
       Day (..)
     -- * Gregorian calendar
     , Year, Month, DayOfMonth
     , YearMonthDay (..)
-    , module Data.Thyme.Calendar
     , isLeapYear
-    -- * Lenses
-    , _toModifiedJulianDay
-    , _ymdYear, _ymdMonth, _ymdDay
+    , module Data.Thyme.Calendar
     ) where
 
 import Prelude hiding ((.))
 import Control.Applicative
 import Control.Category
 import Control.Lens
-import Data.Thyme.Calendar.Day
 import Data.Thyme.Calendar.OrdinalDate
 import Data.Thyme.Calendar.MonthDay
+import Data.Thyme.Calendar.Internal
+import Data.Thyme.TH
 
 {-# INLINE gregorian #-}
 gregorian :: Simple Iso Day YearMonthDay
@@ -46,4 +46,8 @@ gregorianMonthLength = monthLength . isLeapYear
 
 -- TODO: addGregorianMonthsClip addGregorianMonthsRollover
 -- TODO: addGregorianYearsClip addGregorianYearsRollover
+
+-- * Lenses
+thymeLenses ''Day
+thymeLenses ''YearMonthDay
 

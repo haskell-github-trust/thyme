@@ -24,7 +24,7 @@ import Data.AffineSpace
 import Data.Data
 import Data.Micro
 import qualified Data.Time as T
-import Data.Thyme.Calendar.Day
+import Data.Thyme.Calendar.Internal
 import Data.Thyme.Clock
 import Data.Thyme.Clock.Scale
 import Data.Thyme.Clock.UTC

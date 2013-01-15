@@ -2,11 +2,10 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 
 -- #hide
-module Data.Thyme.Calendar.Day where
+module Data.Thyme.Calendar.Internal where
 
 import Prelude
 import Control.DeepSeq
@@ -14,15 +13,12 @@ import Data.AffineSpace
 import Data.Data
 import Data.Int
 import Data.Ix
-import Data.Thyme.TH
 
 -- | The Modified Julian Day is a standard count of days, with zero being
 -- the day 1858-11-17.
 newtype Day = ModifiedJulianDay
     { toModifiedJulianDay :: Int64
     } deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable)
-
-thymeLenses ''Day
 
 #if 1 /*SHOW_INTERNAL*/
 deriving instance Show Day
@@ -48,7 +44,15 @@ data YearMonthDay = YearMonthDay
     , ymdDay :: {-# UNPACK #-}!DayOfMonth
     } deriving (Eq, Ord, Data, Typeable, Show)
 
-thymeLenses ''YearMonthDay
-
 instance NFData YearMonthDay
+
+------------------------------------------------------------------------
+
+type Week = Int
+type DayOfWeek = Int
+data WeekDate = WeekDate
+    { wdYear :: {-# UNPACK #-}!Year
+    , wdWeek :: {-# UNPACK #-}!Week
+    , wdDay :: {-# UNPACK #-}!DayOfWeek
+    } deriving (Eq, Ord, Data, Typeable, Show)
 
