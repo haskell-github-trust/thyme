@@ -27,8 +27,10 @@ newtype Micro = Micro Int64
 deriving instance Show Micro
 #else
 instance Show Micro where
-    show (Micro a) = printf "%d.%06u" q r where
-        (q, r) = divMod a 1000000
+    show (Micro a) = case compare a 0 of
+        LT -> printf "-%d.%06u" `uncurry` quotRem (negate a) 1000000
+        EQ -> "0"
+        GT -> printf "%d.%06u" `uncurry` quotRem a 1000000
 #endif
 
 {-# INLINE toMicro #-}
