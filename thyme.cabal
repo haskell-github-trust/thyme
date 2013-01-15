@@ -11,7 +11,7 @@ maintainer:     thyme@liyang.hu
 copyright:      © 2013 Liyang HU, Ashley Yakeley
 category:       Data, System
 build-type:     Simple
-cabal-version:  >=1.8
+cabal-version:  >= 1.8
 stability:      experimental
 
 source-repository head

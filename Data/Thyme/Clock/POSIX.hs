@@ -7,6 +7,7 @@ import Prelude
 import Control.Lens
 import Data.AdditiveGroup
 import Data.AffineSpace
+import Data.Micro
 import qualified Data.Time.Clock.POSIX as T
 import Data.Thyme.Calendar.Day
 import Data.Thyme.Clock.Scale
@@ -31,5 +32,5 @@ posixTime = iso toPOSIX fromPOSIX where
 -- TODO: reimplement without 'T.getPOSIXTime' to avoid 'realToFrac'?
 {-# INLINE getPOSIXTime #-}
 getPOSIXTime :: IO POSIXTime
-getPOSIXTime = fmap realToFrac T.getPOSIXTime
+getPOSIXTime = fmap {-realToFrac-}(NominalDiffTime . toMicro . toRational) T.getPOSIXTime
 

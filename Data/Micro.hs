@@ -92,7 +92,7 @@ instance VectorSpace Micro where
 instance HasBasis Micro where
     type Basis Micro = ()
     {-# INLINE basisValue #-}
-    basisValue () = 1
+    basisValue () = Micro 1000000
     {-# INLINE decompose #-}
     decompose (Micro a) = [((), fromIntegral a % 1000000)]
     {-# INLINE decompose' #-}

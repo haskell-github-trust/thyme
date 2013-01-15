@@ -41,7 +41,7 @@ instance VectorSpace NominalDiffTime where
 instance HasBasis NominalDiffTime where
     type Basis NominalDiffTime = ()
     {-# INLINE basisValue #-}
-    basisValue () = 1
+    basisValue () = NominalDiffTime (basisValue ())
     {-# INLINE decompose #-}
     decompose (NominalDiffTime a) = decompose a
     {-# INLINE decompose' #-}

@@ -50,8 +50,9 @@ data TimeOfDay = TimeOfDay
 
 {-# INLINE makeTimeOfDayValid #-}
 makeTimeOfDayValid :: Hour -> Minute -> DiffTime -> Maybe TimeOfDay
-makeTimeOfDayValid h m s = TimeOfDay h m s
-    <$ guard (0 <= h && h <= 23 && 0 <= m && m <= 59 && 0 <= s && s < 61)
+makeTimeOfDayValid h m s@(DiffTime u) = TimeOfDay h m s
+    <$ guard (0 <= h && h <= 23 && 0 <= m && m <= 59)
+    <* guard (Micro 0 <= u && u < Micro 61000000)
 
 {-# INLINE timeOfDay #-}
 timeOfDay :: Simple Iso DiffTime TimeOfDay

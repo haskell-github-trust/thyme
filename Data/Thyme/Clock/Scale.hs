@@ -37,7 +37,7 @@ instance VectorSpace DiffTime where
 instance HasBasis DiffTime where
     type Basis DiffTime = ()
     {-# INLINE basisValue #-}
-    basisValue () = 1
+    basisValue () = DiffTime (basisValue ())
     {-# INLINE decompose #-}
     decompose (DiffTime a) = decompose a
     {-# INLINE decompose' #-}
