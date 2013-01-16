@@ -1,4 +1,5 @@
 language: haskell
 install:
+  - cabal install lens vector-space
   - cabal configure --flag -instance-num
   - cabal install --haddock-hyperlink-source
