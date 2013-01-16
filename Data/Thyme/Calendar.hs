@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE ViewPatterns #-}
 
 module Data.Thyme.Calendar (
     -- * Days
@@ -17,6 +18,7 @@ import Control.Lens
 import Data.Thyme.Calendar.OrdinalDate
 import Data.Thyme.Calendar.MonthDay
 import Data.Thyme.Calendar.Internal
+import Data.Thyme.Format.Internal
 import Data.Thyme.TH
 
 {-# INLINE gregorian #-}
@@ -38,7 +40,10 @@ fromGregorianValid :: YearMonthDay -> Maybe Day
 fromGregorianValid (YearMonthDay y m d) = review ordinalDate . OrdinalDate y
     <$> monthDayToDayOfYearValid (isLeapYear y) (MonthDay m d)
 
--- TODO: showGregorian
+{-# INLINEABLE showGregorian #-}
+showGregorian :: Day -> String
+showGregorian (view gregorian -> YearMonthDay y m d) =
+    shows04 y . (:) '-' . shows02 m . (:) '-' . shows02 d $ ""
 
 {-# INLINE gregorianMonthLength #-}
 gregorianMonthLength :: Year -> Month -> Int

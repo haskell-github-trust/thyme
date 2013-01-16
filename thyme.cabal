@@ -41,6 +41,7 @@ library
         Data.Thyme.Calendar.Internal
         Data.Thyme.Clock.Scale
         Data.Thyme.Clock.UTC
+        Data.Thyme.Format.Internal
         Data.Thyme.TH
     build-depends:
         base >= 4.6 && < 5,
