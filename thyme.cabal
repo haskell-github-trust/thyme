@@ -48,6 +48,7 @@ library
         deepseq >= 1.2,
         vector-space >= 0.8,
         lens >= 3.7,
+        old-locale >= 1.0,
         template-haskell >= 2.6,
         time >= 1.4
     ghc-options: -Wall
