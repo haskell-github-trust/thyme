@@ -29,8 +29,8 @@ posixTime = iso toPOSIX fromPOSIX where
     fromPOSIX (NominalDiffTime d) = review utcTime $
         UTCTime unixEpochDay (DiffTime d)
 
--- TODO: reimplement without 'T.getPOSIXTime' to avoid 'realToFrac'?
+-- TODO: reimplement without 'T.getPOSIXTime' to avoid 'Integer'?
 {-# INLINE getPOSIXTime #-}
 getPOSIXTime :: IO POSIXTime
-getPOSIXTime = fmap {-realToFrac-}(NominalDiffTime . toMicro . toRational) T.getPOSIXTime
+getPOSIXTime = fmap (NominalDiffTime . toMicro . toRational) T.getPOSIXTime
 
