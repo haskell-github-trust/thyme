@@ -3,7 +3,7 @@
 
 -- | ISO 8601 Week Date format
 module Data.Thyme.Calendar.WeekDate
-    ( Year, Week, DayOfWeek
+    ( Year, WeekOfYear, DayOfWeek
     , WeekDate (..), weekDate
     , module Data.Thyme.Calendar.WeekDate
     ) where
@@ -17,7 +17,7 @@ import Data.Thyme.Calendar.Internal
 import Data.Thyme.TH
 import Text.Printf
 
--- | Rejects 0-based 'DayOfWeek' and 'Week'.
+-- | Rejects 0-based 'DayOfWeek' and 'WeekOfYear'.
 {-# INLINEABLE fromWeekDateValid #-}
 fromWeekDateValid :: WeekDate -> Maybe Day
 fromWeekDateValid wd@(WeekDate y w d) = fromWeekMax wMax wd

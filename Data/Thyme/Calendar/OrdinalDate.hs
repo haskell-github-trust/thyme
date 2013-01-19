@@ -29,7 +29,7 @@ sundayStartWeek day@(ModifiedJulianDay mjd) = WeekDate y
     d = mjd + 3
     k = d - fromIntegral yd
 
--- | Accepts 0−6 for 'DayOfWeek', and 0-based 'Week's.
+-- | Accepts 0−6 for 'DayOfWeek', and 0-based 'WeekOfYear's.
 {-# INLINEABLE fromSundayStartWeekValid #-}
 fromSundayStartWeekValid :: WeekDate -> Maybe Day
 fromSundayStartWeekValid wd@(WeekDate y w d) = fromWeekMax wMax wd
@@ -45,7 +45,7 @@ mondayStartWeek day@(ModifiedJulianDay mjd) = WeekDate y
     d = mjd + 2
     k = d - fromIntegral yd
 
--- | Accepts 1−7 for 'DayOfWeek', and 0-based 'Week's.
+-- | Accepts 1−7 for 'DayOfWeek', and 0-based 'WeekOfYear's.
 {-# INLINEABLE fromMondayStartWeekValid #-}
 fromMondayStartWeekValid :: WeekDate -> Maybe Day
 fromMondayStartWeekValid wd@(WeekDate y w d) = fromWeekMax wMax wd

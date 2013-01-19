@@ -92,17 +92,17 @@ ordinalDate = iso toOrd fromOrd where
 
 ------------------------------------------------------------------------
 
-type Week = Int
+type WeekOfYear = Int
 type DayOfWeek = Int
 data WeekDate = WeekDate
     { wdYear :: {-# UNPACK #-}!Year
-    , wdWeek :: {-# UNPACK #-}!Week
+    , wdWeek :: {-# UNPACK #-}!WeekOfYear
     , wdDay :: {-# UNPACK #-}!DayOfWeek
     } deriving (Eq, Ord, Data, Typeable, Show)
 
 instance NFData WeekDate
 
--- | Accepts 0-based 'DayOfWeek' and 'Week' when 'review'ing.
+-- | Accepts 0-based 'DayOfWeek' and 'WeekOfYear' when 'review'ing.
 {-# INLINE weekDate #-}
 weekDate :: Simple Iso Day WeekDate
 weekDate = iso toWeek fromWeek where
@@ -114,9 +114,9 @@ weekDate = iso toWeek fromWeek where
         -- pilfered and refactored; no idea what foo and bar mean
         OrdinalDate y0 yd = view ordinalDate day
         d = mjd + 2
-        foo :: Year -> {-Week-1-}Int64
+        foo :: Year -> {-WeekOfYear-1-}Int64
         foo y = bar $ review ordinalDate (OrdinalDate y 6)
-        bar :: Day -> {-Week-1-}Int64
+        bar :: Day -> {-WeekOfYear-1-}Int64
         bar (ModifiedJulianDay k) = div d 7 - div k 7
         w0 = bar $ ModifiedJulianDay (d - fromIntegral yd + 4)
         (y1, w1) = case w0 of
@@ -130,7 +130,7 @@ weekDate = iso toWeek fromWeek where
         WeekDate _ wMax _ = toWeek $ review ordinalDate (OrdinalDate y 365)
 
 {-# INLINE fromWeekMax #-}
-fromWeekMax :: Week -> WeekDate -> Day
+fromWeekMax :: WeekOfYear -> WeekDate -> Day
 fromWeekMax wMax (WeekDate y w d) = ModifiedJulianDay mjd where
     -- pilfered and refactored
     ModifiedJulianDay k = review ordinalDate (OrdinalDate y 6)
