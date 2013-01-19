@@ -2,6 +2,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TemplateHaskell #-}
 
+-- | Julian or Gregorian.
 module Data.Thyme.Calendar.MonthDay
     ( Month, DayOfMonth
     , module Data.Thyme.Calendar.MonthDay

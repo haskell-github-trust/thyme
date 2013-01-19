@@ -21,21 +21,25 @@ import Data.Thyme.Calendar.Internal
 import Data.Thyme.Format.Internal
 import Data.Thyme.TH
 
-{-# INLINE gregorian #-}
-gregorian :: Simple Iso Day YearMonthDay
-gregorian = ordinalDate . iso fromOrdinal toOrdinal where
+{-# INLINE yearMonthDay #-}
+yearMonthDay :: Simple Iso OrdinalDate YearMonthDay
+yearMonthDay = iso fromOrdinal toOrdinal where
 
-    {-# INLINE fromOrdinal #-}
+    {-# INLINEABLE fromOrdinal #-}
     fromOrdinal :: OrdinalDate -> YearMonthDay
     fromOrdinal (OrdinalDate y yd) = (YearMonthDay y m d) where
         MonthDay m d = view (monthDay (isLeapYear y)) yd
 
-    {-# INLINE toOrdinal #-}
+    {-# INLINEABLE toOrdinal #-}
     toOrdinal :: YearMonthDay -> OrdinalDate
     toOrdinal (YearMonthDay y m d) = OrdinalDate y $
         review (monthDay (isLeapYear y)) (MonthDay m d)
 
-{-# INLINE fromGregorianValid #-}
+{-# INLINE gregorian #-}
+gregorian :: Simple Iso Day YearMonthDay
+gregorian = ordinalDate . yearMonthDay
+
+{-# INLINEABLE fromGregorianValid #-}
 fromGregorianValid :: YearMonthDay -> Maybe Day
 fromGregorianValid (YearMonthDay y m d) = review ordinalDate . OrdinalDate y
     <$> monthDayToDayOfYearValid (isLeapYear y) (MonthDay m d)
