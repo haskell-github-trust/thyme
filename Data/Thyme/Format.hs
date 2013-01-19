@@ -42,7 +42,7 @@ instance FormatTime TimeOfDay where
     formatCharacter c = case c of
         -- Aggregate
         'R' -> Just $ \ _ _ (TimeOfDay h m _) -> shows02 h . (:) ':' . shows02 m $ ""
-        'T' -> Just $ \ _ _ (TimeOfDay h m (DiffTime s)) -> shows02 h . (:) ':' . shows02 m . (:) ':' . shows02 (microTruncate s) $ ""
+        'T' -> Just $ \ _ _ (TimeOfDay h m (DiffTime s)) -> shows02 h . (:) ':' . shows02 m . (:) ':' . shows02 (fromIntegral $ microTruncate s) $ ""
         'X' -> Just $ \ l _ -> formatTime l (timeFmt l)
         'r' -> Just $ \ l _ -> formatTime l (time12Fmt l)
         -- AM/PM
@@ -57,7 +57,7 @@ instance FormatTime TimeOfDay where
         -- Minute
         'M' -> Just $ \ _ _ (todMin -> m) -> show02 m
         -- Second
-        'S' -> Just $ \ _ _ (todSec -> DiffTime s) -> show02 (microTruncate s)
+        'S' -> Just $ \ _ _ (todSec -> DiffTime s) -> show02 (fromIntegral $ microTruncate s)
         'q' -> Just $ \ _ _ (todSec -> DiffTime s) -> show60 . snd . microQuotRem s $ Micro 1000000
         'Q' -> Just $ \ _ _ (todSec -> DiffTime s) -> show6 . snd . microQuotRem s $ Micro 1000000
 

@@ -79,8 +79,8 @@ microQuotRem (Micro a) (Micro b) = (n, Micro f) where
 
 -- for when we'd rather not depend on RealFrac
 {-# INLINE microTruncate #-}
-microTruncate :: Micro -> Int
-microTruncate a = fromIntegral . fst . microQuotRem a $ Micro 1000000
+microTruncate :: Micro -> Int64
+microTruncate a = fst . microQuotRem a $ Micro 1000000
 
 instance AdditiveGroup Micro where
     {-# INLINE zeroV #-}
