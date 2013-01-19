@@ -1,5 +1,5 @@
 name:           thyme
-version:        0.1.1.0
+version:        0.1.1.1
 synopsis:       A faster time library
 description:
     A faster time library
@@ -35,6 +35,7 @@ library
         Data.Thyme.Calendar.WeekDate
         Data.Thyme.Clock
         Data.Thyme.Clock.POSIX
+        Data.Thyme.Format
         Data.Thyme.LocalTime
     other-modules:
         Data.Micro
