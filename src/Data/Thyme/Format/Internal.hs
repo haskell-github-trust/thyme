@@ -1,6 +1,13 @@
 module Data.Thyme.Format.Internal where
 
 import Prelude
+import Control.Applicative
+import Data.Attoparsec.ByteString.Char8 (Parser)
+import qualified Data.Attoparsec.ByteString.Char8 as P
+import qualified Data.ByteString.Char8 as S
+import qualified Data.ByteString.Builder as S
+import qualified Data.ByteString.Lazy as L
+import Data.Char
 import Data.Int
 
 {-# INLINE shows02 #-}
@@ -41,4 +48,47 @@ drops0 :: Int64 -> ShowS
 drops0 n = case divMod n 10 of
     (q, 0) -> drops0 q
     _ -> shows n
+
+------------------------------------------------------------------------
+
+{-# INLINE indexOfCI #-}
+indexOfCI :: [String] -> Parser Int
+indexOfCI = P.choice . zipWith (\ i s -> i <$ stringCI s) [0..]
+
+-- | Case-insensitive UTF-8 ByteString parser
+--
+-- Matches one character at a time. Slow.
+{-# INLINE stringCI #-}
+stringCI :: String -> Parser ()
+stringCI = foldl (\ p c -> p *> charCI c) (pure ())
+
+-- | Case-insensitive UTF-8 ByteString parser
+--
+-- We can't easily perform upper/lower case conversion on the input, so
+-- instead we accept either one of @toUpper c@ and @toLower c@.
+{-# INLINE charCI #-}
+charCI :: Char -> Parser ()
+charCI c = if u == l then charU8 c else charU8 l <|> charU8 u where
+    l = toLower c
+    u = toUpper c
+
+{-# INLINE charU8 #-}
+charU8 :: Char -> Parser ()
+charU8 c = () <$ P.string (L.toStrict . S.toLazyByteString . S.charUtf8 $ c)
+
+-- | Number may be prefixed with '-'
+{-# INLINE negative #-}
+negative :: Parser Int64 -> Parser Int64
+negative p = ($) <$> (negate <$ P.char '-' <|> pure id) <*> p
+
+-- | Fixed-length 0-padded decimal
+{-# INLINE dec0 #-}
+dec0 :: Int -> Parser Int
+dec0 n = either fail return . P.parseOnly P.decimal =<< P.take n
+
+-- | Fixed-length space-padded decimal
+{-# INLINE dec_ #-}
+dec_ :: Int -> Parser Int
+dec_ n = either fail return . P.parseOnly P.decimal
+    =<< S.dropWhile isSpace <$> P.take n
 
