@@ -43,6 +43,8 @@ library
         Data.Thyme.Clock.Scale
         Data.Thyme.Clock.UTC
         Data.Thyme.Format.Internal
+        Data.Thyme.LocalTime.Internal
+        Data.Thyme.LocalTime.TimeZone
         Data.Thyme.TH
     build-depends:
         base >= 4.5 && < 5,
