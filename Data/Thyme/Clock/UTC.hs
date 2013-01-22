@@ -102,7 +102,7 @@ utcTime = iso unpack pack where
     pack (UTCTime (ModifiedJulianDay mjd) (DiffTime dt)) =
             UTCPacked (shiftL (mjd + dd) bitsDayTime .|. pt) where
         NominalDiffTime posixDay = posixDayLength
-        (dd, Micro pt) = microQuotRem dt posixDay
+        (dd, Micro pt) = microDivMod dt posixDay
 
     {-# INLINE bitsDayTime #-}
     bitsDayTime :: Int

@@ -73,9 +73,10 @@ instance RealFrac Micro where
 #endif
 
 {-# INLINE microQuotRem #-}
-microQuotRem :: Micro -> Micro -> (Int64, Micro)
-microQuotRem (Micro a) (Micro b) = (n, Micro f) where
-    (n, f) = quotRem a b
+{-# INLINE microDivMod #-}
+microQuotRem, microDivMod :: Micro -> Micro -> (Int64, Micro)
+microQuotRem (Micro a) (Micro b) = (n, Micro f) where (n, f) = quotRem a b
+microDivMod  (Micro a) (Micro b) = (n, Micro f) where (n, f) = divMod a b
 
 instance AdditiveGroup Micro where
     {-# INLINE zeroV #-}
