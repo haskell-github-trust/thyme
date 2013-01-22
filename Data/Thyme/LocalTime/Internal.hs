@@ -18,7 +18,9 @@ import Data.Micro
 import Data.Thyme.Calendar
 import Data.Thyme.Clock.Scale
 import Data.Thyme.Clock.UTC
+#if !SHOW_INTERNAL
 import Data.Thyme.Format.Internal
+#endif
 import Data.Thyme.LocalTime.TimeZone
 import Data.VectorSpace
 
