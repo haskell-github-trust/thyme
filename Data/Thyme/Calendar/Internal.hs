@@ -1,7 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeFamilies #-}
 
 -- #hide
@@ -20,10 +19,6 @@ import Data.Ix
 newtype Day = ModifiedJulianDay
     { toModifiedJulianDay :: Int64
     } deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable)
-
-#if 1 /*SHOW_INTERNAL*/
-deriving instance Show Day
-#endif
 
 instance AffineSpace Day where
     type Diff Day = Int
