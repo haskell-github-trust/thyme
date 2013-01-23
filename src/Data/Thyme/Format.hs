@@ -200,8 +200,13 @@ instance FormatTime ZonedTime where
 instance FormatTime UTCTime where
     {-# INLINEABLE showsTime #-}
     showsTime l t = \ def c -> case c of
-        's' -> shows . fst $ microQuotRem s (Micro 1000000)
+        's' -> shows . fst $ qr s (Micro 1000000)
         _ -> showsTime l (view zonedTime (utc, t)) def c
       where
         NominalDiffTime s = view posixTime t
+#if BUG_FOR_BUG
+        qr = microDivMod -- rounds down
+#else
+        qr = microQuotRem -- rounds to 0
+#endif
 
