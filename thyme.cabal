@@ -67,5 +67,23 @@ library
     if flag(show-internal)
         cpp-options: -DSHOW_INTERNAL=1
 
+test-suite sanity
+    type: exitcode-stdio-1.0
+    hs-source-dirs: tests
+    main-is: sanity.hs
+    build-depends:
+        base >= 4.5 && < 5,
+        mtl >= 2.1,
+        deepseq >= 1.2,
+        vector-space >= 0.8,
+        lens >= 3.7,
+        old-locale >= 1.0,
+        random >= 1.0,
+        QuickCheck >= 2.4,
+        criterion >= 0.6,
+        thyme,
+        time >= 1.4
+    ghc-options: -Wall
+
 -- vim: et sw=4 ts=4 sts=4:
 
