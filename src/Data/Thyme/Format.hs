@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
@@ -52,6 +53,15 @@ formatTime l@TimeLocale {..} spec t = go spec "" where
         c : rest -> (:) c . go rest
         [] -> id
 
+{-# INLINE showsYear #-}
+showsYear :: Year -> ShowS
+#if BUG_FOR_BUG
+showsYear = shows
+#else
+-- ISO 8601 says 4 digits, even for first millennium.
+showsYear = shows04
+#endif
+
 instance FormatTime TimeOfDay where
     {-# INLINEABLE showsTime #-}
     showsTime TimeLocale {..} (TimeOfDay h m (DiffTime s)) = \ def c -> case c of
@@ -99,9 +109,9 @@ instance FormatTime YearMonthDay where
     showsTime TimeLocale {..} (YearMonthDay y m d) = \ def c -> case c of
         -- aggregate
         'D' -> shows02 m . (:) '/' . shows02 d . (:) '/' . shows02 (mod y 100)
-        'F' -> shows04 y . (:) '-' . shows02 m . (:) '-' . shows02 d
+        'F' -> showsYear y . (:) '-' . shows02 m . (:) '-' . shows02 d
         -- Year
-        'Y' -> shows04 y
+        'Y' -> showsYear y
         'y' -> shows02 (mod y 100)
         'C' -> shows02 (div y 100)
         -- Month
@@ -133,7 +143,7 @@ instance FormatTime OrdinalDate where
     {-# INLINEABLE showsTime #-}
     showsTime TimeLocale {..} (OrdinalDate y d) = \ def c -> case c of
         -- Year
-        'Y' -> shows04 y
+        'Y' -> showsYear y
         'y' -> shows02 (mod y 100)
         'C' -> shows02 (div y 100)
         -- DayOfYear
@@ -144,8 +154,8 @@ instance FormatTime OrdinalDate where
 instance FormatTime WeekDate where
     {-# INLINEABLE showsTime #-}
     showsTime TimeLocale {..} (WeekDate y w d) = \ def c -> case c of
-        -- Year
-        'G' -> shows04 y
+        -- Year (WeekDate)
+        'G' -> showsYear y
         'g' -> shows02 (mod y 100)
         'f' -> shows02 (div y 100)
         -- WeekOfYear
