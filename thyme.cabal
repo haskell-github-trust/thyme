@@ -27,6 +27,7 @@ flag show-internal
     default: False
 
 library
+    hs-source-dirs: src
     exposed-modules:
         Data.Thyme
         Data.Thyme.Calendar
