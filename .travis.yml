@@ -1,7 +1,16 @@
 language: haskell
+
+before_install:
+  - ./.travis.install-deps $mode
+
 install:
-  - cabal install lens vector-space criterion
-  - cabal configure --flag -instance-num --enable-tests
+  - cabal configure $mode
   - cabal build
-  - cabal haddock
+
+script:
   - cabal test --show-details=always
+  - ./.travis.hlint
+
+env:
+  - mode="-f-instance-num -fWerror --enable-tests"
+
