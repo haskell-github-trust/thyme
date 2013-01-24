@@ -48,7 +48,7 @@ instance Num Micro where
     {-# INLINE fromInteger #-}
     Micro a + Micro b = Micro (a + b)
     Micro a - Micro b = Micro (a - b)
-    Micro a * Micro b = Micro ((quot a 1000) * (quot b 1000))
+    Micro a * Micro b = Micro (quot a 1000 * quot b 1000)
     negate (Micro a) = Micro (negate a)
     abs (Micro a) = Micro (abs a)
     signum (Micro a) = Micro (signum a * 1000000)

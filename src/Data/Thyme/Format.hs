@@ -25,8 +25,9 @@ import Data.Thyme.LocalTime
 import Data.Thyme.Format.Internal
 import System.Locale
 
+type FormatS = Char -> ShowS
 class FormatTime t where
-    showsTime :: TimeLocale -> t -> (Char -> ShowS) -> (Char -> ShowS)
+    showsTime :: TimeLocale -> t -> FormatS -> FormatS
 
 {-# INLINEABLE formatTime #-}
 formatTime :: (FormatTime t) => TimeLocale -> String -> t -> String
@@ -178,7 +179,7 @@ instance FormatTime Day where
             . showsTime l (view yearMonthDay ordinal)
             . showsTime l (view weekDate d) . other where
         ordinal = view ordinalDate d
-        other :: (Char -> ShowS) -> (Char -> ShowS)
+        other :: FormatS -> FormatS
         other def c = case c of
             -- Non-standard WeekOfYear
             'U' -> shows02 . wdWeek $ sundayStartWeek d

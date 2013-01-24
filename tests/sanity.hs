@@ -48,7 +48,7 @@ x ^/^ y = decompose' x () / decompose' y ()
 newtype Spec = Spec String deriving (Show)
 
 instance Arbitrary Spec where
-    arbitrary = fmap (Spec . intercalate " " . map (\ c -> ['%', c]))
+    arbitrary = fmap (Spec . unwords . map (\ c -> ['%', c]))
             . Gen.listOf1 . Gen.elements . nub $
         {-aggregate/escape-}"crXx%" ++ {-TimeOfDay-}"RTPpHIklMSqQ" ++
         {-YearMonthDay-}"DFYyCBbhmde" ++ {-MonthDay-}"Bbhmde" ++

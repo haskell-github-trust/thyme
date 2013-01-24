@@ -34,7 +34,7 @@ monthDay leap = iso fromOrdinal toOrdinal where
 
     {-# INLINE fromOrdinal #-}
     fromOrdinal :: DayOfYear -> MonthDay
-    fromOrdinal yd = (MonthDay m d) where
+    fromOrdinal yd = MonthDay m d where
         (m, d) = T.dayOfYearToMonthAndDay leap yd
 
     {-# INLINE toOrdinal #-}

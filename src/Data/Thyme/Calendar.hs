@@ -29,7 +29,7 @@ yearMonthDay = iso fromOrdinal toOrdinal where
 
     {-# INLINEABLE fromOrdinal #-}
     fromOrdinal :: OrdinalDate -> YearMonthDay
-    fromOrdinal (OrdinalDate y yd) = (YearMonthDay y m d) where
+    fromOrdinal (OrdinalDate y yd) = YearMonthDay y m d where
         MonthDay m d = view (monthDay (isLeapYear y)) yd
 
     {-# INLINEABLE toOrdinal #-}

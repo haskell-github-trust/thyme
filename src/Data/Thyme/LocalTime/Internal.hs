@@ -83,7 +83,7 @@ timeOfDayFraction = iso fromRatio toRatio . timeOfDay where
     NominalDiffTime posixDay = posixDayLength
 
     fromRatio :: Rational -> DiffTime
-    fromRatio r = DiffTime (r *^ posixDay) where
+    fromRatio r = DiffTime (r *^ posixDay)
 
     toRatio :: DiffTime -> Rational
     toRatio (DiffTime t) = t ^/^ posixDay
