@@ -7,7 +7,7 @@ import Prelude
 import Control.Applicative
 import Control.Lens
 import Control.Monad
-import Control.Monad.Trans
+import Control.Monad.IO.Class
 import Criterion
 import Criterion.Analysis
 import Criterion.Config

@@ -83,7 +83,7 @@ test-suite sanity
     main-is: sanity.hs
     build-depends:
         base >= 4.5 && < 5,
-        mtl >= 2.1,
+        transformers >= 0.3,
         deepseq >= 1.2,
         vector-space >= 0.8,
         lens >= 3.7,
