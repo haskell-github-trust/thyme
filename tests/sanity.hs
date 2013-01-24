@@ -1,3 +1,4 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
@@ -13,6 +14,7 @@ import Criterion.Config
 import Criterion.Environment
 import Criterion.Monad
 import Data.Basis
+import Data.List
 import Data.Monoid
 import Data.Thyme
 import qualified Data.Time as T
@@ -21,7 +23,7 @@ import System.Exit
 import System.Locale
 import System.Random
 import Test.QuickCheck
-import Test.QuickCheck.Gen
+import qualified Test.QuickCheck.Gen as Gen
 import Text.Printf
 
 instance Arbitrary Day where
@@ -43,21 +45,24 @@ x ^/^ y = decompose' x () / decompose' y ()
 
 ------------------------------------------------------------------------
 
-spec :: String
-spec = "%F %G %V %u %j %T %p %s"
+newtype Spec = Spec String deriving (Show)
 
-format :: UTCTime -> String
-format = formatTime defaultTimeLocale spec
-format' :: T.UTCTime -> String
-format' = T.formatTime defaultTimeLocale spec
+instance Arbitrary Spec where
+    arbitrary = fmap (Spec . intercalate " " . map (\ c -> ['%', c]))
+            . Gen.listOf1 . Gen.elements . nub $
+        {-aggregate/escape-}"crXx%" ++ {-TimeOfDay-}"RTPpHIklMSqQ" ++
+        {-YearMonthDay-}"DFYyCBbhmde" ++ {-MonthDay-}"Bbhmde" ++
+        {-OrdinalDate-}"YyCj" ++ {-WeekDate-}"GgfVuAaw" ++
+        {-Day-}"UW" ++ {-TimeZone-}"zZ" ++ {-UTCTime-}"s"
 
 ------------------------------------------------------------------------
 
-prop_formatTime :: UTCTime -> Property
-prop_formatTime t@(toTime -> t') =
-        printTestCase (unlines [s, s']) (s == s') where
-    s = format t
-    s' = format' t'
+prop_formatTime :: Spec -> UTCTime -> Property
+prop_formatTime (Spec spec) t@(toTime -> t')
+        = printTestCase desc (s == s') where
+    s = formatTime defaultTimeLocale spec t
+    s' = T.formatTime defaultTimeLocale spec t'
+    desc = "thyme: " ++ s ++ "\ntime:  " ++ s'
 
 ------------------------------------------------------------------------
 
@@ -67,21 +72,24 @@ main = do
         prop_formatTime :
         []
 
-    t <- unGen (vectorOf 10 arbitrary) <$> newStdGen <*> pure 0
-    let t' = toTime <$> t
-    let s = T.formatTime defaultTimeLocale spec <$> t'
+    ts <- Gen.unGen (vectorOf 10 arbitrary) <$> newStdGen <*> pure 0
+    let ts' = toTime <$> ts
     fast <- fmap and . withConfig config $ do
         env <- measureEnvironment
         ns <- getConfigItem $ fromLJ cfgResamples
         mapM (benchMean env ns) $
-            ("formatTime", nf (fmap format) t, nf (fmap format') t', 9) :
+            ( "formatTime", 9
+                , nf (formatTime defaultTimeLocale spec <$>) ts
+                , nf (T.formatTime defaultTimeLocale spec <$>) ts' ) :
             []
 
     exitWith $ if correct && fast then ExitSuccess else ExitFailure 1
   where
     isSuccess r = case r of Success {} -> True; _ -> False
+
+    spec = "%F %G %V %u %j %T %p %s"
     config = defaultConfig {cfgVerbosity = Last (Just Quiet)}
-    benchMean env n (name, us, them, expected) = do
+    benchMean env n (name, expected, us, them) = do
         ours <- flip analyseMean n =<< runBenchmark env us
         theirs <- flip analyseMean n =<< runBenchmark env them
         let ratio = theirs / ours
