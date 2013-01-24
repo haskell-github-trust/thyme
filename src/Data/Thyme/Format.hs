@@ -80,28 +80,28 @@ instance FormatTime TimeOfDay where
         'M' -> shows02 m
         -- Second
         'S' -> shows02 si
-        'q' -> fills12 su . shows su
-        'Q' -> if su == 0 then id else (:) '.' . fills12 su . drop0 su
+        'q' -> fills06 su . shows su . (++) "000000"
+        'Q' -> if su == 0 then id else (:) '.' . fills06 su . drops0 su
         -- default
         _ -> def c
 
         where
         (fromIntegral -> si, Micro su) = microQuotRem s (Micro 1000000)
 
-        {-# INLINE fills12 #-}
-        fills12 :: Int64 -> ShowS
-        fills12 n
-            | n < 10 = (++) "00000000000"
-            | n < 100 = (++) "0000000000"
-            | n < 1000 = (++) "000000000"
-            | n < 10000 = (++) "00000000"
-            | n < 100000 = (++) "0000000"
-            | otherwise   = (++) "000000"
+        {-# INLINE fills06 #-}
+        fills06 :: Int64 -> ShowS
+        fills06 n
+            | n < 10 = (++) "00000"
+            | n < 100 = (++) "0000"
+            | n < 1000 = (++) "000"
+            | n < 10000 = (++) "00"
+            | n < 100000 = (++) "0"
+            | otherwise = id
 
-        {-# INLINE drop0 #-}
-        drop0 :: Int64 -> ShowS
-        drop0 n = case divMod n 10 of
-            (q, 0) -> drop0 q
+        {-# INLINE drops0 #-}
+        drops0 :: Int64 -> ShowS
+        drops0 n = case divMod n 10 of
+            (q, 0) -> drops0 q
             _ -> shows n
 
 instance FormatTime YearMonthDay where
