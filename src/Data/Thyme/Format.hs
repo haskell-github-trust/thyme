@@ -12,7 +12,6 @@ import Prelude
 import Control.Applicative
 import Control.Lens
 import Data.Char
-import Data.Int
 import Data.Micro
 import Data.Thyme.Calendar
 import Data.Thyme.Calendar.OrdinalDate
@@ -85,25 +84,7 @@ instance FormatTime TimeOfDay where
         'Q' -> if su == 0 then id else (:) '.' . fills06 su . drops0 su
         -- default
         _ -> def c
-
-        where
-        (fromIntegral -> si, Micro su) = microQuotRem s (Micro 1000000)
-
-        {-# INLINE fills06 #-}
-        fills06 :: Int64 -> ShowS
-        fills06 n
-            | n < 10 = (++) "00000"
-            | n < 100 = (++) "0000"
-            | n < 1000 = (++) "000"
-            | n < 10000 = (++) "00"
-            | n < 100000 = (++) "0"
-            | otherwise = id
-
-        {-# INLINE drops0 #-}
-        drops0 :: Int64 -> ShowS
-        drops0 n = case divMod n 10 of
-            (q, 0) -> drops0 q
-            _ -> shows n
+        where (fromIntegral -> si, Micro su) = microQuotRem s (Micro 1000000)
 
 instance FormatTime YearMonthDay where
     {-# INLINEABLE showsTime #-}
