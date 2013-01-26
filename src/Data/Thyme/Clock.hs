@@ -33,7 +33,7 @@ instance Show UTCTime where
     showsPrec p = showsPrec p . view utcTime
 #else
 instance Show UTCTime where
-    showsPrec p = showsPrec p . view (utcLocalTime utc)
+    showsPrec p = showsPrec p . view zonedTime . (,) utc
 #endif
 
 getCurrentTime :: IO UTCTime

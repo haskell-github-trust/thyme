@@ -120,3 +120,30 @@ utcLocalTime TimeZone {..} = utcTime . iso localise globalise where
 
 -- TODO: ut1LocalTime
 
+------------------------------------------------------------------------
+-- * Zoned Time
+
+data ZonedTime = ZonedTime
+    { zonedTimeToLocalTime :: {-only 4 words…-} {-# UNPACK #-}!LocalTime
+    , zonedTimeZone :: !TimeZone
+    } deriving (Eq, Ord, Data, Typeable)
+
+{-# INLINE zonedTime #-}
+zonedTime :: Simple Iso (TimeZone, UTCTime) ZonedTime
+zonedTime = iso toZoned fromZoned where
+
+    {-# INLINE toZoned #-}
+    toZoned :: (TimeZone, UTCTime) -> ZonedTime
+    toZoned (tz, time) = ZonedTime (view (utcLocalTime tz) time) tz
+
+    {-# INLINE fromZoned #-}
+    fromZoned :: ZonedTime -> (TimeZone, UTCTime)
+    fromZoned (ZonedTime lt tz) = (tz, review (utcLocalTime tz) lt)
+
+#if SHOW_INTERNAL
+deriving instance Show ZonedTime
+#else
+instance Show ZonedTime where
+    showsPrec p (ZonedTime lt tz) = showsPrec p lt . (:) ' ' . showsPrec p tz
+#endif
+
