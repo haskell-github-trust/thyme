@@ -9,7 +9,7 @@ module Data.Thyme.LocalTime.Internal where
 
 import Prelude hiding ((.))
 import Control.Applicative
-import Control.Category
+import Control.Category hiding (id)
 import Control.Lens
 import Control.Monad
 import Data.AffineSpace
@@ -40,8 +40,10 @@ deriving instance Show TimeOfDay
 #else
 instance Show TimeOfDay where
     showsPrec _ (TimeOfDay h m (DiffTime s))
-        = shows02 h . (:) ':' . shows02 m . (:) ':'
-        . shows02 (fromIntegral . fst . microQuotRem s $ Micro 1000000)
+            = shows02 h . (:) ':' . shows02 m . (:) ':'
+            . shows02 (fromIntegral si) . frac where
+        (si, Micro su) = microQuotRem s (Micro 1000000)
+        frac = if su == 0 then id else (:) '.' . fills06 su . drops0 su
 #endif
 
 {-# INLINE makeTimeOfDayValid #-}
