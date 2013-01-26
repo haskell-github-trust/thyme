@@ -15,10 +15,10 @@ import Data.Data
 import Data.Int
 import Data.Ix
 import Data.Ratio
-import Data.VectorSpace
 #if !SHOW_INTERNAL
-import Text.Printf
+import Data.Thyme.Format.Internal
 #endif
+import Data.VectorSpace
 
 newtype Micro = Micro Int64
     deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable)
@@ -27,10 +27,10 @@ newtype Micro = Micro Int64
 deriving instance Show Micro
 #else
 instance Show Micro where
-    show (Micro a) = case compare a 0 of
-        LT -> printf "-%d.%06u" `uncurry` quotRem (negate a) 1000000
-        EQ -> "0"
-        GT -> printf "%d.%06u" `uncurry` quotRem a 1000000
+    showsPrec _ (Micro a) = sign . shows si . frac where
+        sign = if a < 0 then (:) '-' else id
+        (si, su) = quotRem (abs a) 1000000
+        frac = if su == 0 then id else (:) '.' . fills06 su . drops0 su
 #endif
 
 {-# INLINE toMicro #-}
