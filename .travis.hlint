@@ -2,5 +2,6 @@
 
 SRC="$(sed -ne 's/^\W*hs-source-dirs:\W*\(.*\)$/\1/p' *.cabal)"
 hlint --cpp-simple -i "Redundant lambda" -i "Use camelCase" \
-	-i "Use import/export shortcut" -i "Use list literal" ${SRC:-.}
+	-i "Use import/export shortcut" -i "Use list literal" \
+	-i "Use if" ${SRC:-.}
 
