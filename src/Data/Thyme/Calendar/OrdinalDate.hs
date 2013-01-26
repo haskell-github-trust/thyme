@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE ViewPatterns #-}
 
 -- | ISO 8601 Ordinal Date format
 
@@ -32,9 +33,8 @@ sundayStartWeek day@(ModifiedJulianDay mjd) = WeekDate y
 -- | Accepts 0−6 for 'DayOfWeek', and 0-based 'WeekOfYear's.
 {-# INLINEABLE fromSundayStartWeekValid #-}
 fromSundayStartWeekValid :: WeekDate -> Maybe Day
-fromSundayStartWeekValid wd@(WeekDate y w d) = fromWeekMax wMax wd
-        <$ guard (0 <= d && d <= 6 && 0 <= w && w <= wMax) where
-    WeekDate _ wMax _ = view (from ordinalDate . weekDate) (OrdinalDate y 365)
+fromSundayStartWeekValid wd@(WeekDate (lastWeekOfYear -> wMax) w d) =
+    fromWeekMax wMax wd <$ guard (0 <= d && d <= 6 && 0 <= w && w <= wMax)
 
 -- | Use @'review' 'weekDate'@ to convert back to 'Day'.
 {-# INLINE mondayStartWeek #-}
@@ -48,9 +48,8 @@ mondayStartWeek day@(ModifiedJulianDay mjd) = WeekDate y
 -- | Accepts 1−7 for 'DayOfWeek', and 0-based 'WeekOfYear's.
 {-# INLINEABLE fromMondayStartWeekValid #-}
 fromMondayStartWeekValid :: WeekDate -> Maybe Day
-fromMondayStartWeekValid wd@(WeekDate y w d) = fromWeekMax wMax wd
-        <$ guard (1 <= d && d <= 7 && 0 <= w && w <= wMax) where
-    WeekDate _ wMax _ = view (from ordinalDate . weekDate) (OrdinalDate y 365)
+fromMondayStartWeekValid wd@(WeekDate (lastWeekOfYear -> wMax) w d) =
+    fromWeekMax wMax wd <$ guard (1 <= d && d <= 7 && 0 <= w && w <= wMax)
 
 -- * Lenses
 thymeLenses ''OrdinalDate

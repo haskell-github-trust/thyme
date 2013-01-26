@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE ViewPatterns #-}
 
 -- | ISO 8601 Week Date format
 module Data.Thyme.Calendar.WeekDate
@@ -20,14 +21,12 @@ import Text.Printf
 -- | Rejects 0-based 'DayOfWeek' and 'WeekOfYear'.
 {-# INLINEABLE fromWeekDateValid #-}
 fromWeekDateValid :: WeekDate -> Maybe Day
-fromWeekDateValid wd@(WeekDate y w d) = fromWeekMax wMax wd
-        <$ guard (1 <= d && d <= 7 && 1 <= w && w <= wMax) where
-    WeekDate _ wMax _ = view (from ordinalDate . weekDate) (OrdinalDate y 365)
+fromWeekDateValid wd@(WeekDate (lastWeekOfYear -> wMax) w d) =
+    fromWeekMax wMax wd <$ guard (1 <= d && d <= 7 && 1 <= w && w <= wMax)
 
 {-# INLINEABLE showWeekDate #-}
 showWeekDate :: Day -> String
-showWeekDate day = printf "%04d-W%02d-%d" y w d where
-    WeekDate y w d = view weekDate day
+showWeekDate (view weekDate -> WeekDate y w d) = printf "%04d-W%02d-%d" y w d
 
 -- * Lenses
 thymeLenses ''WeekDate

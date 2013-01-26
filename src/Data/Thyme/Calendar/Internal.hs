@@ -121,8 +121,11 @@ weekDate = iso toWeek fromWeek where
 
     {-# INLINEABLE fromWeek #-}
     fromWeek :: WeekDate -> Day
-    fromWeek wd@(WeekDate y _ _) = fromWeekMax wMax wd where
-        WeekDate _ wMax _ = toWeek $ review ordinalDate (OrdinalDate y 365)
+    fromWeek wd@(WeekDate y _ _) = fromWeekMax (lastWeekOfYear y) wd
+
+lastWeekOfYear :: Year -> WeekOfYear
+lastWeekOfYear y = if wdWeek wd == 53 then 53 else 52 where
+    wd = view (from ordinalDate . weekDate) (OrdinalDate y 365)
 
 {-# INLINE fromWeekMax #-}
 fromWeekMax :: WeekOfYear -> WeekDate -> Day
