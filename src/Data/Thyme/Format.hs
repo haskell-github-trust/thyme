@@ -136,17 +136,51 @@ instance FormatTime OrdinalDate where
 instance FormatTime WeekDate where
     {-# INLINEABLE showsTime #-}
     showsTime TimeLocale {..} (WeekDate y w d) = \ def c -> case c of
-        -- Year (WeekDate)
+        -- Year
         'G' -> showsYear y
         'g' -> shows02 (mod y 100)
         'f' -> shows02 (div y 100)
         -- WeekOfYear
         'V' -> shows02 w
         -- DayOfWeek
-        'u' -> shows d
+        'u' -> shows $ if d == 0 then 7 else d
+        'w' -> shows $ if d == 7 then 0 else d
         'A' -> (++) . fst $ wDays !! mod d 7
         'a' -> (++) . snd $ wDays !! mod d 7
-        'w' -> shows (mod d 7)
+        -- default
+        _ -> def c
+
+instance FormatTime SundayWeek where
+    {-# INLINEABLE showsTime #-}
+    showsTime TimeLocale {..} (SundayWeek y w d) = \ def c -> case c of
+        -- Year
+        'Y' -> showsYear y
+        'y' -> shows02 (mod y 100)
+        'C' -> shows02 (div y 100)
+        -- WeekOfYear
+        'U' -> shows02 w
+        -- DayOfWeek
+        'u' -> shows $ if d == 0 then 7 else d
+        'w' -> shows $ if d == 7 then 0 else d
+        'A' -> (++) . fst $ wDays !! mod d 7
+        'a' -> (++) . snd $ wDays !! mod d 7
+        -- default
+        _ -> def c
+
+instance FormatTime MondayWeek where
+    {-# INLINEABLE showsTime #-}
+    showsTime TimeLocale {..} (MondayWeek y w d) = \ def c -> case c of
+        -- Year
+        'Y' -> showsYear y
+        'y' -> shows02 (mod y 100)
+        'C' -> shows02 (div y 100)
+        -- WeekOfYear
+        'W' -> shows02 w
+        -- DayOfWeek
+        'u' -> shows $ if d == 0 then 7 else d
+        'w' -> shows $ if d == 7 then 0 else d
+        'A' -> (++) . fst $ wDays !! mod d 7
+        'a' -> (++) . snd $ wDays !! mod d 7
         -- default
         _ -> def c
 
@@ -158,15 +192,11 @@ instance FormatTime Day where
     {-# INLINEABLE showsTime #-}
     showsTime l d = showsTime l ordinal
             . showsTime l (view yearMonthDay ordinal)
-            . showsTime l (view weekDate d) . other where
+            . showsTime l (view weekDate d)
+            . showsTime l (view sundayWeek d)
+            . showsTime l (view mondayWeek d) where
+        -- FIXME: could be a little more efficient wrt week dates here
         ordinal = view ordinalDate d
-        other :: FormatS -> FormatS
-        other def c = case c of
-            -- Non-standard WeekOfYear
-            'U' -> shows02 . wdWeek $ sundayStartWeek d
-            'W' -> shows02 . wdWeek $ mondayStartWeek d
-            -- default
-            _ -> def c
 
 instance FormatTime TimeZone where
     {-# INLINEABLE showsTime #-}
