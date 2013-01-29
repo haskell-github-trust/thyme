@@ -16,9 +16,9 @@ import Control.Monad
 import Data.Thyme.Calendar.Internal
 import Data.Thyme.TH
 
-{-# INLINE fromOrdinalDateValid #-}
-fromOrdinalDateValid :: OrdinalDate -> Maybe Day
-fromOrdinalDateValid od@(OrdinalDate y d) = review ordinalDate od
+{-# INLINE ordinalDateValid #-}
+ordinalDateValid :: OrdinalDate -> Maybe Day
+ordinalDateValid od@(OrdinalDate y d) = review ordinalDate od
     <$ guard (1 <= d && d <= if isLeapYear y then 366 else 365)
 
 -- * Lenses

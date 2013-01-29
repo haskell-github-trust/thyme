@@ -41,9 +41,9 @@ yearMonthDay = iso fromOrdinal toOrdinal where
 gregorian :: Simple Iso Day YearMonthDay
 gregorian = ordinalDate . yearMonthDay
 
-{-# INLINEABLE fromGregorianValid #-}
-fromGregorianValid :: YearMonthDay -> Maybe Day
-fromGregorianValid (YearMonthDay y m d) = review ordinalDate . OrdinalDate y
+{-# INLINEABLE gregorianValid #-}
+gregorianValid :: YearMonthDay -> Maybe Day
+gregorianValid (YearMonthDay y m d) = review ordinalDate . OrdinalDate y
     <$> monthDayToDayOfYearValid (isLeapYear y) (MonthDay m d)
 
 {-# INLINEABLE showGregorian #-}
