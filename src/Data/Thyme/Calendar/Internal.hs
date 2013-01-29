@@ -105,14 +105,15 @@ weekDate = iso toWeek fromWeek where
     {-# INLINEABLE toWeek #-}
     toWeek :: Day -> WeekDate
     toWeek day@(ModifiedJulianDay mjd) = WeekDate
-            y1 (fromIntegral $ w1 + 1) (fromIntegral $ mod d 7 + 1) where
+            y1 (fromIntegral $ w1 + 1) (fromIntegral $ d7mod + 1) where
         -- pilfered and refactored; no idea what foo and bar mean
         OrdinalDate y0 yd = view ordinalDate day
         d = mjd + 2
+        (d7div, d7mod) = divMod d 7
         foo :: Year -> {-WeekOfYear-1-}Int64
         foo y = bar $ review ordinalDate (OrdinalDate y 6)
         bar :: Day -> {-WeekOfYear-1-}Int64
-        bar (ModifiedJulianDay k) = div d 7 - div k 7
+        bar (ModifiedJulianDay k) = d7div - div k 7
         w0 = bar $ ModifiedJulianDay (d - fromIntegral yd + 4)
         (y1, w1) = case w0 of
             -1 -> (y0 - 1, foo (y0 - 1))
