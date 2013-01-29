@@ -14,8 +14,7 @@ import Control.Lens
 import Data.Char
 import Data.Micro
 import Data.Thyme.Calendar
-import Data.Thyme.Calendar.OrdinalDate
-import Data.Thyme.Calendar.WeekDate
+import Data.Thyme.Calendar.Internal
 import Data.Thyme.Calendar.MonthDay
 import Data.Thyme.Clock.POSIX
 import Data.Thyme.Clock.Scale
@@ -190,13 +189,12 @@ instance FormatTime LocalTime where
 
 instance FormatTime Day where
     {-# INLINEABLE showsTime #-}
-    showsTime l d = showsTime l ordinal
-            . showsTime l (view yearMonthDay ordinal)
-            . showsTime l (view weekDate d)
-            . showsTime l (view sundayWeek d)
-            . showsTime l (view mondayWeek d) where
-        -- FIXME: could be a little more efficient wrt week dates here
-        ordinal = view ordinalDate d
+    showsTime l d@(view ordinalDate -> ordinal)
+        = showsTime l ordinal
+        . showsTime l (view yearMonthDay ordinal)
+        . showsTime l (toWeekOrdinal ordinal d)
+        . showsTime l (toSundayOrdinal ordinal d)
+        . showsTime l (toMondayOrdinal ordinal d)
 
 instance FormatTime TimeZone where
     {-# INLINEABLE showsTime #-}
