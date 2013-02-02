@@ -14,9 +14,7 @@ import Control.Lens
 import Data.AdditiveGroup
 import Data.AffineSpace
 import Data.Basis
-import Data.Bits
 import Data.Data
-import Data.Int
 import Data.Ix
 import Data.Micro
 import Data.Thyme.Calendar
@@ -60,7 +58,7 @@ posixDayLength = NominalDiffTime (toMicro 86400)
 
 ------------------------------------------------------------------------
 
-newtype UTCTime = UTCPacked Int64
+newtype UTCTime = UTCRep NominalDiffTime -- since MJD epoch
     deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable)
 
 data UTCView = UTCTime
@@ -79,36 +77,23 @@ _utctDayTime = utcTime . lens utctDayTime (\ (UTCTime d _) t -> UTCTime d t)
 instance AffineSpace UTCTime where
     type Diff UTCTime = NominalDiffTime
     {-# INLINE (.-.) #-}
-    (view utcTime -> UTCTime da ta) .-. (view utcTime -> UTCTime db tb) =
-        fromIntegral (da .-. db) *^ posixDayLength ^+^ NominalDiffTime td where
-        DiffTime td = ta ^-^ tb
+    UTCRep a .-. UTCRep b = a ^-^ b
     {-# INLINE (.+^) #-}
-    (view utcTime -> UTCTime day (DiffTime dt)) .+^ NominalDiffTime d
-        = review utcTime $ UTCTime day (DiffTime (dt ^+^ d))
+    UTCRep a .+^ d = UTCRep (a ^+^ d)
 
 {-# INLINE utcTime #-}
 utcTime :: Simple Iso UTCTime UTCView
-utcTime = iso unpack pack where
+utcTime = iso toView fromView where
+    NominalDiffTime posixDay@(Micro uPosixDay) = posixDayLength
 
-    {-# INLINE unpack #-}
-    unpack :: UTCTime -> UTCView
-    unpack (UTCPacked n) = UTCTime
-            (ModifiedJulianDay mjd) (DiffTime (Micro dt)) where
-        mjd = shiftR n bitsDayTime
-        dt = n .&. maskDayTime
+    {-# INLINE toView #-}
+    toView :: UTCTime -> UTCView
+    toView (UTCRep (NominalDiffTime a)) = UTCTime
+            (ModifiedJulianDay mjd) (DiffTime dt) where
+        (fromIntegral -> mjd, dt) = microDivMod a posixDay
 
-    {-# INLINE pack #-}
-    pack :: UTCView -> UTCTime
-    pack (UTCTime (ModifiedJulianDay mjd) (DiffTime dt)) =
-            UTCPacked (shiftL (mjd + dd) bitsDayTime .|. pt) where
-        NominalDiffTime posixDay = posixDayLength
-        (dd, Micro pt) = microDivMod dt posixDay
-
-    {-# INLINE bitsDayTime #-}
-    bitsDayTime :: Int
-    bitsDayTime = 37 -- enough for 86400 microseconds
-
-    {-# INLINE maskDayTime #-}
-    maskDayTime :: Int64
-    maskDayTime = shiftL 1 bitsDayTime - 1
+    {-# INLINE fromView #-}
+    fromView :: UTCView -> UTCTime
+    fromView (UTCTime (ModifiedJulianDay mjd) (DiffTime dt)) = UTCRep a where
+        a = NominalDiffTime (Micro (fromIntegral mjd * uPosixDay) ^+^ dt)
 

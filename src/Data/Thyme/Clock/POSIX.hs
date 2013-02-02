@@ -6,28 +6,18 @@ module Data.Thyme.Clock.POSIX
 import Prelude
 import Control.Lens
 import Data.AdditiveGroup
-import Data.AffineSpace
 import Data.Micro
 import qualified Data.Time.Clock.POSIX as T
-import Data.Thyme.Calendar.Internal
-import Data.Thyme.Clock.Scale
-import Data.Thyme.Clock.UTC
+import Data.Thyme.Clock.Internal
+import Data.VectorSpace
 
 type POSIXTime = NominalDiffTime
 
 {-# INLINE posixTime #-}
 posixTime :: Simple Iso UTCTime POSIXTime
-posixTime = iso toPOSIX fromPOSIX where
-    unixEpochDay = ModifiedJulianDay 40587
-
-    {-# INLINE toPOSIX #-}
-    toPOSIX :: UTCTime -> POSIXTime
-    toPOSIX t = t .-. review utcTime (UTCTime unixEpochDay zeroV)
-
-    {-# INLINE fromPOSIX #-}
-    fromPOSIX :: POSIXTime -> UTCTime
-    fromPOSIX (NominalDiffTime d) = review utcTime $
-        UTCTime unixEpochDay (DiffTime d)
+posixTime = iso (\ (UTCRep t) -> t ^-^ unixEpoch)
+        (UTCRep . (^+^) unixEpoch) where
+    unixEpoch = {-ModifiedJulianDay-}40587 *^ posixDayLength
 
 -- TODO: reimplement without 'T.getPOSIXTime' to avoid 'Integer'?
 {-# INLINE getPOSIXTime #-}
