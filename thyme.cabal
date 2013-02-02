@@ -67,7 +67,7 @@ library
         lens >= 3.7,
         old-locale >= 1.0,
         template-haskell >= 2.6,
-        bytestring >= 0.10.2,
+        bytestring >= 0.10,
         attoparsec >= 0.10,
         time >= 1.4
     ghc-options: -Wall
@@ -90,7 +90,7 @@ test-suite sanity
         vector-space >= 0.8,
         lens >= 3.7,
         old-locale >= 1.0,
-        bytestring >= 0.10.2,
+        bytestring >= 0.10,
         attoparsec >= 0.10,
         random >= 1.0,
         QuickCheck >= 2.4,

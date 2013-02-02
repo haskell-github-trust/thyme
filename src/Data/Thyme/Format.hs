@@ -23,7 +23,11 @@ import Data.Attoparsec.ByteString.Char8 (Parser)
 import qualified Data.Attoparsec.ByteString.Char8 as P
 import Data.Basis
 import Data.Bits
+#if MIN_VERSION_bytestring(0,10,2)
 import qualified Data.ByteString.Builder as S
+#else
+import qualified Data.ByteString.Lazy.Builder as S
+#endif
 import qualified Data.ByteString.Char8 as S
 import qualified Data.ByteString.Lazy as SL
 import Data.Char

@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -15,7 +16,11 @@ import Criterion.Environment
 import Criterion.Monad
 import qualified Data.Attoparsec.ByteString.Char8 as P
 import Data.Basis
+#if MIN_VERSION_bytestring(0,10,2)
 import qualified Data.ByteString.Builder as S
+#else
+import qualified Data.ByteString.Lazy.Builder as S
+#endif
 import qualified Data.ByteString.Lazy as SL
 import Data.Monoid
 import Data.Thyme
