@@ -35,9 +35,8 @@ import Data.Micro
 import Data.Thyme.Calendar
 import Data.Thyme.Calendar.Internal
 import Data.Thyme.Calendar.MonthDay
+import Data.Thyme.Clock.Internal
 import Data.Thyme.Clock.POSIX
-import Data.Thyme.Clock.Scale
-import Data.Thyme.Clock.UTC
 import Data.Thyme.Format.Internal
 import Data.Thyme.LocalTime
 import Data.Thyme.TH

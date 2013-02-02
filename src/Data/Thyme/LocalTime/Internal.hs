@@ -16,8 +16,7 @@ import Data.AffineSpace
 import Data.Data
 import Data.Micro
 import Data.Thyme.Calendar
-import Data.Thyme.Clock.Scale
-import Data.Thyme.Clock.UTC
+import Data.Thyme.Clock.Internal
 #if !SHOW_INTERNAL
 import Data.Thyme.Format.Internal
 #endif

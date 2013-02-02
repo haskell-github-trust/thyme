@@ -7,8 +7,8 @@ import Prelude
 import Control.Lens
 import Data.AdditiveGroup
 import Data.Micro
-import qualified Data.Time.Clock.POSIX as T
 import Data.Thyme.Clock.Internal
+import qualified Data.Time.Clock.POSIX as T
 import Data.VectorSpace
 
 type POSIXTime = NominalDiffTime

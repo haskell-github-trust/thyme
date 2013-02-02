@@ -22,8 +22,7 @@ module Data.Thyme.Clock (
 
 import Prelude
 import Control.Lens
-import Data.Thyme.Clock.Scale
-import Data.Thyme.Clock.UTC
+import Data.Thyme.Clock.Internal
 import Data.Thyme.Clock.POSIX
 #if !SHOW_INTERNAL
 import Data.Thyme.LocalTime.Internal

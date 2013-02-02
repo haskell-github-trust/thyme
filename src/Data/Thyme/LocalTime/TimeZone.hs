@@ -14,8 +14,7 @@ import Prelude
 import Control.Lens
 import Data.Micro
 import Data.Thyme.Calendar
-import Data.Thyme.Clock.Scale
-import Data.Thyme.Clock.UTC
+import Data.Thyme.Clock.Internal
 import qualified Data.Time as T
 
 getTimeZone :: UTCTime -> IO T.TimeZone
