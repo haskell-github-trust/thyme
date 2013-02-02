@@ -120,7 +120,23 @@ utcLocalTime TimeZone {..} = utcTime . iso localise globalise where
             (review timeOfDay utcToD) where
         (dd, utcToD) = addMinutes (negate timeZoneMinutes) tod
 
--- TODO: ut1LocalTime
+{-# INLINE ut1LocalTime #-}
+ut1LocalTime :: Rational -> Simple Iso UniversalTime LocalTime
+ut1LocalTime long = iso localise globalise where
+    NominalDiffTime posixDay@(Micro usDay) = posixDayLength
+
+    {-# INLINEABLE localise #-}
+    localise :: UniversalTime -> LocalTime
+    localise (UniversalRep (NominalDiffTime t)) = LocalTime
+            (ModifiedJulianDay day) (view timeOfDay (DiffTime dt)) where
+        (day, dt) = microDivMod (t ^+^ (long / 360) *^ posixDay) posixDay
+
+    {-# INLINEABLE globalise #-}
+    globalise :: LocalTime -> UniversalTime
+    globalise (LocalTime day tod) = UniversalRep . NominalDiffTime $
+            Micro (mjd * usDay) ^+^ dt ^-^ (long / 360) *^ posixDay where
+        ModifiedJulianDay mjd = day
+        DiffTime dt = review timeOfDay tod
 
 ------------------------------------------------------------------------
 -- * Zoned Time

@@ -17,8 +17,6 @@ import Data.Ix
 import Data.Micro
 import Data.VectorSpace
 
--- TODO: UniversalTime
-
 newtype DiffTime = DiffTime Micro
     deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable, AdditiveGroup)
 
@@ -53,3 +51,4 @@ deriving instance RealFrac DiffTime
 {-# INLINE microsecondsToDiffTime #-}
 microsecondsToDiffTime :: Int64 -> DiffTime
 microsecondsToDiffTime = DiffTime . Micro
+

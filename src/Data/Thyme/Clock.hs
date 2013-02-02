@@ -3,9 +3,11 @@
 
 module Data.Thyme.Clock (
     -- * Universal Time
+      UniversalTime
+    , modJulianDate
 
     -- * Absolute intervals
-      DiffTime
+    , DiffTime
     , microsecondsToDiffTime
 
     -- * UTC

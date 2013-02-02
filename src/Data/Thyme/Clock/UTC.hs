@@ -58,6 +58,17 @@ posixDayLength = NominalDiffTime (toMicro 86400)
 
 ------------------------------------------------------------------------
 
+newtype UniversalTime = UniversalRep NominalDiffTime -- since MJD epoch
+    deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable)
+
+{-# INLINE modJulianDate #-}
+modJulianDate :: Simple Iso UniversalTime Rational
+modJulianDate = iso
+    (\ (UniversalRep t) -> t ^/^ posixDayLength)
+    (UniversalRep . (*^ posixDayLength))
+
+------------------------------------------------------------------------
+
 newtype UTCTime = UTCRep NominalDiffTime -- since MJD epoch
     deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable)
 
