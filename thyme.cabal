@@ -48,6 +48,7 @@ library
         Data.Thyme.Calendar.WeekDate
         Data.Thyme.Clock
         Data.Thyme.Clock.POSIX
+        Data.Thyme.Clock.TAI
         Data.Thyme.Format
         Data.Thyme.LocalTime
     other-modules:
@@ -60,6 +61,7 @@ library
         Data.Thyme.TH
     build-depends:
         base >= 4.5 && < 5,
+        containers >= 0.5 && < 0.6,
         transformers >= 0.3,
         deepseq >= 1.2,
         vector-space >= 0.8,

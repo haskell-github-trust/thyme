@@ -57,6 +57,10 @@ drops0 n = case divMod n 10 of
 
 ------------------------------------------------------------------------
 
+{-# INLINE indexOf #-}
+indexOf :: [String] -> Parser Int
+indexOf = P.choice . zipWith (\ i s -> i <$ P.string (S.pack s)) [0..]
+
 {-# INLINE indexOfCI #-}
 indexOfCI :: [String] -> Parser Int
 indexOfCI = P.choice . zipWith (\ i s -> i <$ stringCI s) [0..]
