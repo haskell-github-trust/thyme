@@ -37,15 +37,15 @@ import Data.Thyme.Calendar.Internal
 import Data.Thyme.Calendar.MonthDay
 import Data.Thyme.Clock.Internal
 import Data.Thyme.Clock.POSIX
+import Data.Thyme.Clock.TAI
 import Data.Thyme.Format.Internal
 import Data.Thyme.LocalTime
 import Data.Thyme.TH
 import Data.VectorSpace
 import System.Locale
 
-type FormatS = Char -> ShowS
 class FormatTime t where
-    showsTime :: TimeLocale -> t -> FormatS -> FormatS
+    showsTime :: TimeLocale -> t -> (Char -> ShowS) -> Char -> ShowS
 
 {-# INLINEABLE formatTime #-}
 formatTime :: (FormatTime t) => TimeLocale -> String -> t -> String
@@ -240,6 +240,16 @@ instance FormatTime UTCTime where
         qr = microQuotRem -- rounds to 0
 #endif
 
+instance FormatTime UniversalTime where
+    {-# INLINEABLE showsTime #-}
+    showsTime l t = showsTime l $ ZonedTime lt utc {timeZoneName = "UT1"} where
+        lt = view (ut1LocalTime 0) t
+
+instance FormatTime AbsoluteTime where
+    {-# INLINEABLE showsTime #-}
+    showsTime l t = showsTime l $ ZonedTime lt utc {timeZoneName = "TAI"} where
+        lt = view (from (absoluteTime $ const zeroV) . utcLocalTime utc) t
+
 ------------------------------------------------------------------------
 
 data TimeFlag
@@ -418,7 +428,7 @@ timeParser TimeLocale {..} = flip execStateT unixEpoch . go where
     micro :: Parser Micro
     micro = do
         us10 <- either fail return . P.parseOnly P.decimal . S.take 7
-            . (`S.append` S.pack "000000") =<< P.takeWhile1 isDigit
+            . (`S.append` S.pack "000000") =<< P.takeWhile1 P.isDigit
         return $ Micro (div (us10 + 5) 10)
 
     {-# INLINE unixEpoch #-}
@@ -519,15 +529,23 @@ instance ParseTime UTCTime where
         then review posixTime tpPOSIXTime
         else view (from zonedTime . _2) (buildTime tp)
 
+instance ParseTime UniversalTime where
+    {-# INLINE buildTime #-}
+    buildTime (buildTime -> UTCRep t) = UniversalRep t
+
+instance ParseTime AbsoluteTime where
+    {-# INLINE buildTime #-}
+    buildTime = view (absoluteTime $ const zeroV) <$> buildTime
+
 ------------------------------------------------------------------------
 
 -- Dubiously pilfered from time-1.4.0.2
 -- s/^.*-- \(.*\)\n.*\("[A-Z]\+"\).*"\([+-]\)\([0-9]\{2\}\):\([0-9]\{2\}\)", \(True\|False\).*$/    <|> zone \2 (($\3) \4 \5) \6 -- \1/
 -- followed by !sort -r , because some names are prefixes of others.
 timeZoneParser :: Parser TimeZone
-timeZoneParser
+timeZoneParser = zone "TAI" 0 False <|> zone "UT1" 0 False
 
-    =   zone "ZULU" (($+) 00 00) False --  Same as UTC
+    <|> zone "ZULU" (($+) 00 00) False --  Same as UTC
     <|> zone "Z" (($+) 00 00) False --  Same as UTC
     <|> zone "YST" (($-) 09 00) False -- Yukon Standard Time
     <|> zone "YDT" (($-) 08 00) True -- Yukon Daylight-Saving Time
