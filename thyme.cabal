@@ -46,6 +46,7 @@ library
         Data.Thyme.Calendar.MonthDay
         Data.Thyme.Calendar.OrdinalDate
         Data.Thyme.Calendar.WeekDate
+        Data.Thyme.Calendar.WeekdayOfMonth
         Data.Thyme.Clock
         Data.Thyme.Clock.POSIX
         Data.Thyme.Clock.TAI
