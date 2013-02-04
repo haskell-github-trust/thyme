@@ -70,12 +70,10 @@ ordinalDate = iso toOrd fromOrd where
             (fromIntegral year) (fromIntegral yd) where
         -- pilfered
         a = mjd + 678575
-        quadcent = div a 146097
-        b = mod a 146097
+        (quadcent, b) = divMod a 146097
         cent = min (div b 36524) 3
         c = b - cent * 36524
-        quad = div c 1461
-        d = mod c 1461
+        (quad, d) = divMod c 1461
         y = min (div d 365) 3
         yd = d - y * 365 + 1
         year = quadcent * 400 + cent * 100 + quad * 4 + y + 1
