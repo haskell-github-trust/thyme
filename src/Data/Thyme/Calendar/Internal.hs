@@ -159,11 +159,11 @@ showWeekDate (view weekDate -> WeekDate y w d) =
     shows04 y . (++) "-W" . shows02 w . (:) '-' . shows d $ ""
 
 ------------------------------------------------------------------------
--- * Non-standard week dates
 
 -- | Weeks numbered from 0 to 53, starting with the first Sunday of the year
 -- as the first day of week 1. The last week of a given year and week 0 of
--- the next both refer to the same week.
+-- the next both refer to the same week, but not all 'DayOfWeek' are valid.
+-- 'Year' coincides with that of 'gregorian'.
 data SundayWeek = SundayWeek
     { swYear :: {-# UNPACK #-}!Year
     , swWeek :: {-# UNPACK #-}!WeekOfYear
@@ -209,8 +209,9 @@ sundayWeekValid (SundayWeek y w d) = ModifiedJulianDay (firstDay + yd)
 ------------------------------------------------------------------------
 
 -- | Weeks numbered from 0 to 53, starting with the first Monday of the year
--- as the first day of week 01. The last week of a given year and week 0 of
+-- as the first day of week 1. The last week of a given year and week 0 of
 -- the next both refer to the same week, but not all 'DayOfWeek' are valid.
+-- 'Year' coincides with that of 'gregorian'.
 data MondayWeek = MondayWeek
     { mwYear :: {-# UNPACK #-}!Year
     , mwWeek :: {-# UNPACK #-}!WeekOfYear

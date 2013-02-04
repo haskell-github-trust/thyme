@@ -7,7 +7,9 @@ module Data.Thyme.Calendar.WeekDate
     ( Year, WeekOfYear, DayOfWeek
     -- * ISO 8601 Week Date
     , WeekDate (..), weekDate, weekDateValid, showWeekDate
+    -- * Weeks starting Sunday
     , SundayWeek (..), sundayWeek, sundayWeekValid
+    -- * Weeks starting Monday
     , MondayWeek (..), mondayWeek, mondayWeekValid
     , module Data.Thyme.Calendar.WeekDate
     ) where
