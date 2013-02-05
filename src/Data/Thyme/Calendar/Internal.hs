@@ -18,6 +18,10 @@ import Data.Int
 import Data.Ix
 import Data.Thyme.Format.Internal
 
+type Years = Int
+type Months = Int
+type Days = Int
+
 -- | The Modified Julian Day is a standard count of days, with zero being
 -- the day 1858-11-17.
 newtype Day = ModifiedJulianDay
@@ -25,7 +29,7 @@ newtype Day = ModifiedJulianDay
     } deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable)
 
 instance AffineSpace Day where
-    type Diff Day = Int
+    type Diff Day = Days
     {-# INLINE (.-.) #-}
     ModifiedJulianDay a .-. ModifiedJulianDay b = fromIntegral (a - b)
     {-# INLINE (.+^) #-}

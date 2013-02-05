@@ -77,7 +77,6 @@ timeOfDay = iso fromDiff toDiff where
         ^+^ fromIntegral h *^ DiffTime (toMicro 3600)
 
 type Minutes = Int
-type Days = Int
 
 -- | Add some minutes to a 'TimeOfDay'; result comes with a day adjustment.
 {-# INLINE addMinutes #-}

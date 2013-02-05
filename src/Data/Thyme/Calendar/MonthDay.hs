@@ -47,7 +47,7 @@ monthDayValid leap md@(MonthDay m d) = review (monthDay leap) md
     <$ guard (1 <= m && m <= 12 && 1 <= d && d <= T.monthLength leap m)
 
 {-# INLINE monthLength #-}
-monthLength :: Bool -> Month -> Int
+monthLength :: Bool -> Month -> Days
 monthLength = T.monthLength
 
 -- * Lenses
