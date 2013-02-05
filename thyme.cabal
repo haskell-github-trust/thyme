@@ -52,6 +52,7 @@ library
         Data.Thyme.Clock.TAI
         Data.Thyme.Format
         Data.Thyme.LocalTime
+        Data.Thyme.Time
     other-modules:
         Data.Micro
         Data.Thyme.Calendar.Internal
