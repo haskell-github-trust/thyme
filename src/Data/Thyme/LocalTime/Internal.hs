@@ -45,6 +45,14 @@ instance Show TimeOfDay where
         frac = if su == 0 then id else (:) '.' . fills06 su . drops0 su
 #endif
 
+-- | Hour zero
+midnight :: TimeOfDay
+midnight = TimeOfDay 0 0 zeroV
+
+-- | Hour twelve
+midday :: TimeOfDay
+midday = TimeOfDay 12 0 zeroV
+
 {-# INLINE makeTimeOfDayValid #-}
 makeTimeOfDayValid :: Hour -> Minute -> DiffTime -> Maybe TimeOfDay
 makeTimeOfDayValid h m s@(DiffTime u) = TimeOfDay h m s
