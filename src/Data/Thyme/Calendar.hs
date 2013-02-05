@@ -61,8 +61,34 @@ instance Show Day where show = showGregorian
 gregorianMonthLength :: Year -> Month -> Int
 gregorianMonthLength = monthLength . isLeapYear
 
--- TODO: addGregorianMonthsClip addGregorianMonthsRollover
--- TODO: addGregorianYearsClip addGregorianYearsRollover
+{-# INLINEABLE gregorianMonthsClip #-}
+gregorianMonthsClip :: Int -> YearMonthDay -> YearMonthDay
+gregorianMonthsClip n (YearMonthDay y m d) = YearMonthDay y' m'
+        $ min (gregorianMonthLength y' m') d where
+    ((+) y -> y', (+) 1 -> m') = divMod (m + n - 1) 12
+
+{-# INLINEABLE gregorianMonthsRollover #-}
+gregorianMonthsRollover :: Int -> YearMonthDay -> YearMonthDay
+gregorianMonthsRollover n (YearMonthDay y m d) = case d <= len of
+    True -> YearMonthDay y' m' d
+    False -> case m' < 12 of
+        True -> YearMonthDay y' (m' + 1) (d - len)
+        False -> YearMonthDay (y' + 1) 1 (d - len)
+  where
+    ((+) y -> y', (+) 1 -> m') = divMod (m + n - 1) 12
+    len = gregorianMonthLength y' m'
+
+{-# INLINEABLE gregorianYearsClip #-}
+gregorianYearsClip :: Int -> YearMonthDay -> YearMonthDay
+gregorianYearsClip n (YearMonthDay ((+) n -> y') 2 29)
+    | not (isLeapYear y') = YearMonthDay y' 2 28
+gregorianYearsClip n (YearMonthDay y m d) = YearMonthDay (y + n) m d
+
+{-# INLINEABLE gregorianYearsRollover #-}
+gregorianYearsRollover :: Int -> YearMonthDay -> YearMonthDay
+gregorianYearsRollover n (YearMonthDay ((+) n -> y') 2 29)
+    | not (isLeapYear y') = YearMonthDay y' 3 1
+gregorianYearsRollover n (YearMonthDay y m d) = YearMonthDay (y + n) m d
 
 -- * Lenses
 thymeLenses ''Day
