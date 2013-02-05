@@ -10,6 +10,7 @@ module Data.Thyme.Format
     , formatTime
     , ParseTime (..)
     , parseTime
+    , readTime
     , TimeParse (..)
     , timeParser
     ) where
@@ -452,6 +453,12 @@ timeParser TimeLocale {..} = flip execStateT unixEpoch . go where
 {-# INLINEABLE parseTime #-}
 parseTime :: (ParseTime t) => TimeLocale -> String -> String -> Maybe t
 parseTime l spec = either (const Nothing) Just
+    . P.parseOnly (buildTime <$> timeParser l spec)
+    . SL.toStrict . S.toLazyByteString . S.stringUtf8
+
+{-# INLINEABLE readTime #-}
+readTime :: (ParseTime t) => TimeLocale -> String -> String -> t
+readTime l spec = either error id
     . P.parseOnly (buildTime <$> timeParser l spec)
     . SL.toStrict . S.toLazyByteString . S.stringUtf8
 
