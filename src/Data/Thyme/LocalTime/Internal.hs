@@ -85,16 +85,16 @@ addMinutes dm (TimeOfDay h m s) = (dd, TimeOfDay h' m' s) where
     (dd, h') = divMod (h + dh) 24
     (dh, m') = divMod (m + dm) 60
 
-{-# INLINE timeOfDayFraction #-}
-timeOfDayFraction :: Simple Iso Rational TimeOfDay
-timeOfDayFraction = iso fromRatio toRatio . timeOfDay where
+{-# INLINE dayFraction #-}
+dayFraction :: Simple Iso TimeOfDay Rational
+dayFraction = from timeOfDay . iso toRatio fromRatio where
     NominalDiffTime posixDay = posixDayLength
-
-    fromRatio :: Rational -> DiffTime
-    fromRatio r = DiffTime (r *^ posixDay)
 
     toRatio :: DiffTime -> Rational
     toRatio (DiffTime t) = t ^/^ posixDay
+
+    fromRatio :: Rational -> DiffTime
+    fromRatio r = DiffTime (r *^ posixDay)
 
 ------------------------------------------------------------------------
 -- * Local Time
