@@ -14,6 +14,7 @@ module Data.Thyme.Clock (
     , UTCTime, UTCView (..)
     , utcTime
     , NominalDiffTime
+    , microsecondsToNominalDiffTime
     , module Data.Thyme.Clock
 
     -- * Lenses

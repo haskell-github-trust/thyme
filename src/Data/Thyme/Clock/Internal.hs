@@ -89,6 +89,10 @@ deriving instance Fractional NominalDiffTime
 deriving instance RealFrac NominalDiffTime
 #endif
 
+{-# INLINE microsecondsToNominalDiffTime #-}
+microsecondsToNominalDiffTime :: Int64 -> NominalDiffTime
+microsecondsToNominalDiffTime = NominalDiffTime . Micro
+
 {-# INLINE posixDayLength #-}
 posixDayLength :: NominalDiffTime
 posixDayLength = NominalDiffTime (toMicro 86400)
