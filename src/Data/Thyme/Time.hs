@@ -1,4 +1,5 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE ViewPatterns #-}
 
 -- | Compatibility between thyme and time.
 module Data.Thyme.Time where
@@ -6,9 +7,14 @@ module Data.Thyme.Time where
 import Control.Lens
 import Data.AffineSpace
 import Data.Basis
+import Data.Int
 import Data.Micro
 import Data.Thyme.Calendar
+import Data.Thyme.Calendar.OrdinalDate
+import Data.Thyme.Calendar.MonthDay
+import Data.Thyme.Calendar.WeekDate
 import Data.Thyme.Clock.Internal
+import Data.Thyme.Clock.POSIX
 import Data.Thyme.Clock.TAI
 import Data.Thyme.LocalTime
 import qualified Data.Time.Calendar as T
@@ -78,4 +84,216 @@ instance Thyme T.ZonedTime ZonedTime where
     thyme = iso
         (\ (T.ZonedTime t z) -> ZonedTime (view thyme t) (view thyme z))
         (\ (ZonedTime t z) -> T.ZonedTime (review thyme t) (review thyme z))
+
+------------------------------------------------------------------------
+-- * "Data.Time.Calendar"
+
+{-# INLINE addDays #-}
+addDays :: Days -> Day -> Day
+addDays = flip (.+^)
+
+{-# INLINE diffDays #-}
+diffDays :: Day -> Day -> Days
+diffDays = (.-.)
+
+{-# INLINE toGregorian #-}
+toGregorian :: Day -> (Year, Month, DayOfMonth)
+toGregorian (view gregorian -> YearMonthDay y m d) = (y, m, d)
+
+{-# INLINE fromGregorian #-}
+fromGregorian :: Year -> Month -> DayOfMonth -> Day
+fromGregorian y m d = review gregorian (YearMonthDay y m d)
+
+{-# INLINE fromGregorianValid #-}
+fromGregorianValid :: Year -> Month -> DayOfMonth -> Maybe Day
+fromGregorianValid y m d = gregorianValid (YearMonthDay y m d)
+
+{-# INLINE addGregorianMonthsClip #-}
+addGregorianMonthsClip :: Months -> Day -> Day
+addGregorianMonthsClip n = review gregorian
+    . gregorianMonthsClip n . view gregorian
+
+{-# INLINE addGregorianMonthsRollover #-}
+addGregorianMonthsRollover :: Months -> Day -> Day
+addGregorianMonthsRollover n = review gregorian
+    . gregorianMonthsRollover n . view gregorian
+
+{-# INLINE addGregorianYearsClip #-}
+addGregorianYearsClip :: Years -> Day -> Day
+addGregorianYearsClip n = review gregorian
+    . gregorianYearsClip n . view gregorian
+
+{-# INLINE addGregorianYearsRollover #-}
+addGregorianYearsRollover :: Years -> Day -> Day
+addGregorianYearsRollover n = review gregorian
+    . gregorianYearsRollover n . view gregorian
+
+------------------------------------------------------------------------
+-- * "Data.Time.Calendar.MonthDay"
+
+{-# INLINE dayOfYearToMonthAndDay #-}
+dayOfYearToMonthAndDay :: Bool -> DayOfYear -> (Month, DayOfMonth)
+dayOfYearToMonthAndDay leap (view (monthDay leap) -> MonthDay m d) = (m, d)
+
+{-# INLINE monthAndDayToDayOfYear #-}
+monthAndDayToDayOfYear :: Bool -> Month -> DayOfMonth -> DayOfYear
+monthAndDayToDayOfYear leap m d = review (monthDay leap) (MonthDay m d)
+
+{-# INLINE monthAndDayToDayOfYearValid #-}
+monthAndDayToDayOfYearValid :: Bool -> Month -> DayOfMonth -> Maybe DayOfYear
+monthAndDayToDayOfYearValid leap m d = monthDayValid leap (MonthDay m d)
+
+------------------------------------------------------------------------
+-- * "Data.Time.Calendar.OrdinalDate"
+
+{-# INLINE toOrdinalDate #-}
+toOrdinalDate :: Day -> (Year, DayOfYear)
+toOrdinalDate (view ordinalDate -> OrdinalDate y d) = (y, d)
+
+{-# INLINE fromOrdinalDate #-}
+fromOrdinalDate :: Year -> DayOfYear -> Day
+fromOrdinalDate y d = review ordinalDate (OrdinalDate y d)
+
+{-# INLINE fromOrdinalDateValid #-}
+fromOrdinalDateValid :: Year -> DayOfYear -> Maybe Day
+fromOrdinalDateValid y d = ordinalDateValid (OrdinalDate y d)
+
+{-# INLINE sundayStartWeek #-}
+sundayStartWeek :: Day -> (Year, WeekOfYear, DayOfWeek)
+sundayStartWeek (view sundayWeek -> SundayWeek y w d) = (y, w, d)
+
+{-# INLINE fromSundayStartWeek #-}
+fromSundayStartWeek :: Year -> WeekOfYear -> DayOfWeek -> Day
+fromSundayStartWeek y w d = review sundayWeek (SundayWeek y w d)
+
+{-# INLINE fromSundayStartWeekValid #-}
+fromSundayStartWeekValid :: Year -> WeekOfYear -> DayOfWeek -> Maybe Day
+fromSundayStartWeekValid y w d = sundayWeekValid (SundayWeek y w d)
+
+{-# INLINE mondayStartWeek #-}
+mondayStartWeek :: Day -> (Year, WeekOfYear, DayOfWeek)
+mondayStartWeek (view mondayWeek -> MondayWeek y w d) = (y, w, d)
+
+{-# INLINE fromMondayStartWeek #-}
+fromMondayStartWeek :: Year -> WeekOfYear -> DayOfWeek -> Day
+fromMondayStartWeek y w d = review mondayWeek (MondayWeek y w d)
+
+{-# INLINE fromMondayStartWeekValid #-}
+fromMondayStartWeekValid :: Year -> WeekOfYear -> DayOfWeek -> Maybe Day
+fromMondayStartWeekValid y w d = mondayWeekValid (MondayWeek y w d)
+
+------------------------------------------------------------------------
+-- * "Data.Time.Calendar.WeekDate"
+
+{-# INLINE toWeekDate #-}
+toWeekDate :: Day -> (Year, WeekOfYear, DayOfWeek)
+toWeekDate (view weekDate -> WeekDate y w d) = (y, w, d)
+
+{-# INLINE fromWeekDate #-}
+fromWeekDate :: Year -> WeekOfYear -> DayOfWeek -> Day
+fromWeekDate y w d = review weekDate (WeekDate y w d)
+
+{-# INLINE fromWeekDateValid #-}
+fromWeekDateValid :: Year -> WeekOfYear -> DayOfWeek -> Maybe Day
+fromWeekDateValid y w d = weekDateValid (WeekDate y w d)
+
+------------------------------------------------------------------------
+-- * "Data.Time.Clock"
+
+{-# INLINE secondsToDiffTime #-}
+secondsToDiffTime :: Int64 -> DiffTime
+secondsToDiffTime a = DiffTime (Micro $ a * 1000000)
+
+{-# INLINE picosecondsToDiffTime #-}
+picosecondsToDiffTime :: Int64 -> DiffTime
+picosecondsToDiffTime a = DiffTime (Micro $ div (a + 500000) 1000000)
+
+{-# INLINE addUTCTime #-}
+addUTCTime :: NominalDiffTime -> UTCTime -> UTCTime
+addUTCTime = flip (.+^)
+
+{-# INLINE diffUTCTime #-}
+diffUTCTime :: UTCTime -> UTCTime -> NominalDiffTime
+diffUTCTime = (.-.)
+
+------------------------------------------------------------------------
+-- * "Data.Time.Clock.POSIX"
+
+{-# INLINE posixSecondsToUTCTime #-}
+posixSecondsToUTCTime :: POSIXTime -> UTCTime
+posixSecondsToUTCTime = review posixTime
+
+{-# INLINE utcTimeToPOSIXSeconds #-}
+utcTimeToPOSIXSeconds :: UTCTime -> POSIXTime
+utcTimeToPOSIXSeconds = view posixTime
+
+------------------------------------------------------------------------
+-- * "Data.Time.Clock.TAI"
+
+{-# INLINE addAbsoluteTime #-}
+addAbsoluteTime :: DiffTime -> AbsoluteTime -> AbsoluteTime
+addAbsoluteTime = flip (.+^)
+
+{-# INLINE diffAbsoluteTime #-}
+diffAbsoluteTime :: AbsoluteTime -> AbsoluteTime -> DiffTime
+diffAbsoluteTime = (.-.)
+
+{-# INLINE utcToTAITime #-}
+utcToTAITime :: LeapSecondTable -> UTCTime -> AbsoluteTime
+utcToTAITime = view . absoluteTime
+
+{-# INLINE taiToUTCTime #-}
+taiToUTCTime :: LeapSecondTable -> AbsoluteTime -> UTCTime
+taiToUTCTime = review . absoluteTime
+
+------------------------------------------------------------------------
+-- * "Data.Time.LocalTime"
+
+{-# INLINE utcToLocalTimeOfDay #-}
+utcToLocalTimeOfDay :: TimeZone -> TimeOfDay -> (Days, TimeOfDay)
+utcToLocalTimeOfDay = addMinutes . timeZoneMinutes
+
+{-# INLINE localToUTCTimeOfDay #-}
+localToUTCTimeOfDay :: TimeZone -> TimeOfDay -> (Days, TimeOfDay)
+localToUTCTimeOfDay = addMinutes . negate . timeZoneMinutes
+
+{-# INLINE timeToTimeOfDay #-}
+timeToTimeOfDay :: DiffTime -> TimeOfDay
+timeToTimeOfDay = view timeOfDay
+
+{-# INLINE timeOfDayToTime #-}
+timeOfDayToTime :: TimeOfDay -> DiffTime
+timeOfDayToTime = review timeOfDay
+
+{-# INLINE dayFractionToTimeOfDay #-}
+dayFractionToTimeOfDay :: Rational -> TimeOfDay
+dayFractionToTimeOfDay = review dayFraction
+
+{-# INLINE timeOfDayToDayFraction #-}
+timeOfDayToDayFraction :: TimeOfDay -> Rational
+timeOfDayToDayFraction = view dayFraction
+
+{-# INLINE utcToLocalTime #-}
+utcToLocalTime :: TimeZone -> UTCTime -> LocalTime
+utcToLocalTime = view . utcLocalTime
+
+{-# INLINE localTimeToUTC #-}
+localTimeToUTC :: TimeZone -> LocalTime -> UTCTime
+localTimeToUTC = review . utcLocalTime
+
+{-# INLINE ut1ToLocalTime #-}
+ut1ToLocalTime :: Rational -> UniversalTime -> LocalTime
+ut1ToLocalTime = view . ut1LocalTime
+
+{-# INLINE localTimeToUT1 #-}
+localTimeToUT1 :: Rational -> LocalTime -> UniversalTime
+localTimeToUT1 = review . ut1LocalTime
+
+{-# INLINE utcToZonedTime #-}
+utcToZonedTime :: TimeZone -> UTCTime -> ZonedTime
+utcToZonedTime z t = view zonedTime (z, t)
+
+{-# INLINE zonedTimeToUTC #-}
+zonedTimeToUTC :: ZonedTime -> UTCTime
+zonedTimeToUTC = snd . review zonedTime
 
