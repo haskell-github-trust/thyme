@@ -44,7 +44,7 @@ gregorian = ordinalDate . yearMonthDay
 {-# INLINEABLE gregorianValid #-}
 gregorianValid :: YearMonthDay -> Maybe Day
 gregorianValid (YearMonthDay y m d) = review ordinalDate . OrdinalDate y
-    <$> monthDayToDayOfYearValid (isLeapYear y) (MonthDay m d)
+    <$> monthDayValid (isLeapYear y) (MonthDay m d)
 
 {-# INLINEABLE showGregorian #-}
 showGregorian :: Day -> String

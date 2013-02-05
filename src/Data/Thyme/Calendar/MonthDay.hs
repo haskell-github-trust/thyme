@@ -41,9 +41,9 @@ monthDay leap = iso fromOrdinal toOrdinal where
     toOrdinal :: MonthDay -> DayOfYear
     toOrdinal (MonthDay m d) = T.monthAndDayToDayOfYear leap m d
 
-{-# INLINEABLE monthDayToDayOfYearValid #-}
-monthDayToDayOfYearValid :: Bool -> MonthDay -> Maybe DayOfYear
-monthDayToDayOfYearValid leap md@(MonthDay m d) = review (monthDay leap) md
+{-# INLINEABLE monthDayValid #-}
+monthDayValid :: Bool -> MonthDay -> Maybe DayOfYear
+monthDayValid leap md@(MonthDay m d) = review (monthDay leap) md
     <$ guard (1 <= m && m <= 12 && 1 <= d && d <= T.monthLength leap m)
 
 {-# INLINE monthLength #-}
