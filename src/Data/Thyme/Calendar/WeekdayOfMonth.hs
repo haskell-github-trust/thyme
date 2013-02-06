@@ -26,7 +26,7 @@ data WeekdayOfMonth = WeekdayOfMonth
 instance NFData WeekdayOfMonth
 
 {-# INLINE weekdayOfMonth #-}
-weekdayOfMonth :: Simple Iso Day WeekdayOfMonth
+weekdayOfMonth :: Iso' Day WeekdayOfMonth
 weekdayOfMonth = iso toWeekday fromWeekday where
 
     {-# INLINEABLE toWeekday #-}

@@ -14,7 +14,7 @@ import Data.VectorSpace
 type POSIXTime = NominalDiffTime
 
 {-# INLINE posixTime #-}
-posixTime :: Simple Iso UTCTime POSIXTime
+posixTime :: Iso' UTCTime POSIXTime
 posixTime = iso (\ (UTCRep t) -> t ^-^ unixEpoch)
         (UTCRep . (^+^) unixEpoch) where
     unixEpoch = {-ModifiedJulianDay-}40587 *^ posixDayLength

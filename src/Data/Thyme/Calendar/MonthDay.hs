@@ -28,7 +28,7 @@ instance NFData MonthDay
 -- | Convert between day of year in the Gregorian or Julian calendars, and
 -- month and day of month. First arg is leap year flag.
 {-# INLINE monthDay #-}
-monthDay :: Bool -> Simple Iso DayOfYear MonthDay
+monthDay :: Bool -> Iso' DayOfYear MonthDay
 monthDay leap = iso fromOrdinal toOrdinal where
     -- TODO: Calls non-inlineable code from @time@. Pilfer and optimise?
 

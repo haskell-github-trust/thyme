@@ -45,7 +45,7 @@ import qualified Data.Time.LocalTime as T
 -- * Type conversion
 
 class Thyme a b | b -> a where
-    thyme :: Simple Iso a b
+    thyme :: Iso' a b
 
 instance Thyme T.Day Day where
     {-# INLINE thyme #-}

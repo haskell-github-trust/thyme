@@ -65,7 +65,7 @@ data OrdinalDate = OrdinalDate
 instance NFData OrdinalDate
 
 {-# INLINE ordinalDate #-}
-ordinalDate :: Simple Iso Day OrdinalDate
+ordinalDate :: Iso' Day OrdinalDate
 ordinalDate = iso toOrd fromOrd where
 
     {-# INLINEABLE toOrd #-}
@@ -108,7 +108,7 @@ data WeekDate = WeekDate
 instance NFData WeekDate
 
 {-# INLINE weekDate #-}
-weekDate :: Simple Iso Day WeekDate
+weekDate :: Iso' Day WeekDate
 weekDate = iso toWeek fromWeek where
 
     {-# INLINEABLE toWeek #-}
@@ -175,7 +175,7 @@ data SundayWeek = SundayWeek
 instance NFData SundayWeek
 
 {-# INLINE sundayWeek #-}
-sundayWeek :: Simple Iso Day SundayWeek
+sundayWeek :: Iso' Day SundayWeek
 sundayWeek = iso toSunday fromSunday where
 
     {-# INLINEABLE toSunday #-}
@@ -223,7 +223,7 @@ data MondayWeek = MondayWeek
 instance NFData MondayWeek
 
 {-# INLINE mondayWeek #-}
-mondayWeek :: Simple Iso Day MondayWeek
+mondayWeek :: Iso' Day MondayWeek
 mondayWeek = iso toMonday fromMonday where
 
     {-# INLINEABLE toMonday #-}

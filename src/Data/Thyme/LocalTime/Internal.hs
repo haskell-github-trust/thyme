@@ -63,7 +63,7 @@ makeTimeOfDayValid h m s@(DiffTime u) = TimeOfDay h m s
     <* guard (Micro 0 <= u && u < Micro 61000000)
 
 {-# INLINE timeOfDay #-}
-timeOfDay :: Simple Iso DiffTime TimeOfDay
+timeOfDay :: Iso' DiffTime TimeOfDay
 timeOfDay = iso fromDiff toDiff where
 
     {-# INLINEABLE fromDiff #-}
@@ -89,7 +89,7 @@ addMinutes dm (TimeOfDay h m s) = (dd, TimeOfDay h' m' s) where
     (dh, m') = divMod (m + dm) 60
 
 {-# INLINE dayFraction #-}
-dayFraction :: Simple Iso TimeOfDay Rational
+dayFraction :: Iso' TimeOfDay Rational
 dayFraction = from timeOfDay . iso toRatio fromRatio where
     NominalDiffTime posixDay = posixDayLength
 
@@ -117,7 +117,7 @@ instance Show LocalTime where
 #endif
 
 {-# INLINE utcLocalTime #-}
-utcLocalTime :: TimeZone -> Simple Iso UTCTime LocalTime
+utcLocalTime :: TimeZone -> Iso' UTCTime LocalTime
 utcLocalTime TimeZone {..} = utcTime . iso localise globalise where
 
     {-# INLINEABLE localise #-}
@@ -132,7 +132,7 @@ utcLocalTime TimeZone {..} = utcTime . iso localise globalise where
         (dd, utcToD) = addMinutes (negate timeZoneMinutes) tod
 
 {-# INLINE ut1LocalTime #-}
-ut1LocalTime :: Rational -> Simple Iso UniversalTime LocalTime
+ut1LocalTime :: Rational -> Iso' UniversalTime LocalTime
 ut1LocalTime long = iso localise globalise where
     NominalDiffTime posixDay@(Micro usDay) = posixDayLength
 
@@ -161,7 +161,7 @@ instance NFData ZonedTime where
     rnf ZonedTime {..} = rnf zonedTimeZone
 
 {-# INLINE zonedTime #-}
-zonedTime :: Simple Iso (TimeZone, UTCTime) ZonedTime
+zonedTime :: Iso' (TimeZone, UTCTime) ZonedTime
 zonedTime = iso toZoned fromZoned where
 
     {-# INLINE toZoned #-}

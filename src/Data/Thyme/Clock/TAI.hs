@@ -72,7 +72,7 @@ utcDayLength table day@((.+^ 1) -> next) =
     NominalDiffTime posixDay = posixDayLength
 
 {-# INLINE absoluteTime #-}
-absoluteTime :: LeapSecondTable -> Simple Iso UTCTime AbsoluteTime
+absoluteTime :: LeapSecondTable -> Iso' UTCTime AbsoluteTime
 absoluteTime table = iso toTAI fromTAI where
 
     {-# INLINE toTAI #-}

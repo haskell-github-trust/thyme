@@ -103,7 +103,7 @@ newtype UniversalTime = UniversalRep NominalDiffTime -- since MJD epoch
     deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable)
 
 {-# INLINE modJulianDate #-}
-modJulianDate :: Simple Iso UniversalTime Rational
+modJulianDate :: Iso' UniversalTime Rational
 modJulianDate = iso
     (\ (UniversalRep t) -> t ^/^ posixDayLength)
     (UniversalRep . (*^ posixDayLength))
@@ -120,10 +120,10 @@ data UTCView = UTCTime
 
 instance NFData UTCView
 
-_utctDay :: Simple Lens UTCTime Day
+_utctDay :: Lens' UTCTime Day
 _utctDay = utcTime . lens utctDay (\ (UTCTime _ t) d -> UTCTime d t)
 
-_utctDayTime :: Simple Lens UTCTime DiffTime
+_utctDayTime :: Lens' UTCTime DiffTime
 _utctDayTime = utcTime . lens utctDayTime (\ (UTCTime d _) t -> UTCTime d t)
 
 instance AffineSpace UTCTime where
@@ -134,7 +134,7 @@ instance AffineSpace UTCTime where
     UTCRep a .+^ d = UTCRep (a ^+^ d)
 
 {-# INLINE utcTime #-}
-utcTime :: Simple Iso UTCTime UTCView
+utcTime :: Iso' UTCTime UTCView
 utcTime = iso toView fromView where
     NominalDiffTime posixDay@(Micro uPosixDay) = posixDayLength
 

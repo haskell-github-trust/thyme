@@ -25,7 +25,7 @@ import Data.Thyme.Format.Internal
 import Data.Thyme.TH
 
 {-# INLINE yearMonthDay #-}
-yearMonthDay :: Simple Iso OrdinalDate YearMonthDay
+yearMonthDay :: Iso' OrdinalDate YearMonthDay
 yearMonthDay = iso fromOrdinal toOrdinal where
 
     {-# INLINEABLE fromOrdinal #-}
@@ -39,7 +39,7 @@ yearMonthDay = iso fromOrdinal toOrdinal where
         review (monthDay (isLeapYear y)) (MonthDay m d)
 
 {-# INLINE gregorian #-}
-gregorian :: Simple Iso Day YearMonthDay
+gregorian :: Iso' Day YearMonthDay
 gregorian = ordinalDate . yearMonthDay
 
 {-# INLINEABLE gregorianValid #-}

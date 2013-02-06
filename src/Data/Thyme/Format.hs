@@ -280,7 +280,7 @@ data TimeParse = TimeParse
 thymeLenses ''TimeParse
 
 {-# INLINE flag #-}
-flag :: TimeFlag -> Simple Lens TimeParse Bool
+flag :: TimeFlag -> Lens' TimeParse Bool
 flag (fromEnum -> f) = _tpFlags . lens
     (`testBit` f) (\ n b -> (if b then setBit else clearBit) n f)
 
