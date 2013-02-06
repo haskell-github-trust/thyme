@@ -1,7 +1,7 @@
 language: haskell
 
 before_install:
-  - ./.travis.install-deps $mode
+  - ./.travis.install-deps $mode --constraint="bytestring installed"
 
 install:
   - cabal configure $mode
@@ -12,5 +12,5 @@ script:
   - ./.travis.hlint
 
 env:
-  - mode="-f-instance-num -fWerror --enable-tests"
+  - mode="-f-instance-num -fWerror -futf8-string --enable-tests"
 
