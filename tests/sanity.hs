@@ -19,6 +19,7 @@ import Data.Basis
 import Data.ByteString (ByteString)
 import Data.Monoid
 import Data.Thyme
+import Data.Thyme.Time
 import qualified Data.Time as T
 import Data.VectorSpace
 import System.Exit
@@ -59,13 +60,6 @@ instance Arbitrary DiffTime where
 
 instance Arbitrary UTCTime where
     arbitrary = fmap (review utcTime) $ UTCTime <$> arbitrary <*> arbitrary
-
-toTime :: UTCTime -> T.UTCTime
-toTime (view utcTime -> UTCTime (ModifiedJulianDay d) t) = T.UTCTime
-    (T.ModifiedJulianDay $ fromIntegral d) (fromRational $ t ^/^ basisValue ())
-
-(^/^) :: (HasBasis v, Basis v ~ (), Scalar v ~ s, Fractional s) => v -> v -> s
-x ^/^ y = decompose' x () / decompose' y ()
 
 ------------------------------------------------------------------------
 
@@ -111,16 +105,17 @@ instance Arbitrary Spec where
 ------------------------------------------------------------------------
 
 prop_formatTime :: Spec -> UTCTime -> Property
-prop_formatTime (Spec spec) t@(toTime -> t')
+prop_formatTime (Spec spec) t@(review thyme -> t')
         = printTestCase desc (s == s') where
     s = formatTime defaultTimeLocale spec t
     s' = T.formatTime defaultTimeLocale spec t'
     desc = "thyme: " ++ s ++ "\ntime:  " ++ s'
 
 prop_parseTime :: Spec -> UTCTime -> Property
-prop_parseTime (Spec spec) (T.formatTime defaultTimeLocale spec . toTime -> s)
-        = printTestCase desc (fmap toTime t == t') where
-    t = parseTime defaultTimeLocale spec s
+prop_parseTime (Spec spec) orig
+        = printTestCase desc (fmap (review thyme) t == t') where
+    s = T.formatTime defaultTimeLocale spec (review thyme orig)
+    t = parseTime defaultTimeLocale spec s :: Maybe UTCTime
     t' = T.parseTime defaultTimeLocale spec s
     tp = P.parseOnly (timeParser defaultTimeLocale spec) . utf8String
     desc = "input: " ++ show s ++ "\nthyme: " ++ show t
@@ -136,7 +131,7 @@ main = do
         []
 
     ts <- Gen.unGen (vectorOf 10 arbitrary) <$> newStdGen <*> pure 0
-    let ts' = toTime <$> ts
+    let ts' = review thyme <$> (ts :: [UTCTime])
     let ss = T.formatTime defaultTimeLocale spec <$> ts'
     fast <- fmap and . withConfig config $ do
         env <- measureEnvironment
