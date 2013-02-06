@@ -38,6 +38,10 @@ flag Werror
     default: False
     manual: True
 
+flag utf8-string
+    description: use utf8-string with bytestring < 0.10
+    default: False
+
 library
     hs-source-dirs: src
     exposed-modules:
@@ -70,9 +74,12 @@ library
         lens >= 3.7,
         old-locale >= 1.0,
         template-haskell >= 2.6,
-        bytestring >= 0.10,
         attoparsec >= 0.10,
         time >= 1.4
+    if flag(utf8-string)
+        build-depends: bytestring >= 0.9, utf8-string >= 0.3
+    else
+        build-depends: bytestring >= 0.10
     ghc-options: -Wall
     if flag(bug-for-bug)
         cpp-options: -DBUG_FOR_BUG=1
@@ -93,13 +100,16 @@ test-suite sanity
         vector-space >= 0.8,
         lens >= 3.7,
         old-locale >= 1.0,
-        bytestring >= 0.10,
         attoparsec >= 0.10,
         random >= 1.0,
         QuickCheck >= 2.4,
         criterion >= 0.6,
         thyme,
         time >= 1.4
+    if flag(utf8-string)
+        build-depends: bytestring >= 0.9, utf8-string >= 0.3
+    else
+        build-depends: bytestring >= 0.10
     ghc-options: -Wall
 
 -- vim: et sw=4 ts=4 sts=4:

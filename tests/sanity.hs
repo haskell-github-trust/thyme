@@ -16,12 +16,7 @@ import Criterion.Environment
 import Criterion.Monad
 import qualified Data.Attoparsec.ByteString.Char8 as P
 import Data.Basis
-#if MIN_VERSION_bytestring(0,10,2)
-import qualified Data.ByteString.Builder as S
-#else
-import qualified Data.ByteString.Lazy.Builder as S
-#endif
-import qualified Data.ByteString.Lazy as SL
+import Data.ByteString (ByteString)
 import Data.Monoid
 import Data.Thyme
 import qualified Data.Time as T
@@ -32,6 +27,27 @@ import System.Random
 import Test.QuickCheck
 import qualified Test.QuickCheck.Gen as Gen
 import Text.Printf
+
+#if MIN_VERSION_bytestring(0,10,0)
+# if MIN_VERSION_bytestring(0,10,2)
+import qualified Data.ByteString.Builder as B
+# else
+import qualified Data.ByteString.Lazy.Builder as B
+# endif
+import qualified Data.ByteString.Lazy as L
+#else
+import qualified Data.ByteString.UTF8 as U8
+#endif
+
+{-# INLINE utf8String #-}
+utf8String :: String -> ByteString
+#if MIN_VERSION_bytestring(0,10,0)
+utf8String = L.toStrict . B.toLazyByteString . B.stringUtf8
+#else
+utf8String = U8.fromString
+#endif
+
+------------------------------------------------------------------------
 
 instance Arbitrary Day where
     arbitrary = fmap (review gregorian) $ YearMonthDay
@@ -106,8 +122,7 @@ prop_parseTime (Spec spec) (T.formatTime defaultTimeLocale spec . toTime -> s)
         = printTestCase desc (fmap toTime t == t') where
     t = parseTime defaultTimeLocale spec s
     t' = T.parseTime defaultTimeLocale spec s
-    tp = P.parseOnly (timeParser defaultTimeLocale spec)
-        . SL.toStrict . S.toLazyByteString . S.stringUtf8
+    tp = P.parseOnly (timeParser defaultTimeLocale spec) . utf8String
     desc = "input: " ++ show s ++ "\nthyme: " ++ show t
         ++ "\ntime:  " ++ show t' ++ "\nstate: " ++ show (tp s)
 

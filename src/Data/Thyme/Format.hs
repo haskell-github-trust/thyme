@@ -24,13 +24,7 @@ import Data.Attoparsec.ByteString.Char8 (Parser)
 import qualified Data.Attoparsec.ByteString.Char8 as P
 import Data.Basis
 import Data.Bits
-#if MIN_VERSION_bytestring(0,10,2)
-import qualified Data.ByteString.Builder as S
-#else
-import qualified Data.ByteString.Lazy.Builder as S
-#endif
 import qualified Data.ByteString.Char8 as S
-import qualified Data.ByteString.Lazy as SL
 import Data.Char
 import Data.Micro
 import Data.Thyme.Calendar
@@ -453,14 +447,12 @@ timeParser TimeLocale {..} = flip execStateT unixEpoch . go where
 {-# INLINEABLE parseTime #-}
 parseTime :: (ParseTime t) => TimeLocale -> String -> String -> Maybe t
 parseTime l spec = either (const Nothing) Just
-    . P.parseOnly (buildTime <$> timeParser l spec)
-    . SL.toStrict . S.toLazyByteString . S.stringUtf8
+    . P.parseOnly (buildTime <$> timeParser l spec) . utf8String
 
 {-# INLINEABLE readTime #-}
 readTime :: (ParseTime t) => TimeLocale -> String -> String -> t
 readTime l spec = either error id
-    . P.parseOnly (buildTime <$> timeParser l spec)
-    . SL.toStrict . S.toLazyByteString . S.stringUtf8
+    . P.parseOnly (buildTime <$> timeParser l spec) . utf8String
 
 class ParseTime t where
     buildTime :: TimeParse -> t

@@ -6,15 +6,34 @@ import Prelude
 import Control.Applicative
 import Data.Attoparsec.ByteString.Char8 (Parser)
 import qualified Data.Attoparsec.ByteString.Char8 as P
-#if MIN_VERSION_bytestring(0,10,2)
-import qualified Data.ByteString.Builder as S
-#else
-import qualified Data.ByteString.Lazy.Builder as S
-#endif
 import qualified Data.ByteString.Char8 as S
-import qualified Data.ByteString.Lazy as L
 import Data.Char
 import Data.Int
+
+#if MIN_VERSION_bytestring(0,10,0)
+# if MIN_VERSION_bytestring(0,10,2)
+import qualified Data.ByteString.Builder as B
+# else
+import qualified Data.ByteString.Lazy.Builder as B
+# endif
+import qualified Data.ByteString.Lazy as L
+#else
+import qualified Data.ByteString.UTF8 as U8
+#endif
+
+{-# INLINE utf8Char #-}
+{-# INLINE utf8String #-}
+utf8Char :: Char -> S.ByteString
+utf8String :: String -> S.ByteString
+#if MIN_VERSION_bytestring(0,10,0)
+utf8Char = L.toStrict . B.toLazyByteString . B.charUtf8
+utf8String = L.toStrict . B.toLazyByteString . B.stringUtf8
+#else
+utf8Char = U8.fromString . (:[])
+utf8String = U8.fromString
+#endif
+
+------------------------------------------------------------------------
 
 {-# INLINE shows02 #-}
 shows02 :: Int -> String -> String
@@ -84,7 +103,7 @@ charCI c = if u == l then charU8 c else charU8 l <|> charU8 u where
 
 {-# INLINE charU8 #-}
 charU8 :: Char -> Parser ()
-charU8 c = () <$ P.string (L.toStrict . S.toLazyByteString . S.charUtf8 $ c)
+charU8 c = () <$ P.string (utf8Char c)
 
 -- | Number may be prefixed with '-'
 {-# INLINE negative #-}
