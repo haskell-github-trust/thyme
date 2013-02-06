@@ -2,7 +2,26 @@
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE ViewPatterns #-}
 
--- | Compatibility between thyme and time.
+-- | This module provides compatibility wrappers for the things that @thyme@
+-- does differently from @time@, and allows it to be used as a drop-in
+-- replacement for the latter, with the exceptions noted below:
+--
+--   * When constructing an 'UTCTime' or 'UniversalTime', use 'mkUTCTime' or
+--   'mkModJulianDate' in place of @UTCTime@ or @ModJulianDate@.
+--
+--   * Instead of pattern matching on @UTCTime@, use 'unUTCTime' to get
+--   a 'UTCView', which has a constructor @UTCTime@ with the same fields.
+--   For @ModJulianDate@, use 'getModJulianDate'. @ViewPatterns@ may make
+--   the transition more seamless.
+--
+--   * Where a third party library uses @time@, you can use 'toThyme' and
+--   'fromThyme' to convert between the corresponding types.
+--
+-- You shouldn't need to use @lens@ or @vector-space@ if you don't want to.
+--
+-- Anything else is probably not intentional, and you should either contact
+-- me via IRC or file an issue at <https://github.com/liyang/thyme/issues>.
+
 module Data.Thyme.Time where
 
 import Control.Lens
@@ -22,6 +41,8 @@ import qualified Data.Time.Calendar as T
 import qualified Data.Time.Clock as T
 import qualified Data.Time.Clock.TAI as T
 import qualified Data.Time.LocalTime as T
+
+-- * Type conversion
 
 class Thyme a b | b -> a where
     thyme :: Simple Iso a b
@@ -86,8 +107,16 @@ instance Thyme T.ZonedTime ZonedTime where
         (\ (T.ZonedTime t z) -> ZonedTime (view thyme t) (view thyme z))
         (\ (ZonedTime t z) -> T.ZonedTime (review thyme t) (review thyme z))
 
+{-# INLINE toThyme #-}
+toThyme :: (Thyme a b) => a -> b
+toThyme = view thyme
+
+{-# INLINE fromThyme #-}
+fromThyme :: (Thyme a b) => b -> a
+fromThyme = review thyme
+
 ------------------------------------------------------------------------
--- * "Data.Time.Calendar"
+-- * @Data.Time.Calendar@
 
 {-# INLINE addDays #-}
 addDays :: Days -> Day -> Day
@@ -130,7 +159,7 @@ addGregorianYearsRollover n = review gregorian
     . gregorianYearsRollover n . view gregorian
 
 ------------------------------------------------------------------------
--- * "Data.Time.Calendar.MonthDay"
+-- * @Data.Time.Calendar.MonthDay@
 
 {-# INLINE dayOfYearToMonthAndDay #-}
 dayOfYearToMonthAndDay :: Bool -> DayOfYear -> (Month, DayOfMonth)
@@ -145,7 +174,7 @@ monthAndDayToDayOfYearValid :: Bool -> Month -> DayOfMonth -> Maybe DayOfYear
 monthAndDayToDayOfYearValid leap m d = monthDayValid leap (MonthDay m d)
 
 ------------------------------------------------------------------------
--- * "Data.Time.Calendar.OrdinalDate"
+-- * @Data.Time.Calendar.OrdinalDate@
 
 {-# INLINE toOrdinalDate #-}
 toOrdinalDate :: Day -> (Year, DayOfYear)
@@ -184,7 +213,7 @@ fromMondayStartWeekValid :: Year -> WeekOfYear -> DayOfWeek -> Maybe Day
 fromMondayStartWeekValid y w d = mondayWeekValid (MondayWeek y w d)
 
 ------------------------------------------------------------------------
--- * "Data.Time.Calendar.WeekDate"
+-- * @Data.Time.Calendar.WeekDate@
 
 {-# INLINE toWeekDate #-}
 toWeekDate :: Day -> (Year, WeekOfYear, DayOfWeek)
@@ -199,7 +228,16 @@ fromWeekDateValid :: Year -> WeekOfYear -> DayOfWeek -> Maybe Day
 fromWeekDateValid y w d = weekDateValid (WeekDate y w d)
 
 ------------------------------------------------------------------------
--- * "Data.Time.Clock"
+-- * @Data.Time.Clock@
+
+{-# INLINE getModJulianDate #-}
+getModJulianDate :: UniversalTime -> Rational
+getModJulianDate = view modJulianDate
+
+-- | Replacement for 'T.ModJulianDate'.
+{-# INLINE mkModJulianDate #-}
+mkModJulianDate :: Rational -> UniversalTime
+mkModJulianDate = review modJulianDate
 
 {-# INLINE secondsToDiffTime #-}
 secondsToDiffTime :: Int64 -> DiffTime
@@ -208,6 +246,14 @@ secondsToDiffTime a = DiffTime (Micro $ a * 1000000)
 {-# INLINE picosecondsToDiffTime #-}
 picosecondsToDiffTime :: Int64 -> DiffTime
 picosecondsToDiffTime a = DiffTime (Micro $ div (a + 500000) 1000000)
+
+{-# INLINE mkUTCTime #-}
+mkUTCTime :: Day -> DiffTime -> UTCTime
+mkUTCTime d t = review utcTime (UTCTime d t)
+
+{-# INLINE unUTCTime #-}
+unUTCTime :: UTCTime -> UTCView
+unUTCTime = view utcTime
 
 {-# INLINE addUTCTime #-}
 addUTCTime :: NominalDiffTime -> UTCTime -> UTCTime
@@ -218,7 +264,7 @@ diffUTCTime :: UTCTime -> UTCTime -> NominalDiffTime
 diffUTCTime = (.-.)
 
 ------------------------------------------------------------------------
--- * "Data.Time.Clock.POSIX"
+-- * @Data.Time.Clock.POSIX@
 
 {-# INLINE posixSecondsToUTCTime #-}
 posixSecondsToUTCTime :: POSIXTime -> UTCTime
@@ -229,7 +275,7 @@ utcTimeToPOSIXSeconds :: UTCTime -> POSIXTime
 utcTimeToPOSIXSeconds = view posixTime
 
 ------------------------------------------------------------------------
--- * "Data.Time.Clock.TAI"
+-- * @Data.Time.Clock.TAI@
 
 {-# INLINE addAbsoluteTime #-}
 addAbsoluteTime :: DiffTime -> AbsoluteTime -> AbsoluteTime
@@ -248,7 +294,7 @@ taiToUTCTime :: LeapSecondTable -> AbsoluteTime -> UTCTime
 taiToUTCTime = review . absoluteTime
 
 ------------------------------------------------------------------------
--- * "Data.Time.LocalTime"
+-- * @Data.Time.LocalTime@
 
 {-# INLINE utcToLocalTimeOfDay #-}
 utcToLocalTimeOfDay :: TimeZone -> TimeOfDay -> (Days, TimeOfDay)
