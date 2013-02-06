@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -29,7 +30,11 @@ import Data.Char
 import Data.Data
 import Data.Either
 import Data.Ix
+#if MIN_VERSION_containers(0,5,0)
 import qualified Data.Map.Strict as Map
+#else
+import qualified Data.Map as Map
+#endif
 import Data.Micro
 import Data.Thyme.Calendar
 import Data.Thyme.Clock.Internal
@@ -123,7 +128,12 @@ parseTAIUTCDAT = parse $ do
 
     parse row = pair . unzip . rights . map (P.parseOnly row) . S.lines
     pair (look -> atUTC, look -> atTAI) = either atUTC atTAI
+#if MIN_VERSION_containers(0,5,0)
     look l = \ t -> maybe zeroV (($ t) . snd) $ Map.lookupLE t (Map.fromList l)
+#else
+    look l = \ t -> case Map.splitLookup t (Map.fromList l) of
+        (lt, eq, _) -> maybe zeroV ($ t) $ eq <|> fst <$> Map.maxView lt
+#endif
 
     {-# INLINEABLE micro #-}
     micro :: Parser Micro
