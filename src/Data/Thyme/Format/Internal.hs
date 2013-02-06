@@ -1,14 +1,17 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE ViewPatterns #-}
 
 module Data.Thyme.Format.Internal where
 
 import Prelude
 import Control.Applicative
-import Data.Attoparsec.ByteString.Char8 (Parser)
+import Data.Attoparsec.ByteString.Char8 (Parser, Result, IResult (..))
 import qualified Data.Attoparsec.ByteString.Char8 as P
 import qualified Data.ByteString.Char8 as S
 import Data.Char
 import Data.Int
+import qualified Data.Text as Text
+import qualified Data.Text.Encoding as Text
 
 #if MIN_VERSION_bytestring(0,10,0)
 # if MIN_VERSION_bytestring(0,10,2)
@@ -17,9 +20,6 @@ import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Lazy.Builder as B
 # endif
 import qualified Data.ByteString.Lazy as L
-#else
-import qualified Data.Text as Text
-import qualified Data.Text.Encoding as Text
 #endif
 
 {-# INLINE utf8Char #-}
@@ -76,6 +76,22 @@ drops0 n = case divMod n 10 of
     _ -> shows n
 
 ------------------------------------------------------------------------
+
+{-# INLINEABLE parserToReadS #-}
+parserToReadS :: Parser a -> ReadS a
+parserToReadS = go . P.parse where
+    {-# INLINEABLE go #-}
+    go :: (S.ByteString -> Result a) -> ReadS a
+    go k (splitAt 32 -> (h, t)) = case k (utf8String h) of
+        -- `date -R | wc -c` is 32 characters
+        Fail rest cxts msg -> fail $ concat [ "parserToReadS: ", msg
+            , "; remaining: ", show (utf8Decode rest), "; stack: ", show cxts ]
+        Partial k' -> go k' t
+        Done rest a -> return (a, utf8Decode rest ++ t)
+
+    {-# INLINE utf8Decode #-}
+    utf8Decode :: S.ByteString -> String
+    utf8Decode = Text.unpack . Text.decodeUtf8
 
 {-# INLINE indexOf #-}
 indexOf :: [String] -> Parser Int

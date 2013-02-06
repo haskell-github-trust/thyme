@@ -11,6 +11,7 @@ module Data.Thyme.Format
     , ParseTime (..)
     , parseTime
     , readTime
+    , readsTime
     , TimeParse (..)
     , timeParser
     ) where
@@ -453,6 +454,39 @@ parseTime l spec = either (const Nothing) Just
 readTime :: (ParseTime t) => TimeLocale -> String -> String -> t
 readTime l spec = either error id
     . P.parseOnly (buildTime <$> timeParser l spec) . utf8String
+
+{-# INLINEABLE readsTime #-}
+readsTime :: (ParseTime t) => TimeLocale -> String -> ReadS t
+readsTime l spec = parserToReadS (buildTime <$> timeParser l spec)
+
+------------------------------------------------------------------------
+
+instance Read Day where
+    {-# INLINEABLE readsPrec #-}
+    readsPrec _ = readParen False $
+        readsTime defaultTimeLocale "%Y-%m-%d"
+
+instance Read TimeOfDay where
+    {-# INLINEABLE readsPrec #-}
+    readsPrec _ = readParen False $
+        readsTime defaultTimeLocale "%H:%M:%S%Q"
+
+instance Read LocalTime where
+    {-# INLINEABLE readsPrec #-}
+    readsPrec _ = readParen False $
+        readsTime defaultTimeLocale "%Y-%m-%d %H:%M:%S%Q"
+
+instance Read ZonedTime where
+    {-# INLINEABLE readsPrec #-}
+    readsPrec _ = readParen False $
+        readsTime defaultTimeLocale "%Y-%m-%d %H:%M:%S%Q %Z"
+
+instance Read UTCTime where
+    {-# INLINEABLE readsPrec #-}
+    readsPrec _ = readParen False $
+        readsTime defaultTimeLocale "%Y-%m-%d %H:%M:%S%Q %Z"
+
+------------------------------------------------------------------------
 
 class ParseTime t where
     buildTime :: TimeParse -> t
