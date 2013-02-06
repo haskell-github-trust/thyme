@@ -17,6 +17,8 @@
 --   * Where a third party library uses @time@, you can use 'toThyme' and
 --   'fromThyme' to convert between the corresponding types.
 --
+--   * 'Year's are 'Int's, not 'Integer's: you may need 'fromIntegral'.
+--
 -- You shouldn't need to use @lens@ or @vector-space@ if you don't want to.
 --
 -- Anything else is probably not intentional, and you should either contact

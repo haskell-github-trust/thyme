@@ -2,10 +2,10 @@ name:           thyme
 version:        0.2.1.0
 synopsis:       A faster time library
 description:
-    A faster time library
+    Thyme is a rewrite of the fine @time@ library, with a particular focus
+    on performance for applications that make heavy use of timestamps.
     .
-    "Data.Thyme.Time" is a compatibility module for exising code using the
-    @time@ package.
+    See "Data.Thyme" for a full description.
 homepage:       https://github.com/liyang/thyme
 license:        BSD3
 license-file:   LICENSE
