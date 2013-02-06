@@ -1,4 +1,5 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE ViewPatterns #-}
 
 -- | Compatibility between thyme and time.
@@ -22,7 +23,7 @@ import qualified Data.Time.Clock as T
 import qualified Data.Time.Clock.TAI as T
 import qualified Data.Time.LocalTime as T
 
-class Thyme a b where
+class Thyme a b | b -> a where
     thyme :: Simple Iso a b
 
 instance Thyme T.Day Day where
