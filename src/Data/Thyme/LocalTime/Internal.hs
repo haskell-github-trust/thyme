@@ -10,6 +10,7 @@ module Data.Thyme.LocalTime.Internal where
 import Prelude hiding ((.))
 import Control.Applicative
 import Control.Category hiding (id)
+import Control.DeepSeq
 import Control.Lens
 import Control.Monad
 import Data.AffineSpace
@@ -33,6 +34,8 @@ data TimeOfDay = TimeOfDay
     , todMin :: {-# UNPACK #-}!Minute
     , todSec :: {-# UNPACK #-}!DiffTime
     } deriving (Eq, Ord, Data, Typeable)
+
+instance NFData TimeOfDay
 
 #if SHOW_INTERNAL
 deriving instance Show TimeOfDay
@@ -104,6 +107,8 @@ data LocalTime = LocalTime
     , localTimeOfDay :: {-only 3 words…-} {-# UNPACK #-}!TimeOfDay
     } deriving (Eq, Ord, Data, Typeable)
 
+instance NFData LocalTime
+
 #if SHOW_INTERNAL
 deriving instance Show LocalTime
 #else
@@ -151,6 +156,9 @@ data ZonedTime = ZonedTime
     { zonedTimeToLocalTime :: {-only 4 words…-} {-# UNPACK #-}!LocalTime
     , zonedTimeZone :: !TimeZone
     } deriving (Eq, Ord, Data, Typeable)
+
+instance NFData ZonedTime where
+    rnf ZonedTime {..} = rnf zonedTimeZone
 
 {-# INLINE zonedTime #-}
 zonedTime :: Simple Iso (TimeZone, UTCTime) ZonedTime
