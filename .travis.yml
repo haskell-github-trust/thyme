@@ -12,5 +12,5 @@ script:
   - ./.travis.hlint
 
 env:
-  - mode="-f-instance-num -fWerror -futf8-string --enable-tests"
+  - mode="-f-instance-num -fWerror --enable-tests"
 

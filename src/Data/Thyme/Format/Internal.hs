@@ -18,7 +18,8 @@ import qualified Data.ByteString.Lazy.Builder as B
 # endif
 import qualified Data.ByteString.Lazy as L
 #else
-import qualified Data.ByteString.UTF8 as U8
+import qualified Data.Text as Text
+import qualified Data.Text.Encoding as Text
 #endif
 
 {-# INLINE utf8Char #-}
@@ -29,8 +30,8 @@ utf8String :: String -> S.ByteString
 utf8Char = L.toStrict . B.toLazyByteString . B.charUtf8
 utf8String = L.toStrict . B.toLazyByteString . B.stringUtf8
 #else
-utf8Char = U8.fromString . (:[])
-utf8String = U8.fromString
+utf8Char = Text.encodeUtf8 . Text.singleton
+utf8String = Text.encodeUtf8 . Text.pack
 #endif
 
 ------------------------------------------------------------------------

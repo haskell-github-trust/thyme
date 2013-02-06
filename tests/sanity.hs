@@ -37,7 +37,8 @@ import qualified Data.ByteString.Lazy.Builder as B
 # endif
 import qualified Data.ByteString.Lazy as L
 #else
-import qualified Data.ByteString.UTF8 as U8
+import qualified Data.Text as Text
+import qualified Data.Text.Encoding as Text
 #endif
 
 {-# INLINE utf8String #-}
@@ -45,7 +46,7 @@ utf8String :: String -> ByteString
 #if MIN_VERSION_bytestring(0,10,0)
 utf8String = L.toStrict . B.toLazyByteString . B.stringUtf8
 #else
-utf8String = U8.fromString
+utf8String = Text.encodeUtf8 . Text.pack
 #endif
 
 ------------------------------------------------------------------------
