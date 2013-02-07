@@ -52,9 +52,9 @@ deriving instance Fractional DiffTime
 deriving instance RealFrac DiffTime
 #endif
 
-{-# INLINE microsecondsToDiffTime #-}
-microsecondsToDiffTime :: Int64 -> DiffTime
-microsecondsToDiffTime = DiffTime . Micro
+{-# INLINE microDiffTime #-}
+microDiffTime :: Iso' Int64 DiffTime
+microDiffTime = iso (DiffTime . Micro) (\ (DiffTime (Micro u)) -> u)
 
 ------------------------------------------------------------------------
 
@@ -89,9 +89,10 @@ deriving instance Fractional NominalDiffTime
 deriving instance RealFrac NominalDiffTime
 #endif
 
-{-# INLINE microsecondsToNominalDiffTime #-}
-microsecondsToNominalDiffTime :: Int64 -> NominalDiffTime
-microsecondsToNominalDiffTime = NominalDiffTime . Micro
+{-# INLINE microNominalDiffTime #-}
+microNominalDiffTime :: Iso' Int64 NominalDiffTime
+microNominalDiffTime = iso (NominalDiffTime . Micro)
+    (\ (NominalDiffTime (Micro u)) -> u)
 
 {-# INLINE posixDayLength #-}
 posixDayLength :: NominalDiffTime

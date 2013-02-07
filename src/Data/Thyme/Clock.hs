@@ -8,13 +8,13 @@ module Data.Thyme.Clock (
 
     -- * Absolute intervals
     , DiffTime
-    , microsecondsToDiffTime
+    , microDiffTime
 
     -- * UTC
     , UTCTime, UTCView (..)
     , utcTime
     , NominalDiffTime
-    , microsecondsToNominalDiffTime
+    , microNominalDiffTime
     , module Data.Thyme.Clock
 
     -- * Lenses

@@ -31,9 +31,9 @@ module Data.Thyme.Time
 
 import Control.Lens
 import Data.AffineSpace
-import Data.Basis
 import Data.Int
 import Data.Micro
+import Data.Ratio
 import Data.Thyme
 import Data.Thyme.Calendar.OrdinalDate
 import Data.Thyme.Calendar.MonthDay
@@ -63,9 +63,8 @@ instance Thyme T.UniversalTime UniversalTime where
 
 instance Thyme T.DiffTime DiffTime where
     {-# INLINE thyme #-}
-    thyme = iso (microsecondsToDiffTime . round . (*) 1000000)
-        ( \ (DiffTime (Micro t)) ->
-            T.picosecondsToDiffTime $ toInteger t * 1000000 )
+    thyme = iso (round . (*) 1000000)
+        (T.picosecondsToDiffTime . (*) 1000000 . toInteger) . microDiffTime
 
 instance Thyme T.UTCTime UTCView where
     {-# INLINE thyme #-}
@@ -79,8 +78,8 @@ instance Thyme T.UTCTime UTCTime where
 
 instance Thyme T.NominalDiffTime NominalDiffTime where
     {-# INLINE thyme #-}
-    thyme = iso (microsecondsToNominalDiffTime . round . (*) 1000000)
-        (\ (NominalDiffTime t) -> fromRational $ t ^/^ basisValue ())
+    thyme = iso (round . (*) 1000000) -- no picosecondsToNominalDiffTime D:
+        (fromRational . (% 1000000) . toInteger) . microNominalDiffTime
 
 instance Thyme T.AbsoluteTime AbsoluteTime where
     {-# INLINE thyme #-}
@@ -95,9 +94,9 @@ instance Thyme T.TimeZone TimeZone where
 instance Thyme T.TimeOfDay TimeOfDay where
     {-# INLINE thyme #-}
     thyme = iso ( \ (T.TimeOfDay h m s) -> TimeOfDay h m
-            . microsecondsToDiffTime . round $ s * 1000000 )
-        ( \ (TimeOfDay h m s) -> T.TimeOfDay h m
-            . fromRational $ s ^/^ basisValue () )
+            . view microDiffTime . round $ s * 1000000 )
+        ( \ (TimeOfDay h m s) -> T.TimeOfDay h m . fromRational
+            . (% 1000000) . toInteger $ review microDiffTime s )
 
 instance Thyme T.LocalTime LocalTime where
     {-# INLINE thyme #-}
