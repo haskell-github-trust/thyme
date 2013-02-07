@@ -24,21 +24,23 @@
 -- Anything else is probably not intentional, and you should either contact
 -- me via IRC or file an issue at <https://github.com/liyang/thyme/issues>.
 
-module Data.Thyme.Time where
+module Data.Thyme.Time
+    ( module Data.Thyme
+    , module Data.Thyme.Time
+    ) where
 
 import Control.Lens
 import Data.AffineSpace
 import Data.Basis
 import Data.Int
 import Data.Micro
-import Data.Thyme.Calendar
+import Data.Thyme
 import Data.Thyme.Calendar.OrdinalDate
 import Data.Thyme.Calendar.MonthDay
 import Data.Thyme.Calendar.WeekDate
 import Data.Thyme.Clock.Internal
 import Data.Thyme.Clock.POSIX
 import Data.Thyme.Clock.TAI
-import Data.Thyme.LocalTime
 import qualified Data.Time.Calendar as T
 import qualified Data.Time.Clock as T
 import qualified Data.Time.Clock.TAI as T
