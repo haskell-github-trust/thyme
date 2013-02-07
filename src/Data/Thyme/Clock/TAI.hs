@@ -138,8 +138,9 @@ parseTAIUTCDAT = parse $ do
     {-# INLINEABLE micro #-}
     micro :: Parser Micro
     micro = do
-        s <- P.decimal <* P.string "."
+        sign <- negate <$ P.char '-' <|> pure id
+        s <- P.decimal <* P.char '.'
         us10 <- either fail return . P.parseOnly P.decimal . S.take 7
             . (`S.append` S.pack "000000") =<< P.takeWhile1 P.isDigit
-        return $ Micro (s * 1000000 + div (us10 + 5) 10)
+        return . Micro . sign $ s * 1000000 + div (us10 + 5) 10
 
