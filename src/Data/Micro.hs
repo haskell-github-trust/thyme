@@ -15,22 +15,41 @@ import Data.Data
 import Data.Int
 import Data.Ix
 import Data.Ratio
-#if !SHOW_INTERNAL
-import Data.Thyme.Format.Internal
-#endif
 import Data.VectorSpace
+
+#if !SHOW_INTERNAL
+import Control.Monad
+import Data.Char
+import Data.Thyme.Format.Internal
+import Numeric
+import Text.ParserCombinators.ReadPrec
+import Text.ParserCombinators.ReadP
+import Text.Read
+#endif
 
 newtype Micro = Micro Int64
     deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable)
 
 #if SHOW_INTERNAL
 deriving instance Show Micro
+deriving instance Read Micro
 #else
 instance Show Micro where
     showsPrec _ (Micro a) = sign . shows si . frac where
         sign = if a < 0 then (:) '-' else id
         (si, su) = quotRem (abs a) 1000000
         frac = if su == 0 then id else (:) '.' . fills06 su . drops0 su
+
+instance Read Micro where
+    readPrec = lift $ do
+        sign <- char '-' >> return negate `mplus` return id
+        s <- readS_to_P readDec
+        us <- (`mplus` return 0) $ do
+            _ <- char '.'
+            [(us10, "")] <- (readDec . take 7 . (++ "000000"))
+                `fmap` munch1 isDigit
+            return (div (us10 + 5) 10)
+        return . Micro . sign $ s * 1000000 + us
 #endif
 
 {-# INLINE toMicro #-}

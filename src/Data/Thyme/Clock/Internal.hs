@@ -21,14 +21,24 @@ import Data.Micro
 import Data.Thyme.Calendar
 import Data.VectorSpace
 
+#if !SHOW_INTERNAL
+import Control.Monad
+import Text.ParserCombinators.ReadPrec (lift)
+import Text.ParserCombinators.ReadP (char)
+import Text.Read (readPrec)
+#endif
+
 newtype DiffTime = DiffTime Micro
     deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable, AdditiveGroup)
 
 #if SHOW_INTERNAL
 deriving instance Show DiffTime
+deriving instance Read DiffTime
 #else
 instance Show DiffTime where
-    showsPrec p (DiffTime a) rest = showsPrec p a ('s' : rest)
+    showsPrec p (DiffTime a) = showsPrec p a . (:) 's'
+instance Read DiffTime where
+    readPrec = return (const . DiffTime) `ap` readPrec `ap` lift (char 's')
 #endif
 
 instance VectorSpace DiffTime where
@@ -63,9 +73,12 @@ newtype NominalDiffTime = NominalDiffTime Micro
 
 #if SHOW_INTERNAL
 deriving instance Show NominalDiffTime
+deriving instance Read NominalDiffTime
 #else
 instance Show NominalDiffTime where
     showsPrec p (NominalDiffTime a) rest = showsPrec p a ('s' : rest)
+instance Read NominalDiffTime where
+    readPrec = return (const . NominalDiffTime) `ap` readPrec `ap` lift (char 's')
 #endif
 
 instance VectorSpace NominalDiffTime where
