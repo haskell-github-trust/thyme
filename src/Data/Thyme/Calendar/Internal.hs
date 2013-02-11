@@ -17,6 +17,8 @@ import Data.Data
 import Data.Int
 import Data.Ix
 import Data.Thyme.Format.Internal
+import Data.Vector.Unboxed (Vector)
+import qualified Data.Vector.Unboxed as V
 
 type Years = Int
 type Months = Int
@@ -90,6 +92,32 @@ ordinalDate = iso toOrd fromOrd where
         mjd = 365 * y + div y 4 - div y 100 + div y 400 - 678576
             + clip 1 (if isLeapYear year then 366 else 365) (fromIntegral yd)
         clip a b = max a . min b
+
+------------------------------------------------------------------------
+-- Lookup tables for Data.Thyme.Calendar.MonthDay
+
+{-# NOINLINE monthLengths #-}
+{-# NOINLINE monthLengthsLeap #-}
+monthLengths, monthLengthsLeap :: Vector Days
+monthLengths     = V.fromList [31,28,31,30,31,30,31,31,30,31,30,31]
+monthLengthsLeap = V.fromList [31,29,31,30,31,30,31,31,30,31,30,31]
+                            -- J  F  M  A  M  J  J  A  S  O  N  D
+
+{-# NOINLINE monthDays #-}
+monthDays :: Vector ({-Month-}Int8, {-DayOfMonth-}Int8)
+monthDays = V.generate 365 go where
+    first = V.prescanl' (+) 0 monthLengths
+    go yd = (fromIntegral m, fromIntegral d) where
+        m = maybe 12 id $ V.findIndex (yd <) first
+        d = succ yd - V.unsafeIndex first (pred m)
+
+{-# NOINLINE monthDaysLeap #-}
+monthDaysLeap :: Vector ({-Month-}Int8, {-DayOfMonth-}Int8)
+monthDaysLeap = V.generate 366 go where
+    first = V.prescanl' (+) 0 monthLengthsLeap
+    go yd = (fromIntegral m, fromIntegral d) where
+        m = maybe 12 id $ V.findIndex (yd <) first
+        d = succ yd - V.unsafeIndex first (pred m)
 
 ------------------------------------------------------------------------
 

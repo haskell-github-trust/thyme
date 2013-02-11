@@ -76,6 +76,7 @@ library
         template-haskell >= 2.6,
         time >= 1.4,
         transformers,
+        vector >= 0.9,
         vector-space >= 0.8
     ghc-options: -Wall
     if flag(bug-for-bug)
