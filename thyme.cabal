@@ -92,16 +92,32 @@ test-suite sanity
     type: exitcode-stdio-1.0
     hs-source-dirs: tests
     main-is: sanity.hs
+    other-modules: Common
     build-depends:
         QuickCheck,
         attoparsec,
         base,
         bytestring,
+        lens,
+        old-locale,
+        text,
+        thyme,
+        time,
+        vector-space
+    ghc-options: -Wall
+
+benchmark bench
+    type: exitcode-stdio-1.0
+    hs-source-dirs: tests
+    main-is: bench.hs
+    other-modules: Common
+    build-depends:
+        QuickCheck,
+        base,
         criterion,
         lens,
         old-locale,
         random,
-        text,
         thyme,
         time,
         transformers,
