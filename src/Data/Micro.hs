@@ -56,41 +56,6 @@ instance Read Micro where
 toMicro :: Rational -> Micro
 toMicro r = Micro (fromInteger $ 1000000 * numerator r `div` denominator r)
 
-#if INSTANCE_NUM
-instance Num Micro where
-    {-# INLINE (+) #-}
-    {-# INLINE (-) #-}
-    {-# INLINE (*) #-}
-    {-# INLINE negate #-}
-    {-# INLINE abs #-}
-    {-# INLINE signum #-}
-    {-# INLINE fromInteger #-}
-    Micro a + Micro b = Micro (a + b)
-    Micro a - Micro b = Micro (a - b)
-    Micro a * Micro b = Micro (quot a 1000 * quot b 1000)
-    negate (Micro a) = Micro (negate a)
-    abs (Micro a) = Micro (abs a)
-    signum (Micro a) = Micro (signum a * 1000000)
-    fromInteger a = Micro (fromInteger a * 1000000)
-
-instance Real Micro where
-    {-# INLINE toRational #-}
-    toRational (Micro a) = toInteger a % 1000000
-
-instance Fractional Micro where
-    {-# INLINE (/) #-}
-    {-# INLINE recip #-}
-    {-# INLINE fromRational #-}
-    Micro a / Micro b = Micro (quot (a * 1000) (b * 1000))
-    recip (Micro a) = Micro (quot 1000000 a)
-    fromRational = toMicro
-
-instance RealFrac Micro where
-    {-# INLINE properFraction #-}
-    properFraction a = (fromIntegral q, r) where
-        (q, r) = microQuotRem a (Micro 1000000)
-#endif
-
 {-# INLINE microQuotRem #-}
 {-# INLINE microDivMod #-}
 microQuotRem, microDivMod :: Micro -> Micro -> (Int64, Micro)

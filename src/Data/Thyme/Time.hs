@@ -1,10 +1,14 @@
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
--- | This module provides compatibility wrappers for the things that @thyme@
--- does differently from @time@, and allows it to be used as a drop-in
--- replacement for the latter, with the exceptions noted below:
+-- | This module provides compatibility instances and wrappers for the
+-- things that @thyme@ does differently from @time@, and allows it to be
+-- used as a drop-in replacement for the latter, with the exceptions noted
+-- below:
 --
 --   * When constructing an 'UTCTime' or 'UniversalTime', use 'mkUTCTime' or
 --   'mkModJulianDate' in place of @UTCTime@ or @ModJulianDate@.
@@ -46,6 +50,50 @@ import qualified Data.Time.Clock as T
 import qualified Data.Time.Clock.TAI as T
 import qualified Data.Time.LocalTime as T
 
+instance Num Micro where
+    {-# INLINE (+) #-}
+    {-# INLINE (-) #-}
+    {-# INLINE (*) #-}
+    {-# INLINE negate #-}
+    {-# INLINE abs #-}
+    {-# INLINE signum #-}
+    {-# INLINE fromInteger #-}
+    Micro a + Micro b = Micro (a + b)
+    Micro a - Micro b = Micro (a - b)
+    Micro a * Micro b = Micro (quot a 1000 * quot b 1000)
+    negate (Micro a) = Micro (negate a)
+    abs (Micro a) = Micro (abs a)
+    signum (Micro a) = Micro (signum a * 1000000)
+    fromInteger a = Micro (fromInteger a * 1000000)
+
+instance Real Micro where
+    {-# INLINE toRational #-}
+    toRational (Micro a) = toInteger a % 1000000
+
+instance Fractional Micro where
+    {-# INLINE (/) #-}
+    {-# INLINE recip #-}
+    {-# INLINE fromRational #-}
+    Micro a / Micro b = Micro (quot (a * 1000) (b * 1000))
+    recip (Micro a) = Micro (quot 1000000 a)
+    fromRational = toMicro
+
+instance RealFrac Micro where
+    {-# INLINE properFraction #-}
+    properFraction a = (fromIntegral q, r) where
+        (q, r) = microQuotRem a (Micro 1000000)
+
+deriving instance Num DiffTime
+deriving instance Real DiffTime
+deriving instance Fractional DiffTime
+deriving instance RealFrac DiffTime
+
+deriving instance Num NominalDiffTime
+deriving instance Real NominalDiffTime
+deriving instance Fractional NominalDiffTime
+deriving instance RealFrac NominalDiffTime
+
+------------------------------------------------------------------------
 -- * Type conversion
 
 class Thyme a b | b -> a where

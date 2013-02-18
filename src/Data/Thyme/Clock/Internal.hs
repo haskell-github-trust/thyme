@@ -55,13 +55,6 @@ instance HasBasis DiffTime where
     {-# INLINE decompose' #-}
     decompose' (DiffTime a) = decompose' a
 
-#if INSTANCE_NUM
-deriving instance Num DiffTime
-deriving instance Real DiffTime
-deriving instance Fractional DiffTime
-deriving instance RealFrac DiffTime
-#endif
-
 {-# INLINE microDiffTime #-}
 microDiffTime :: Iso' Int64 DiffTime
 microDiffTime = iso (DiffTime . Micro) (\ (DiffTime (Micro u)) -> u)
@@ -94,13 +87,6 @@ instance HasBasis NominalDiffTime where
     decompose (NominalDiffTime a) = decompose a
     {-# INLINE decompose' #-}
     decompose' (NominalDiffTime a) = decompose' a
-
-#if INSTANCE_NUM
-deriving instance Num NominalDiffTime
-deriving instance Real NominalDiffTime
-deriving instance Fractional NominalDiffTime
-deriving instance RealFrac NominalDiffTime
-#endif
 
 {-# INLINE microNominalDiffTime #-}
 microNominalDiffTime :: Iso' Int64 NominalDiffTime

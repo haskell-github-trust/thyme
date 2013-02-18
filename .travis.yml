@@ -13,5 +13,5 @@ script:
   - ./.travis.hlint
 
 env:
-  - mode="-f-instance-num -fWerror --enable-tests --enable-benchmarks"
+  - mode="-fWerror --enable-tests --enable-benchmarks"
 

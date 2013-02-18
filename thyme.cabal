@@ -26,11 +26,6 @@ flag bug-for-bug
     default: True
     manual: True
 
-flag instance-num
-    description: instance Num (Nominal)DiffTime
-    default: True
-    manual: True
-
 flag show-internal
     description: instance Show of internal representation
     default: False
@@ -81,8 +76,6 @@ library
     ghc-options: -Wall
     if flag(bug-for-bug)
         cpp-options: -DBUG_FOR_BUG=1
-    if flag(instance-num)
-        cpp-options: -DINSTANCE_NUM=1
     if flag(show-internal)
         cpp-options: -DSHOW_INTERNAL=1
     if flag(Werror)
