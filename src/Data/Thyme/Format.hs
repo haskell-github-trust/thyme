@@ -23,7 +23,6 @@ import Control.Monad.Trans.Class
 import Control.Monad.Trans.State.Strict
 import Data.Attoparsec.ByteString.Char8 (Parser)
 import qualified Data.Attoparsec.ByteString.Char8 as P
-import Data.Basis
 import Data.Bits
 import qualified Data.ByteString.Char8 as S
 import Data.Char
@@ -359,7 +358,7 @@ timeParser TimeLocale {..} = flip execStateT unixEpoch . go where
             -- UTCTime
             's' -> do
                 s <- lift (negative P.decimal)
-                _tpPOSIXTime .= fromIntegral s *^ basisValue ()
+                _tpPOSIXTime .= fromSeconds s
                 flag IsPOSIXTime .= True
                 go rspec
 
@@ -494,7 +493,7 @@ class ParseTime t where
 instance ParseTime TimeOfDay where
     {-# INLINE buildTime #-}
     buildTime tp@TimeParse {..} = TimeOfDay h tpMinute
-            (fromIntegral tpSecond *^ basisValue () ^+^ tpSecFrac) where
+            (fromSeconds tpSecond ^+^ tpSecFrac) where
         h = case tp ^. flag TwelveHour of
             False -> tpHour
             True -> case tp ^. flag PostMeridiem of

@@ -87,7 +87,3 @@ instance HasBasis Micro where
     {-# INLINE decompose' #-}
     decompose' (Micro a) = const (fromIntegral a % 1000000)
 
-{-# INLINE (^/^) #-}
-(^/^) :: (HasBasis v, Basis v ~ (), Scalar v ~ s, Fractional s) => v -> v -> s
-x ^/^ y = decompose' x () / decompose' y ()
-

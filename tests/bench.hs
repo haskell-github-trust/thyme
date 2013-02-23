@@ -9,7 +9,6 @@ import Criterion.Analysis
 import Criterion.Config
 import Criterion.Environment
 import Criterion.Monad
-import Data.Basis
 import Data.Monoid
 import Data.Thyme
 import Data.Thyme.Calendar.OrdinalDate
@@ -20,7 +19,6 @@ import qualified Data.Time.Calendar.OrdinalDate as T
 import qualified Data.Time.Calendar.WeekDate as T
 import qualified Data.Time.Calendar.MonthDay as T
 import qualified Data.Time.Clock.POSIX as T
-import Data.VectorSpace
 import Test.QuickCheck as QC
 import Test.QuickCheck.Gen as QC
 import System.Locale
@@ -37,7 +35,7 @@ main = do
     now <- getCurrentTime
     let now' = review thyme now
     let strs = T.formatTime defaultTimeLocale spec <$> utcs'
-    let dt = 86405 *^ basisValue ()
+    let dt = fromSeconds' 86405
     let dt' = review thyme dt
     let days = utctDay . unUTCTime <$> utcs
     let days' = T.utctDay <$> utcs'

@@ -21,9 +21,8 @@ import Control.DeepSeq
 import Control.Lens
 import Control.Monad
 import Data.AffineSpace
-import Data.Attoparsec.ByteString.Char8 (Parser, (<?>))
+import Data.Attoparsec.ByteString.Char8 ((<?>))
 import qualified Data.Attoparsec.ByteString.Char8 as P
-import Data.Basis
 import Data.ByteString.Char8 (ByteString)
 import qualified Data.ByteString.Char8 as S
 import Data.Char
@@ -35,7 +34,6 @@ import qualified Data.Map.Strict as Map
 #else
 import qualified Data.Map as Map
 #endif
-import Data.Micro
 import Data.Thyme.Calendar
 import Data.Thyme.Clock.Internal
 import Data.Thyme.Format.Internal
@@ -102,7 +100,7 @@ parseTAIUTCDAT = parse $ do
         show ymd ++ " is not Modified Julian Day " ++ show mjd
 
     tokens ["TAI", "-", "UTC", "="]
-    b <- micro <?> "Base"
+    b <- P.rational <?> "Base"
     tokens ["S", "+", "(", "MJD", "-"]
     o <- P.rational <?> "Offset"
     tokens [".", ")", "X"]
@@ -111,19 +109,16 @@ parseTAIUTCDAT = parse $ do
     -- FIXME: confirm UTC↔TAI conversion for pre-1972.
     -- Do we round MJD? This is a guess:
     -- TAI-UTC =  b + c * (MJD(UTC) - o)
-    let atUTC (UTCRep (NominalDiffTime t)) = DiffTime $
-            b ^+^ (c * (t ^/^ posixDay - o)) *^ basisValue ()
-    let c1' = recip (1 + c); c1'c = c1' * c
+    let atUTC (UTCRep t) = fromSeconds' $ b + c * (toMJD t - o)
     -- TAI-UTC = (b + c * (MJD(TAI) - o)) / (1 + c)
-    let atTAI (AbsoluteTime (DiffTime t)) = DiffTime $
-            c1' *^ b ^+^ (c1'c * (t ^/^ posixDay - o)) *^ basisValue ()
-    let begin = toRational mjd *^ posixDay
+    let atTAI (AbsoluteTime t) = fromSeconds' $ b + c * (toMJD t - o) / (1 + c)
+    let NominalDiffTime ((toRational mjd *^) -> begin) = posixDayLength
     let beginUTC = UTCRep (NominalDiffTime begin)
     let beginTAI = AbsoluteTime (DiffTime begin ^-^ atUTC beginUTC)
     return ((beginUTC, atUTC), (beginTAI, atTAI))
 
   where
-    NominalDiffTime posixDay = posixDayLength
+    toMJD t = simply view seconds t / simply view seconds posixDayLength
     tokens = foldr (\ tok a -> P.skipSpace >> P.string tok >> a) P.skipSpace
 
     parse row = pair . unzip . rights . map (P.parseOnly row) . S.lines
@@ -134,13 +129,4 @@ parseTAIUTCDAT = parse $ do
     look l = \ t -> case Map.splitLookup t (Map.fromList l) of
         (lt, eq, _) -> maybe zeroV ($ t) $ eq <|> fst <$> Map.maxView lt
 #endif
-
-    {-# INLINEABLE micro #-}
-    micro :: Parser Micro
-    micro = do
-        sign <- negate <$ P.char '-' <|> pure id
-        s <- P.decimal <* P.char '.'
-        us10 <- either fail return . P.parseOnly P.decimal . S.take 7
-            . (`S.append` S.pack "000000") =<< P.takeWhile1 P.isDigit
-        return . Micro . sign $ s * 1000000 + div (us10 + 5) 10
 

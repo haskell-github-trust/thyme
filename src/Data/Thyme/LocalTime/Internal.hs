@@ -3,6 +3,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE ViewPatterns #-}
 
 -- #hide
 module Data.Thyme.LocalTime.Internal where
@@ -91,13 +92,14 @@ addMinutes dm (TimeOfDay h m s) = (dd, TimeOfDay h' m' s) where
 {-# INLINE dayFraction #-}
 dayFraction :: Iso' TimeOfDay Rational
 dayFraction = from timeOfDay . iso toRatio fromRatio where
-    NominalDiffTime posixDay = posixDayLength
 
+    {-# INLINEABLE toRatio #-}
     toRatio :: DiffTime -> Rational
-    toRatio (DiffTime t) = t ^/^ posixDay
+    toRatio t = simply view seconds t / simply view seconds posixDayLength
 
+    {-# INLINEABLE fromRatio #-}
     fromRatio :: Rational -> DiffTime
-    fromRatio r = DiffTime (r *^ posixDay)
+    fromRatio ((*^ posixDayLength) -> NominalDiffTime r) = DiffTime r
 
 ------------------------------------------------------------------------
 -- * Local Time

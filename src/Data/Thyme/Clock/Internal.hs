@@ -28,6 +28,37 @@ import Text.ParserCombinators.ReadP (char)
 import Text.Read (readPrec)
 #endif
 
+-- | Time interval as a 'Rational' number of seconds. For example, @'over'
+-- 'seconds' 'id'@ converts between 'DiffTime' and 'NominalDiffTime'.
+-- Compose with 'simple' or 'simply' 'view'/'review' to avoid ambiguous type
+-- variables.
+{-# INLINE seconds #-}
+seconds :: (HasBasis s, Basis s ~ (), HasBasis t, Basis t ~ ()) =>
+    Iso s t (Scalar s) (Scalar t)
+seconds = iso (`decompose'` ()) (*^ basisValue ())
+
+-- | Convert a time interval to some 'Fractional' type.
+{-# INLINE toSeconds #-}
+toSeconds :: (HasBasis s, Basis s ~ (), Scalar s ~ a, Real a, Fractional n) => s -> n
+toSeconds = realToFrac . simply view seconds
+
+-- | Make a time interval from some 'Real' type.
+{-# INLINE fromSeconds #-}
+fromSeconds :: (HasBasis t, Basis t ~ (), Scalar t ~ b, Real n, Fractional b) => n -> t
+fromSeconds = simply review seconds . realToFrac
+
+-- | Type-restricted 'toSeconds' to avoid constraint-defaulting warnings.
+{-# INLINE toSeconds' #-}
+toSeconds' :: (HasBasis s, Basis s ~ ()) => s -> Scalar s
+toSeconds' = simply view seconds
+
+-- | Type-restricted 'fromSeconds' to avoid constraint-defaulting warnings.
+{-# INLINE fromSeconds' #-}
+fromSeconds' :: (HasBasis t, Basis t ~ ()) => Scalar t -> t
+fromSeconds' = simply review seconds
+
+------------------------------------------------------------------------
+
 newtype DiffTime = DiffTime Micro
     deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable, AdditiveGroup)
 
@@ -108,8 +139,8 @@ newtype UniversalTime = UniversalRep NominalDiffTime -- since MJD epoch
 
 {-# INLINE modJulianDate #-}
 modJulianDate :: Iso' UniversalTime Rational
-modJulianDate = iso
-    (\ (UniversalRep t) -> t ^/^ posixDayLength)
+modJulianDate = iso ( \ (UniversalRep t) ->
+        simply view seconds t / simply view seconds posixDayLength )
     (UniversalRep . (*^ posixDayLength))
 
 ------------------------------------------------------------------------

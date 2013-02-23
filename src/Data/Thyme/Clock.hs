@@ -3,25 +3,17 @@
 
 -- | 'Num', 'Real', 'Fractional' and 'RealFrac' instances for 'DiffTime' and
 -- 'NominalDiffTime' are only available by importing "Data.Thyme.Time". In
--- their stead, instances of 'Data.AdditiveGroup.AdditiveGroup',
--- 'Data.Basis.HasBasis' and 'Data.VectorSpace.VectorSpace' are given here.
--- Addition and subtraction are performed with the 'Data.AdditiveGroup.^+^'
--- and 'Data.AdditiveGroup.^-^' operators from
--- 'Data.AdditiveGroup.AdditiveGroup', while 'Data.VectorSpace.*^' scales by
--- a 'Rational'. To find the ratio of two time differences, define:
+-- their stead are instances of 'Data.AdditiveGroup.AdditiveGroup',
+-- 'Data.Basis.HasBasis' and 'Data.VectorSpace.VectorSpace', with
+-- @'Data.VectorSpace.Scalar' 'DiffTime' ≡ 'Data.VectorSpace.Scalar'
+-- 'NominalDiffTime' ≡ 'Rational'@.
 --
--- @
--- (^\/^) :: ('Data.Basis.HasBasis' v, 'Data.Basis.Basis' v ~ (), 'Data.VectorSpace.Scalar' v ~ s, 'Prelude.Fractional' s) => v -> v -> s
--- (^\/^) = ('Prelude./') '`Data.Function.on`' flip 'Data.Basis.decompose'' ()
--- @
+--  Convert between time intervals and 'Rational's with 'seconds', or more
+--  generally between any 'Real' or 'Fractional' using 'fromSeconds' and
+--  'toSeconds'.
 --
--- Finally, write @n 'Data.VectorSpace.*^' 'Data.Basis.basisValue' ()@ where
--- literals are expected.
---
--- 'UniversalTime' and 'UTCTime' are instances of
--- 'Data.AffineSpace.AffineSpace', with @'Data.AffineSpace.Diff'
--- 'UniversalTime' ≡ 'DiffTime'@, and @'Data.AffineSpace.Diff' 'UTCTime' ≡
--- 'NominalDiffTime'@.
+-- 'UTCTime' is an instance of 'Data.AffineSpace.AffineSpace', with
+-- @'Data.AffineSpace.Diff' 'UTCTime' ≡ 'NominalDiffTime'@.
 
 module Data.Thyme.Clock (
     -- * Universal Time
@@ -38,6 +30,11 @@ module Data.Thyme.Clock (
     , NominalDiffTime
     , microNominalDiffTime
     , module Data.Thyme.Clock
+
+    -- * Time interval conversion
+    , seconds
+    , toSeconds, fromSeconds
+    , toSeconds', fromSeconds'
 
     -- * Lenses
     , _utctDay, _utctDayTime

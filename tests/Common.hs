@@ -4,9 +4,7 @@ module Common where
 import Prelude
 import Control.Applicative
 import Control.Lens
-import Data.Basis
 import Data.Thyme
-import Data.VectorSpace
 import System.Exit
 import Test.QuickCheck
 import qualified Test.QuickCheck.Gen as Gen
@@ -22,7 +20,7 @@ instance Arbitrary Day where
         <$> choose (1000, 9999) <*> choose (1, 12) <*> choose (1, 31)
 
 instance Arbitrary DiffTime where
-    arbitrary = (^*) (basisValue ()) . toRational <$> (choose (0, 86400.999999) :: Gen Double)
+    arbitrary = fromSeconds <$> (choose (0, 86400.999999) :: Gen Double)
 
 instance Arbitrary UTCTime where
     arbitrary = fmap (review utcTime) $ UTCTime <$> arbitrary <*> arbitrary
