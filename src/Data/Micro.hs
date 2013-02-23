@@ -35,12 +35,14 @@ deriving instance Show Micro
 deriving instance Read Micro
 #else
 instance Show Micro where
+    {-# INLINEABLE showsPrec #-}
     showsPrec _ (Micro a) = sign . shows si . frac where
         sign = if a < 0 then (:) '-' else id
-        (si, su) = quotRem (abs a) 1000000
+        (si, su) = abs a `divMod` 1000000
         frac = if su == 0 then id else (:) '.' . fills06 su . drops0 su
 
 instance Read Micro where
+    {-# INLINEABLE readPrec #-}
     readPrec = lift $ do
         sign <- char '-' >> return negate `mplus` return id
         s <- readS_to_P readDec

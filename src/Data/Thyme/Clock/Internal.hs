@@ -36,8 +36,10 @@ deriving instance Show DiffTime
 deriving instance Read DiffTime
 #else
 instance Show DiffTime where
+    {-# INLINEABLE showsPrec #-}
     showsPrec p (DiffTime a) = showsPrec p a . (:) 's'
 instance Read DiffTime where
+    {-# INLINEABLE readPrec #-}
     readPrec = return (const . DiffTime) `ap` readPrec `ap` lift (char 's')
 #endif
 
@@ -69,8 +71,10 @@ deriving instance Show NominalDiffTime
 deriving instance Read NominalDiffTime
 #else
 instance Show NominalDiffTime where
+    {-# INLINEABLE showsPrec #-}
     showsPrec p (NominalDiffTime a) rest = showsPrec p a ('s' : rest)
 instance Read NominalDiffTime where
+    {-# INLINEABLE readPrec #-}
     readPrec = return (const . NominalDiffTime) `ap` readPrec `ap` lift (char 's')
 #endif
 
