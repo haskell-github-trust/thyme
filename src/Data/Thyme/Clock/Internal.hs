@@ -1,5 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE FlexibleContexts #-} -- workaround
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -28,23 +29,35 @@ import Text.ParserCombinators.ReadP (char)
 import Text.Read (readPrec)
 #endif
 
--- | Time interval as a 'Rational' number of seconds. For example, @'over'
--- 'seconds' 'id'@ converts between 'DiffTime' and 'NominalDiffTime'.
--- Compose with 'simple' or 'simply' 'view'/'review' to avoid ambiguous type
--- variables.
+-- | Workaround for GHC refusing to match RULES for functions with equality
+-- constraints; see <http://hackage.haskell.org/trac/ghc/ticket/7611>.
+class (HasBasis t, Basis t ~ ()) => OneDimensional t
+instance OneDimensional DiffTime
+instance OneDimensional NominalDiffTime
+
+-- | Time interval as a 'Rational' number of seconds. Compose with 'simple'
+-- or 'simply' 'view' / 'review' to avoid ambiguous type variables.
 {-# INLINE seconds #-}
-seconds :: (HasBasis s, Basis s ~ (), HasBasis t, Basis t ~ ()) =>
-    Iso s t (Scalar s) (Scalar t)
+seconds :: (HasBasis s, Basis s ~ (), HasBasis t, Basis t ~ ()) => Iso s t (Scalar s) (Scalar t)
 seconds = iso (`decompose'` ()) (*^ basisValue ())
 
 -- | Convert a time interval to some 'Fractional' type.
+--
+-- @
+-- toSeconds :: (HasBasis s, Basis s ~ (), Scalar s ~ a, Real a, Fractional n) => s -> n
+-- @
 {-# INLINE toSeconds #-}
-toSeconds :: (HasBasis s, Basis s ~ (), Scalar s ~ a, Real a, Fractional n) => s -> n
+toSeconds :: (OneDimensional s, Real (Scalar s), Fractional n) => s -> n
 toSeconds = realToFrac . simply view seconds
 
--- | Make a time interval from some 'Real' type.
+-- | Make a time interval from some 'Real' type. 'Rational'-avoiding rewrite
+-- rules included for 'Double', 'Float', 'Integer', 'Int' and 'Int64'.
+--
+-- @
+-- fromSeconds :: (HasBasis t, Basis t ~ (), Scalar t ~ b, Real n, Fractional b) => n -> t
+-- @
 {-# INLINE fromSeconds #-}
-fromSeconds :: (HasBasis t, Basis t ~ (), Scalar t ~ b, Real n, Fractional b) => n -> t
+fromSeconds :: (OneDimensional t, Real n, Fractional (Scalar t)) => n -> t
 fromSeconds = simply review seconds . realToFrac
 
 -- | Type-restricted 'toSeconds' to avoid constraint-defaulting warnings.
@@ -56,6 +69,33 @@ toSeconds' = simply view seconds
 {-# INLINE fromSeconds' #-}
 fromSeconds' :: (HasBasis t, Basis t ~ ()) => Scalar t -> t
 fromSeconds' = simply review seconds
+
+{-# RULES
+
+"toSeconds∷DiffTime→Fractional"
+    toSeconds = (/ 1000000) . fromIntegral . review microDiffTime
+"toSeconds∷NominalDiffTime→Fractional"
+    toSeconds = (/ 1000000) . fromIntegral . review microNominalDiffTime
+
+"fromSeconds∷Double→DiffTime"
+    fromSeconds = view microDiffTime . round . (*) (1000000 :: Double)
+"fromSeconds∷Double→NominalDiffTime"
+    fromSeconds = view microNominalDiffTime . round . (*) (1000000 :: Double)
+
+"fromSeconds∷Float→DiffTime"
+    fromSeconds = view microDiffTime . round . (*) (1000000 :: Float)
+"fromSeconds∷Float→NominalDiffTime"
+    fromSeconds = view microNominalDiffTime . round . (*) (1000000 :: Float)
+
+"fromSeconds∷Integer→{,Nominal}DiffTime"
+    fromSeconds = fromSeconds . (fromInteger :: Integer -> Int64)
+"fromSeconds∷Int→{,Nominal}DiffTime"
+    fromSeconds = fromSeconds . (fromIntegral :: Int -> Int64)
+
+"fromSeconds∷Int64→DiffTime"
+    fromSeconds = view microDiffTime . (*) 1000000
+"fromSeconds∷Int64→NominalDiffTime"
+    fromSeconds = view microNominalDiffTime . (*) 1000000 #-}
 
 ------------------------------------------------------------------------
 

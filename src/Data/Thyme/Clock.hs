@@ -10,7 +10,8 @@
 --
 --  Convert between time intervals and 'Rational's with 'seconds', or more
 --  generally between any 'Real' or 'Fractional' using 'fromSeconds' and
---  'toSeconds'.
+--  'toSeconds'. If you must convert between 'DiffTime' and
+--  'NominalDiffTime', compose 'microDiffTime' and 'microNominalDiffTime'.
 --
 -- 'UTCTime' is an instance of 'Data.AffineSpace.AffineSpace', with
 -- @'Data.AffineSpace.Diff' 'UTCTime' ≡ 'NominalDiffTime'@.

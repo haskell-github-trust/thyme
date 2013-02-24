@@ -100,7 +100,15 @@ deriving instance RealFrac NominalDiffTime
 "realToFrac∷NominalDiffTime→DiffTime"
     realToFrac = \ (NominalDiffTime d) -> DiffTime d
 
-  #-}
+"realToFrac∷DiffTime→Fractional"
+    realToFrac = toSeconds :: (Fractional n) => DiffTime -> n
+"realToFrac∷NominalDiffTime→Fractional"
+    realToFrac = toSeconds :: (Fractional n) => NominalDiffTime -> n
+
+"realToFrac∷Real→DiffTime"
+    realToFrac = fromSeconds :: (Real n) => n -> DiffTime
+"realToFrac∷Real→NominalDiffTime"
+    realToFrac = fromSeconds :: (Real n) => n -> NominalDiffTime #-}
 
 ------------------------------------------------------------------------
 -- * Type conversion
