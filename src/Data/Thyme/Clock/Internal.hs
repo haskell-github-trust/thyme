@@ -5,8 +5,8 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# OPTIONS_HADDOCK hide #-}
 
--- #hide
 module Data.Thyme.Clock.Internal where
 
 import Prelude

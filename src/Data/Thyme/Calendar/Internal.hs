@@ -3,8 +3,8 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# OPTIONS_HADDOCK hide #-}
 
--- #hide
 module Data.Thyme.Calendar.Internal where
 
 import Prelude

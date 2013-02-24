@@ -4,8 +4,8 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# OPTIONS_HADDOCK hide #-}
 
--- #hide
 module Data.Thyme.LocalTime.Internal where
 
 import Prelude hiding ((.))

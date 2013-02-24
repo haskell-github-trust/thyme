@@ -1,4 +1,5 @@
--- #hide
+{-# OPTIONS_HADDOCK hide #-}
+
 module Data.Thyme.TH (thymeLenses) where
 
 import Prelude
