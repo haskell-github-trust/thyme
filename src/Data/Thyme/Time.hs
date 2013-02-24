@@ -93,6 +93,15 @@ deriving instance Real NominalDiffTime
 deriving instance Fractional NominalDiffTime
 deriving instance RealFrac NominalDiffTime
 
+{-# RULES
+
+"realToFrac∷DiffTime→NominalDiffTime"
+    realToFrac = \ (DiffTime d) -> NominalDiffTime d
+"realToFrac∷NominalDiffTime→DiffTime"
+    realToFrac = \ (NominalDiffTime d) -> DiffTime d
+
+  #-}
+
 ------------------------------------------------------------------------
 -- * Type conversion
 
