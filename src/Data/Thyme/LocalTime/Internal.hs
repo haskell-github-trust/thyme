@@ -4,6 +4,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# OPTIONS_HADDOCK hide #-}
 
 module Data.Thyme.LocalTime.Internal where
@@ -176,8 +177,12 @@ zonedTime = iso toZoned fromZoned where
 
 #if SHOW_INTERNAL
 deriving instance Show ZonedTime
+instance Show UTCTime where
+    showsPrec p = showsPrec p . view utcTime
 #else
 instance Show ZonedTime where
     showsPrec p (ZonedTime lt tz) = showsPrec p lt . (:) ' ' . showsPrec p tz
+instance Show UTCTime where
+    showsPrec p = showsPrec p . view zonedTime . (,) utc
 #endif
 
