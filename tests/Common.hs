@@ -15,15 +15,21 @@ exit b = exitWith $ if b then ExitSuccess else ExitFailure 1
 ------------------------------------------------------------------------
 
 instance Arbitrary Day where
-    arbitrary = fmap (review gregorian) $ YearMonthDay
-        -- FIXME: We disagree with time on how many digits to use for year.
-        <$> choose (1000, 9999) <*> choose (1, 12) <*> choose (1, 31)
+    arbitrary = ModifiedJulianDay <$> arbitrary
 
 instance Arbitrary DiffTime where
-    arbitrary = fromSeconds <$> (choose (0, 86400.999999) :: Gen Double)
+    arbitrary = view microDiffTime <$> arbitrary
+
+instance Arbitrary NominalDiffTime where
+    arbitrary = view microNominalDiffTime <$> arbitrary
 
 instance Arbitrary UTCTime where
-    arbitrary = fmap (review utcTime) $ UTCTime <$> arbitrary <*> arbitrary
+    arbitrary = fmap (review utcTime) $ UTCTime
+            <$> (ModifiedJulianDay <$> choose (mjd0, mjd1))
+            <*> (view microDiffTime <$> choose (0, 86400999999)) where
+        -- FIXME: We disagree with time on how many digits to use for year.
+        ModifiedJulianDay mjd0 = review gregorian $ YearMonthDay 1000 1 1
+        ModifiedJulianDay mjd1 = review gregorian $ YearMonthDay 9999 12 31
 
 ------------------------------------------------------------------------
 

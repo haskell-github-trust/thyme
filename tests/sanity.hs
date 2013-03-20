@@ -53,12 +53,19 @@ prop_parseTime (Spec spec) orig
     desc = "input: " ++ show s ++ "\nthyme: " ++ show t
         ++ "\ntime:  " ++ show t' ++ "\nstate: " ++ show (tp s)
 
+prop_ShowRead :: (Eq a, Show a, Read a) => a -> Bool
+prop_ShowRead a = (a, "") `elem` reads (show a)
+
 ------------------------------------------------------------------------
 
 main :: IO ()
-main = (exit . all isSuccess <=< mapM quickCheckResult) $
-        prop_formatTime :
-        prop_parseTime :
+main = (exit . all isSuccess <=< sequence) $
+        quickCheckResult (prop_ShowRead :: Day -> Bool) :
+        quickCheckResult (prop_ShowRead :: DiffTime -> Bool) :
+        quickCheckResult (prop_ShowRead :: NominalDiffTime -> Bool) :
+        quickCheckResult (prop_ShowRead :: UTCTime -> Bool) :
+        quickCheckResult prop_formatTime :
+        quickCheckResult prop_parseTime :
         []
   where
     isSuccess r = case r of Success {} -> True; _ -> False
