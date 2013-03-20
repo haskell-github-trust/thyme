@@ -44,7 +44,7 @@ instance Show Micro where
 instance Read Micro where
     {-# INLINEABLE readPrec #-}
     readPrec = lift $ do
-        sign <- char '-' >> return negate `mplus` return id
+        sign <- (char '-' >> return negate) `mplus` return id
         s <- readS_to_P readDec
         us <- (`mplus` return 0) $ do
             _ <- char '.'
