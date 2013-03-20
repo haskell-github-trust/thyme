@@ -67,13 +67,13 @@ formatTime l@TimeLocale {..} spec t = go spec "" where
         c : rest -> (:) c . go rest
         [] -> id
 
-{-# INLINE showsYear #-}
-showsYear :: Year -> ShowS
+{-# INLINE showsY #-}
+showsY :: Year -> ShowS
 #if BUG_FOR_BUG
-showsYear = shows
+showsY = shows
 #else
--- ISO 8601 says 4 digits, even for first millennium.
-showsYear = shows04
+-- ISO 8601 says minimum of 4 digits, even for first millennium.
+showsY = showsYear
 #endif
 
 instance FormatTime TimeOfDay where
@@ -105,9 +105,9 @@ instance FormatTime YearMonthDay where
     showsTime TimeLocale {..} (YearMonthDay y m d) = \ def c -> case c of
         -- aggregate
         'D' -> shows02 m . (:) '/' . shows02 d . (:) '/' . shows02 (mod y 100)
-        'F' -> showsYear y . (:) '-' . shows02 m . (:) '-' . shows02 d
+        'F' -> showsY y . (:) '-' . shows02 m . (:) '-' . shows02 d
         -- Year
-        'Y' -> showsYear y
+        'Y' -> showsY y
         'y' -> shows02 (mod y 100)
         'C' -> shows02 (div y 100)
         -- Month
@@ -139,7 +139,7 @@ instance FormatTime OrdinalDate where
     {-# INLINEABLE showsTime #-}
     showsTime TimeLocale {..} (OrdinalDate y d) = \ def c -> case c of
         -- Year
-        'Y' -> showsYear y
+        'Y' -> showsY y
         'y' -> shows02 (mod y 100)
         'C' -> shows02 (div y 100)
         -- DayOfYear
@@ -151,7 +151,7 @@ instance FormatTime WeekDate where
     {-# INLINEABLE showsTime #-}
     showsTime TimeLocale {..} (WeekDate y w d) = \ def c -> case c of
         -- Year
-        'G' -> showsYear y
+        'G' -> showsY y
         'g' -> shows02 (mod y 100)
         'f' -> shows02 (div y 100)
         -- WeekOfYear
@@ -168,7 +168,7 @@ instance FormatTime SundayWeek where
     {-# INLINEABLE showsTime #-}
     showsTime TimeLocale {..} (SundayWeek y w d) = \ def c -> case c of
         -- Year
-        'Y' -> showsYear y
+        'Y' -> showsY y
         'y' -> shows02 (mod y 100)
         'C' -> shows02 (div y 100)
         -- WeekOfYear
@@ -185,7 +185,7 @@ instance FormatTime MondayWeek where
     {-# INLINEABLE showsTime #-}
     showsTime TimeLocale {..} (MondayWeek y w d) = \ def c -> case c of
         -- Year
-        'Y' -> showsYear y
+        'Y' -> showsY y
         'y' -> shows02 (mod y 100)
         'C' -> shows02 (div y 100)
         -- WeekOfYear
@@ -321,7 +321,7 @@ timeParser TimeLocale {..} = flip execStateT unixEpoch . go where
 
             -- Year
             -- FIXME: should full years / centuries be fixed width?
-            'Y' -> lift (dec0 4) >>= setYear
+            'Y' -> lift (negative P.decimal) >>= setYear
             'y' -> lift (dec0 2) >>= setCenturyYear
             'C' -> lift (dec0 2) >>= setCentury
             -- Month
@@ -358,7 +358,7 @@ timeParser TimeLocale {..} = flip execStateT unixEpoch . go where
             -- UTCTime
             's' -> do
                 s <- lift (negative P.decimal)
-                _tpPOSIXTime .= fromSeconds s
+                _tpPOSIXTime .= fromSeconds (s :: Int)
                 flag IsPOSIXTime .= True
                 go rspec
 

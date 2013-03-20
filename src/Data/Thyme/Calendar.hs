@@ -50,7 +50,7 @@ gregorianValid (YearMonthDay y m d) = review ordinalDate . OrdinalDate y
 {-# INLINEABLE showGregorian #-}
 showGregorian :: Day -> String
 showGregorian (view gregorian -> YearMonthDay y m d) =
-    shows04 y . (:) '-' . shows02 m . (:) '-' . shows02 d $ ""
+    showsYear y . (:) '-' . shows02 m . (:) '-' . shows02 d $ ""
 
 #if SHOW_INTERNAL
 deriving instance Show Day

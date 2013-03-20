@@ -38,11 +38,11 @@ utf8String = Text.encodeUtf8 . Text.pack
 ------------------------------------------------------------------------
 
 {-# INLINE shows02 #-}
-shows02 :: Int -> String -> String
+shows02 :: Int -> ShowS
 shows02 n = if n < 10 then (:) '0' . shows n else shows n
 
 {-# INLINE shows_2 #-}
-shows_2 :: Int -> String -> String
+shows_2 :: Int -> ShowS
 shows_2 n = if n < 10 then (:) ' ' . shows n else shows n
 
 {-# INLINE shows03 #-}
@@ -52,12 +52,12 @@ shows03 n
     | n < 100 = (++) "0" . shows n
     | otherwise = shows n
 
-{-# INLINE shows04 #-}
-shows04 :: Int -> String -> String
-shows04 n@(abs -> u)
-    | u < 10 = neg . (++) "000" . shows n
-    | u < 100 = neg . (++) "00" . shows n
-    | u < 1000 = neg . (++) "0" . shows n
+{-# INLINE showsYear #-}
+showsYear :: Int -> ShowS
+showsYear n@(abs -> u)
+    | u < 10 = neg . (++) "000" . shows u
+    | u < 100 = neg . (++) "00" . shows u
+    | u < 1000 = neg . (++) "0" . shows u
     | otherwise = neg . shows u
     where neg = if n < 0 then (:) '-' else id
 
@@ -126,7 +126,7 @@ charU8 c = () <$ P.string (utf8Char c)
 
 -- | Number may be prefixed with '-'
 {-# INLINE negative #-}
-negative :: Parser Int64 -> Parser Int64
+negative :: (Integral n) => Parser n -> Parser n
 negative p = ($) <$> (negate <$ P.char '-' <|> pure id) <*> p
 
 -- | Fixed-length 0-padded decimal

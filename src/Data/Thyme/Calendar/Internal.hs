@@ -186,7 +186,7 @@ weekDateValid wd@(WeekDate (lastWeekOfYear -> wMax) w d) =
 {-# INLINEABLE showWeekDate #-}
 showWeekDate :: Day -> String
 showWeekDate (view weekDate -> WeekDate y w d) =
-    shows04 y . (++) "-W" . shows02 w . (:) '-' . shows d $ ""
+    showsYear y . (++) "-W" . shows02 w . (:) '-' . shows d $ ""
 
 ------------------------------------------------------------------------
 
