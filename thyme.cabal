@@ -49,6 +49,7 @@ library
         Data.Thyme.Clock.POSIX
         Data.Thyme.Clock.TAI
         Data.Thyme.Format
+        Data.Thyme.Format.Human
         Data.Thyme.LocalTime
         Data.Thyme.Time
         Data.Thyme.Time.Core
