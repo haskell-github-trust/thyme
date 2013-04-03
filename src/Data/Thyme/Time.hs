@@ -20,17 +20,16 @@
 --
 --   * 'Year's are 'Int's, not 'Integer's: you may need 'fromIntegral'.
 --
--- You shouldn't need to use @lens@ or @vector-space@ if you don't want to.
--- If you do use @vector-space@ however and wish to avoid the 'RealFrac'
--- instances for 'DiffTime' and 'NominalDiffTime', import
+-- You shouldn't need to use @lens@ or @vector-space@ directly if you don't
+-- want to. However if you do use @vector-space@ and wish to avoid the
+-- 'RealFrac' instances for 'DiffTime' and 'NominalDiffTime', import
 -- "Data.Thyme.Time.Core" instead.
 --
 -- Anything else is probably not intentional, and you should either contact
 -- me via IRC or file an issue at <https://github.com/liyang/thyme/issues>.
 
 module Data.Thyme.Time
-    ( module Data.Thyme
-    , module Data.Thyme.Time.Core
+    ( module Data.Thyme.Time.Core
     {- instance RealFrac {,Nominal}DiffTime -}
     ) where
 
