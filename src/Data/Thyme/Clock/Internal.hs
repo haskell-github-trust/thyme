@@ -31,9 +31,10 @@ import Text.Read (readPrec)
 
 -- | Workaround for GHC refusing to match RULES for functions with equality
 -- constraints; see <http://hackage.haskell.org/trac/ghc/ticket/7611>.
-class (HasBasis t, Basis t ~ ()) => OneDimensional t
-instance OneDimensional DiffTime
-instance OneDimensional NominalDiffTime
+class (HasBasis t, Basis t ~ ()) => TimeDiff t where
+    microTimeDiff :: t -> Micro
+instance TimeDiff DiffTime where microTimeDiff (DiffTime d) = d
+instance TimeDiff NominalDiffTime where microTimeDiff (NominalDiffTime d) = d
 
 -- | Time interval as a 'Rational' number of seconds. Compose with 'simple'
 -- or 'simply' 'view' / 'review' to avoid ambiguous type variables.
@@ -47,7 +48,7 @@ seconds = iso (`decompose'` ()) (*^ basisValue ())
 -- toSeconds :: (HasBasis s, Basis s ~ (), Scalar s ~ a, Real a, Fractional n) => s -> n
 -- @
 {-# INLINE toSeconds #-}
-toSeconds :: (OneDimensional s, Real (Scalar s), Fractional n) => s -> n
+toSeconds :: (TimeDiff s, Real (Scalar s), Fractional n) => s -> n
 toSeconds = realToFrac . simply view seconds
 
 -- | Make a time interval from some 'Real' type. 'Rational'-avoiding rewrite
@@ -57,7 +58,7 @@ toSeconds = realToFrac . simply view seconds
 -- fromSeconds :: (HasBasis t, Basis t ~ (), Scalar t ~ b, Real n, Fractional b) => n -> t
 -- @
 {-# INLINE fromSeconds #-}
-fromSeconds :: (OneDimensional t, Real n, Fractional (Scalar t)) => n -> t
+fromSeconds :: (TimeDiff t, Real n, Fractional (Scalar t)) => n -> t
 fromSeconds = simply review seconds . realToFrac
 
 -- | Type-restricted 'toSeconds' to avoid constraint-defaulting warnings.
