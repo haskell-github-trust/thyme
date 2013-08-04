@@ -64,7 +64,7 @@ instance Fractional Micro where
     {-# INLINE (/) #-}
     {-# INLINE recip #-}
     {-# INLINE fromRational #-}
-    Micro a / Micro b = Micro (quot (a * 1000) (b * 1000))
+    Micro a / Micro b = Micro (quot (a * 1000) (b `quot` 1000))
     recip (Micro a) = Micro (quot 1000000 a)
     fromRational = toMicro
 
