@@ -22,7 +22,7 @@
 -- <http://hackage.haskell.org/package/enummapset-th>. In any case the 'Ord'
 -- instances are much faster, if you must use 'Data.Map.Map'.
 --
--- "Data.Thyme.Time" is a drop-in compatibility module for exising code.
+-- "Data.Thyme.Time" is a drop-in compatibility module for existing code.
 
 module Data.Thyme
     ( module Data.Thyme.Calendar
