@@ -9,6 +9,7 @@ module Data.Thyme.Format.Human
     ) where
 
 import Prelude
+import Control.Arrow
 import Control.Applicative
 import Control.Lens hiding (singular)
 import Control.Monad
@@ -46,27 +47,23 @@ approx us next Unit {..} = First $
         half = Micro . fst $ microQuotRem unit (Micro 2)
     inflection = if n == 1 then singular else plural
 
-times :: String -> Rational -> Unit -> Unit
-times ((++) . (:) ' ' -> singular) r Unit {unit}
-    = Unit {unit = r *^ unit, plural = singular . (:) 's', ..}
-
 units :: [Unit]
-units = scanl (&) usec
-    [ times "millisecond" 1000
-    , times "second"      1000
-    , times "minute"      60
-    , times "hour"        60
-    , times "day"         24
-    , times "week"        7
-    , times "month"       (30.4368 / 7)
-    , times "year"        12
-    , times "decade"      10
-    , set _plural (" centuries" ++)
-    . times "century"     10
-    , set _plural (" millennia" ++)
-    . times "millennium"  10
-{-     , times "aeon"       1000000 -}
-    , const (Unit maxBound id id)
+units = scanl (&)
+    (Unit (Micro 1) (" microsecond" ++) (" microseconds" ++))
+    [ times "millisecond"   1000
+    , times "second"        1000
+    , times "minute"        60
+    , times "hour"          60
+    , times "day"           24
+    , times "week"          7
+    , times "month"         (30.4368 / 7)
+    , times "year"          12
+    , times "decade"        10
+    , times "century"       10 >>> set _plural (" centuries" ++)
+    , times "millennium"    10 >>> set _plural (" millennia" ++)
+    , const (Unit maxBound id id) -- upper bound needed for humanTimeDiffs.diff
     ] where
-    usec = Unit (Micro 1) (" microsecond" ++) (" microseconds" ++)
+    times :: String -> Rational -> Unit -> Unit
+    times ((++) . (:) ' ' -> singular) r Unit {unit}
+        = Unit {unit = r *^ unit, plural = singular . (:) 's', ..}
 
