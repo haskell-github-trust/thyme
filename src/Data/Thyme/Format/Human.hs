@@ -6,6 +6,8 @@
 module Data.Thyme.Format.Human
     ( humanTimeDiff
     , humanTimeDiffs
+    , humanRelTime
+    , humanRelTimes
     ) where
 
 import Prelude
@@ -14,6 +16,7 @@ import Control.Applicative
 import Control.Lens hiding (singular)
 import Control.Monad
 import Data.AdditiveGroup
+import Data.AffineSpace
 import Data.Foldable
 import Data.Micro
 import Data.Monoid
@@ -39,6 +42,20 @@ humanTimeDiffs (microTimeDiff -> signed@(Micro (Micro . abs -> us)))
         = (if signed < Micro 0 then (:) '-' else id) . diff where
     diff = maybe id id . getFirst . fold $
         zipWith (approx us . unit) (tail units) units
+
+-- | Display one 'UTCTime' relative to another, in a human-readable form.
+{-# INLINE humanRelTime #-}
+humanRelTime :: UTCTime -> UTCTime -> String
+humanRelTime ref time = humanRelTimes ref time ""
+
+-- | Display one 'UTCTime' relative to another, in a human-readable form.
+humanRelTimes :: UTCTime -> UTCTime -> ShowS
+humanRelTimes ref time = thence $ humanTimeDiffs diff where
+    (diff, thence) = case compare delta zeroV of
+        LT -> (negateV delta, ((++) "in " .))
+        EQ -> (zeroV, const $ (++) "right now")
+        GT -> (delta, (. (++) " ago"))
+        where delta = time .-. ref
 
 approx :: Micro -> Micro -> Unit -> First ShowS
 approx us next Unit {..} = First $
