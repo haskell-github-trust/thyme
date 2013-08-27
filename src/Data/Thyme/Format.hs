@@ -27,6 +27,7 @@ import Data.Bits
 import qualified Data.ByteString.Char8 as S
 import Data.Char
 import Data.Micro
+import Data.Int
 import Data.Thyme.Calendar
 import Data.Thyme.Calendar.Internal
 import Data.Thyme.Calendar.MonthDay
@@ -358,7 +359,7 @@ timeParser TimeLocale {..} = flip execStateT unixEpoch . go where
             -- UTCTime
             's' -> do
                 s <- lift (negative P.decimal)
-                _tpPOSIXTime .= fromSeconds (s :: Int)
+                _tpPOSIXTime .= fromSeconds (s :: Int64)
                 flag IsPOSIXTime .= True
                 go rspec
 
