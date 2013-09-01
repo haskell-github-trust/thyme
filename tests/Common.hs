@@ -4,6 +4,7 @@ module Common where
 import Prelude
 import Control.Applicative
 import Control.Lens
+import Data.Int
 import Data.Thyme
 import System.Exit
 import Test.QuickCheck
@@ -15,7 +16,8 @@ exit b = exitWith $ if b then ExitSuccess else ExitFailure 1
 ------------------------------------------------------------------------
 
 instance Arbitrary Day where
-    arbitrary = ModifiedJulianDay <$> arbitrary
+    -- To avoid overflows in Day --> YearMonthDay conversion on 32 bit platforms:
+    arbitrary = ModifiedJulianDay <$> (fromIntegral :: Int -> Int64) <$> arbitrary
 
 instance Arbitrary DiffTime where
     arbitrary = view microDiffTime <$> arbitrary

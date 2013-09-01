@@ -28,6 +28,7 @@ import qualified Data.ByteString.Char8 as S
 import Data.Char
 import Data.Int
 import Data.Micro
+import Data.Int
 import Data.Thyme.Calendar
 import Data.Thyme.Calendar.Internal
 import Data.Thyme.Calendar.MonthDay
