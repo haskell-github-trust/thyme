@@ -13,7 +13,6 @@ import Data.AffineSpace
 import Data.Data
 import Data.Thyme.Calendar
 import Data.Thyme.Calendar.Internal
-import Data.Thyme.Calendar.MonthDay
 import Data.Thyme.TH
 
 data WeekdayOfMonth = WeekdayOfMonth

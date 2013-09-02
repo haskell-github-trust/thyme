@@ -20,7 +20,6 @@ import Control.Applicative
 import Control.Category
 import Control.Lens
 import Data.Thyme.Calendar.Internal
-import Data.Thyme.Calendar.MonthDay
 import Data.Thyme.Format.Internal
 import Data.Thyme.TH
 

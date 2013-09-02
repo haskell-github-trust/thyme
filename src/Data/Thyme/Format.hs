@@ -30,7 +30,6 @@ import Data.Int
 import Data.Micro
 import Data.Thyme.Calendar
 import Data.Thyme.Calendar.Internal
-import Data.Thyme.Calendar.MonthDay
 import Data.Thyme.Clock.Internal
 import Data.Thyme.Clock.POSIX
 import Data.Thyme.Clock.TAI
