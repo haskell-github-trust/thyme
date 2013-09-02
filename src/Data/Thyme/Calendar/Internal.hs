@@ -29,7 +29,7 @@ type Days = Int
 -- the day 1858-11-17.
 newtype Day = ModifiedJulianDay
     { toModifiedJulianDay :: Int64
-    } deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable)
+    } deriving (Eq, Ord, Enum, Ix, NFData, Data, Typeable)
 
 instance AffineSpace Day where
     type Diff Day = Days
@@ -162,6 +162,10 @@ data MonthDay = MonthDay
     } deriving (Eq, Ord, Data, Typeable, Show)
 
 instance NFData MonthDay
+
+instance Bounded MonthDay where
+    minBound = MonthDay 1 1
+    maxBound = MonthDay 12 31
 
 -- | Convert between day of year in the Gregorian or Julian calendars, and
 -- month and day of month. First arg is leap year flag.

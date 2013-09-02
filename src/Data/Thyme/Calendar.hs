@@ -4,6 +4,11 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
+-- | 'UTCTime' is not Y294K-compliant, and 'Bounded' instances for the
+-- various calendar types reflect this fact. That said, the calendar
+-- calculations by themselves work perfectly fine for a wider range of
+-- dates, subject to the size of 'Int' for your platform.
+
 module Data.Thyme.Calendar
     ( Years, Months, Days
     -- * Days
@@ -18,8 +23,22 @@ module Data.Thyme.Calendar
 
 import Prelude hiding ((.))
 import Control.Category
+import Control.Lens
 import Data.Thyme.Calendar.Internal
+import Data.Thyme.Clock.Internal
 import Data.Thyme.TH
+
+-- "Data.Thyme.Calendar.Internal" cannot import "Data.Thyme.Clock.Internal",
+-- therefore these orphan 'Bounded' instances must live here.
+instance Bounded Day where
+    minBound = minBound ^. _utctDay
+    maxBound = maxBound ^. _utctDay
+
+instance Bounded YearMonthDay where
+    minBound = minBound ^. gregorian
+    maxBound = maxBound ^. gregorian
+
+------------------------------------------------------------------------
 
 {-# INLINE gregorianMonthLength #-}
 gregorianMonthLength :: Year -> Month -> Days

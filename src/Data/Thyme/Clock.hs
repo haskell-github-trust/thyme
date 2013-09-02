@@ -12,6 +12,9 @@
 --
 -- 'UTCTime' is an instance of 'Data.AffineSpace.AffineSpace', with
 -- @'Data.AffineSpace.Diff' 'UTCTime' ≡ 'NominalDiffTime'@.
+--
+-- 'UTCTime' is not Y294K-compliant. Please file a bug report on GitHub when
+-- this becomes a problem.
 
 module Data.Thyme.Clock (
     -- * Universal Time

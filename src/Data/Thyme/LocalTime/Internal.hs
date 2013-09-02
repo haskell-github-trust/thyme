@@ -50,6 +50,10 @@ instance Show TimeOfDay where
         frac = if su == 0 then id else (:) '.' . fills06 su . drops0 su
 #endif
 
+instance Bounded TimeOfDay where
+    minBound = TimeOfDay 0 0 zeroV
+    maxBound = TimeOfDay 23 59 (60999999 ^. microDiffTime)
+
 -- | Hour zero
 midnight :: TimeOfDay
 midnight = TimeOfDay 0 0 zeroV

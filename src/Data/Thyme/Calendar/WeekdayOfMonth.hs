@@ -24,6 +24,10 @@ data WeekdayOfMonth = WeekdayOfMonth
 
 instance NFData WeekdayOfMonth
 
+instance Bounded WeekdayOfMonth where
+    minBound = minBound ^. weekdayOfMonth
+    maxBound = maxBound ^. weekdayOfMonth
+
 {-# INLINE weekdayOfMonth #-}
 weekdayOfMonth :: Iso' Day WeekdayOfMonth
 weekdayOfMonth = iso toWeekday fromWeekday where

@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 -- | ISO 8601 Ordinal Date format
 
@@ -13,8 +13,13 @@ import Prelude
 import Control.Applicative
 import Control.Lens
 import Control.Monad
+import Data.Thyme.Calendar
 import Data.Thyme.Calendar.Internal
 import Data.Thyme.TH
+
+instance Bounded OrdinalDate where
+    minBound = minBound ^. ordinalDate
+    maxBound = maxBound ^. ordinalDate
 
 {-# INLINE ordinalDateValid #-}
 ordinalDateValid :: OrdinalDate -> Maybe Day
