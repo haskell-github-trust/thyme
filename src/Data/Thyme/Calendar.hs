@@ -12,50 +12,14 @@ module Data.Thyme.Calendar
     , Year, Month, DayOfMonth
     , YearMonthDay (..)
     , isLeapYear
+    , yearMonthDay, gregorian, gregorianValid, showGregorian
     , module Data.Thyme.Calendar
     ) where
 
 import Prelude hiding ((.))
-import Control.Applicative
 import Control.Category
-import Control.Lens
 import Data.Thyme.Calendar.Internal
-import Data.Thyme.Format.Internal
 import Data.Thyme.TH
-
-{-# INLINE yearMonthDay #-}
-yearMonthDay :: Iso' OrdinalDate YearMonthDay
-yearMonthDay = iso fromOrdinal toOrdinal where
-
-    {-# INLINEABLE fromOrdinal #-}
-    fromOrdinal :: OrdinalDate -> YearMonthDay
-    fromOrdinal (OrdinalDate y yd) = YearMonthDay y m d where
-        MonthDay m d = view (monthDay (isLeapYear y)) yd
-
-    {-# INLINEABLE toOrdinal #-}
-    toOrdinal :: YearMonthDay -> OrdinalDate
-    toOrdinal (YearMonthDay y m d) = OrdinalDate y $
-        review (monthDay (isLeapYear y)) (MonthDay m d)
-
-{-# INLINE gregorian #-}
-gregorian :: Iso' Day YearMonthDay
-gregorian = ordinalDate . yearMonthDay
-
-{-# INLINEABLE gregorianValid #-}
-gregorianValid :: YearMonthDay -> Maybe Day
-gregorianValid (YearMonthDay y m d) = review ordinalDate . OrdinalDate y
-    <$> monthDayValid (isLeapYear y) (MonthDay m d)
-
-{-# INLINEABLE showGregorian #-}
-showGregorian :: Day -> String
-showGregorian (view gregorian -> YearMonthDay y m d) =
-    showsYear y . (:) '-' . shows02 m . (:) '-' . shows02 d $ ""
-
-#if SHOW_INTERNAL
-deriving instance Show Day
-#else
-instance Show Day where show = showGregorian
-#endif
 
 {-# INLINE gregorianMonthLength #-}
 gregorianMonthLength :: Year -> Month -> Days

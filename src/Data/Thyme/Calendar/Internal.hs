@@ -38,6 +38,40 @@ instance AffineSpace Day where
     {-# INLINE (.+^) #-}
     ModifiedJulianDay a .+^ d = ModifiedJulianDay (a + fromIntegral d)
 
+{-# INLINE yearMonthDay #-}
+yearMonthDay :: Iso' OrdinalDate YearMonthDay
+yearMonthDay = iso fromOrdinal toOrdinal where
+
+    {-# INLINEABLE fromOrdinal #-}
+    fromOrdinal :: OrdinalDate -> YearMonthDay
+    fromOrdinal (OrdinalDate y yd) = YearMonthDay y m d where
+        MonthDay m d = view (monthDay (isLeapYear y)) yd
+
+    {-# INLINEABLE toOrdinal #-}
+    toOrdinal :: YearMonthDay -> OrdinalDate
+    toOrdinal (YearMonthDay y m d) = OrdinalDate y $
+        review (monthDay (isLeapYear y)) (MonthDay m d)
+
+{-# INLINE gregorian #-}
+gregorian :: Iso' Day YearMonthDay
+gregorian = ordinalDate . yearMonthDay
+
+{-# INLINEABLE gregorianValid #-}
+gregorianValid :: YearMonthDay -> Maybe Day
+gregorianValid (YearMonthDay y m d) = review ordinalDate . OrdinalDate y
+    <$> monthDayValid (isLeapYear y) (MonthDay m d)
+
+{-# INLINEABLE showGregorian #-}
+showGregorian :: Day -> String
+showGregorian (view gregorian -> YearMonthDay y m d) =
+    showsYear y . (:) '-' . shows02 m . (:) '-' . shows02 d $ ""
+
+#if SHOW_INTERNAL
+deriving instance Show Day
+#else
+instance Show Day where show = showGregorian
+#endif
+
 ------------------------------------------------------------------------
 
 type Year = Int
