@@ -24,7 +24,7 @@ getZonedTime = utcToLocalZonedTime =<< getCurrentTime
 utcToLocalZonedTime :: UTCTime -> IO ZonedTime
 utcToLocalZonedTime time = do
     tz <- getTimeZone time
-    return (view zonedTime (tz, time))
+    return $ (tz, time) ^. zonedTime
 
 ------------------------------------------------------------------------
 -- * Lenses

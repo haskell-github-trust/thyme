@@ -66,7 +66,7 @@ type LeapSecondTable = Either UTCTime AbsoluteTime -> DiffTime
 utcDayLength :: LeapSecondTable -> Day -> DiffTime
 utcDayLength table day@((.+^ 1) -> next) =
         DiffTime posixDay ^+^ diff next ^-^ diff day where
-    diff d = table . Left $ review utcTime (UTCTime d zeroV)
+    diff d = table . Left $ utcTime # UTCTime d zeroV
     NominalDiffTime posixDay = posixDayLength
 
 {-# INLINE absoluteTime #-}
@@ -96,7 +96,7 @@ parseTAIUTCDAT = parse $ do
     mjd <- subtract 2400000{-.5-} <$> P.decimal
         <* P.string ".5" <?> "Julian Date .5"
     let ymd = YearMonthDay y m d
-    unless (review gregorian ymd == ModifiedJulianDay mjd) . fail $
+    unless (gregorian # ymd == ModifiedJulianDay mjd) . fail $
         show ymd ++ " is not Modified Julian Day " ++ show mjd
 
     tokens ["TAI", "-", "UTC", "="]
@@ -118,7 +118,7 @@ parseTAIUTCDAT = parse $ do
     return ((beginUTC, atUTC), (beginTAI, atTAI))
 
   where
-    toMJD t = simply view seconds t / simply view seconds posixDayLength
+    toMJD t = toSeconds t / toSeconds posixDayLength
     tokens = foldr (\ tok a -> P.skipSpace >> P.string tok >> a) P.skipSpace
 
     parse row = pair . unzip . rights . map (P.parseOnly row) . S.lines

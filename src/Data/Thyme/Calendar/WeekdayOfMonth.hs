@@ -35,16 +35,16 @@ weekdayOfMonth = iso toWeekday fromWeekday where
     {-# INLINEABLE toWeekday #-}
     toWeekday :: Day -> WeekdayOfMonth
     toWeekday day@(view ordinalDate -> ord) = WeekdayOfMonth y m n wd where
-        YearMonthDay y m d = view yearMonthDay ord
+        YearMonthDay y m d = ord ^. yearMonthDay
         WeekDate _ _ wd = toWeekOrdinal ord day
         n = div (d - 1) 7
 
     {-# INLINEABLE fromWeekday #-}
     fromWeekday :: WeekdayOfMonth -> Day
     fromWeekday (WeekdayOfMonth y m n wd) = refDay .+^ s * offset where
-        refOrd = review yearMonthDay . YearMonthDay y m $
-            if n < 0 then monthLength (isLeapYear y) m else 1
-        refDay = review ordinalDate refOrd
+        refOrd = yearMonthDay # YearMonthDay y m
+            (if n < 0 then monthLength (isLeapYear y) m else 1)
+        refDay = ordinalDate # refOrd
         WeekDate _ _ wd1 = toWeekOrdinal refOrd refDay
         s = signum n
         wo = s * (wd - wd1)
@@ -55,8 +55,8 @@ weekdayOfMonthValid :: WeekdayOfMonth -> Maybe Day
 weekdayOfMonthValid (WeekdayOfMonth y m n wd) = (refDay .+^ s * offset)
         <$ guard (n /= 0 && 1 <= wd && wd <= 7 && offset < len) where
     len = monthLength (isLeapYear y) m
-    refOrd = review yearMonthDay $ YearMonthDay y m (if n < 0 then len else 1)
-    refDay = review ordinalDate refOrd
+    refOrd = yearMonthDay # YearMonthDay y m (if n < 0 then len else 1)
+    refDay = ordinalDate # refOrd
     WeekDate _ _ wd1 = toWeekOrdinal refOrd refDay
     s = signum n
     wo = s * (wd - wd1)

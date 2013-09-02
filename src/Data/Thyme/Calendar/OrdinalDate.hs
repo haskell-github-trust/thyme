@@ -23,7 +23,7 @@ instance Bounded OrdinalDate where
 
 {-# INLINE ordinalDateValid #-}
 ordinalDateValid :: OrdinalDate -> Maybe Day
-ordinalDateValid od@(OrdinalDate y d) = review ordinalDate od
+ordinalDateValid od@(OrdinalDate y d) = ordinalDate # od
     <$ guard (1 <= d && d <= if isLeapYear y then 366 else 365)
 
 -- * Lenses

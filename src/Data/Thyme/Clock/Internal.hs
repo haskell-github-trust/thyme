@@ -180,8 +180,8 @@ newtype UniversalTime = UniversalRep NominalDiffTime -- since MJD epoch
 
 {-# INLINE modJulianDate #-}
 modJulianDate :: Iso' UniversalTime Rational
-modJulianDate = iso ( \ (UniversalRep t) ->
-        simply view seconds t / simply view seconds posixDayLength )
+modJulianDate = iso
+    (\ (UniversalRep t) -> toSeconds t / toSeconds posixDayLength)
     (UniversalRep . (*^ posixDayLength))
 
 ------------------------------------------------------------------------

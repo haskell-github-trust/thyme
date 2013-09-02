@@ -100,7 +100,7 @@ dayFraction = from timeOfDay . iso toRatio fromRatio where
 
     {-# INLINEABLE toRatio #-}
     toRatio :: DiffTime -> Rational
-    toRatio t = simply view seconds t / simply view seconds posixDayLength
+    toRatio t = toSeconds t / toSeconds posixDayLength
 
     {-# INLINEABLE fromRatio #-}
     fromRatio :: Rational -> DiffTime
@@ -130,12 +130,12 @@ utcLocalTime TimeZone {..} = utcTime . iso localise globalise where
     {-# INLINEABLE localise #-}
     localise :: UTCView -> LocalTime
     localise (UTCTime day dt) = LocalTime (day .+^ dd) tod where
-        (dd, tod) = addMinutes timeZoneMinutes (view timeOfDay dt)
+        (dd, tod) = addMinutes timeZoneMinutes (dt ^. timeOfDay)
 
     {-# INLINEABLE globalise #-}
     globalise :: LocalTime -> UTCView
     globalise (LocalTime day tod) = UTCTime (day .+^ dd)
-            (review timeOfDay utcToD) where
+            (timeOfDay # utcToD) where
         (dd, utcToD) = addMinutes (negate timeZoneMinutes) tod
 
 {-# INLINE ut1LocalTime #-}
@@ -147,7 +147,7 @@ ut1LocalTime long = iso localise globalise where
     localise :: UniversalTime -> LocalTime
     localise (UniversalRep (NominalDiffTime t)) = LocalTime
             (ModifiedJulianDay $ fromIntegral day)
-            (view timeOfDay (DiffTime dt)) where
+            (DiffTime dt ^. timeOfDay) where
         (day, dt) = microDivMod (t ^+^ (long / 360) *^ posixDay) posixDay
 
     {-# INLINEABLE globalise #-}
@@ -155,7 +155,7 @@ ut1LocalTime long = iso localise globalise where
     globalise (LocalTime day tod) = UniversalRep . NominalDiffTime $
             Micro (mjd * usDay) ^+^ dt ^-^ (long / 360) *^ posixDay where
         ModifiedJulianDay (fromIntegral -> mjd) = day
-        DiffTime dt = review timeOfDay tod
+        DiffTime dt = timeOfDay # tod
 
 ------------------------------------------------------------------------
 -- * Zoned Time
@@ -174,11 +174,11 @@ zonedTime = iso toZoned fromZoned where
 
     {-# INLINE toZoned #-}
     toZoned :: (TimeZone, UTCTime) -> ZonedTime
-    toZoned (tz, time) = ZonedTime (view (utcLocalTime tz) time) tz
+    toZoned (tz, time) = ZonedTime (time ^. utcLocalTime tz) tz
 
     {-# INLINE fromZoned #-}
     fromZoned :: ZonedTime -> (TimeZone, UTCTime)
-    fromZoned (ZonedTime lt tz) = (tz, review (utcLocalTime tz) lt)
+    fromZoned (ZonedTime lt tz) = (tz, utcLocalTime tz # lt)
 
 #if SHOW_INTERNAL
 deriving instance Show ZonedTime

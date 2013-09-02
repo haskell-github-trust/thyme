@@ -53,8 +53,8 @@ instance Thyme T.DiffTime DiffTime where
 instance Thyme T.UTCTime UTCView where
     {-# INLINE thyme #-}
     thyme = iso
-        (\ (T.UTCTime d t) -> UTCTime (view thyme d) (view thyme t))
-        (\ (UTCTime d t) -> T.UTCTime (review thyme d) (review thyme t))
+        (\ (T.UTCTime d t) -> UTCTime (d ^. thyme) (t ^. thyme))
+        (\ (UTCTime d t) -> T.UTCTime (thyme # d) (thyme # t))
 
 instance Thyme T.UTCTime UTCTime where
     {-# INLINE thyme #-}
@@ -80,19 +80,19 @@ instance Thyme T.TimeOfDay TimeOfDay where
     thyme = iso ( \ (T.TimeOfDay h m s) -> TimeOfDay h m
             . view microDiffTime . round $ s * 1000000 )
         ( \ (TimeOfDay h m s) -> T.TimeOfDay h m . fromRational
-            . (% 1000000) . toInteger $ review microDiffTime s )
+            . (% 1000000) . toInteger $ microDiffTime # s )
 
 instance Thyme T.LocalTime LocalTime where
     {-# INLINE thyme #-}
     thyme = iso
-        (\ (T.LocalTime d t) -> LocalTime (view thyme d) (view thyme t))
-        (\ (LocalTime d t) -> T.LocalTime (review thyme d) (review thyme t))
+        (\ (T.LocalTime d t) -> LocalTime (d ^. thyme) (t ^. thyme))
+        (\ (LocalTime d t) -> T.LocalTime (thyme # d) (thyme # t))
 
 instance Thyme T.ZonedTime ZonedTime where
     {-# INLINE thyme #-}
     thyme = iso
-        (\ (T.ZonedTime t z) -> ZonedTime (view thyme t) (view thyme z))
-        (\ (ZonedTime t z) -> T.ZonedTime (review thyme t) (review thyme z))
+        (\ (T.ZonedTime t z) -> ZonedTime (t ^. thyme) (z ^. thyme))
+        (\ (ZonedTime t z) -> T.ZonedTime (thyme # t) (thyme # z))
 
 {-# INLINE toThyme #-}
 toThyme :: (Thyme a b) => a -> b
@@ -119,7 +119,7 @@ toGregorian (view gregorian -> YearMonthDay y m d) = (y, m, d)
 
 {-# INLINE fromGregorian #-}
 fromGregorian :: Year -> Month -> DayOfMonth -> Day
-fromGregorian y m d = review gregorian (YearMonthDay y m d)
+fromGregorian y m d = gregorian # YearMonthDay y m d
 
 {-# INLINE fromGregorianValid #-}
 fromGregorianValid :: Year -> Month -> DayOfMonth -> Maybe Day
@@ -154,7 +154,7 @@ dayOfYearToMonthAndDay leap (view (monthDay leap) -> MonthDay m d) = (m, d)
 
 {-# INLINE monthAndDayToDayOfYear #-}
 monthAndDayToDayOfYear :: Bool -> Month -> DayOfMonth -> DayOfYear
-monthAndDayToDayOfYear leap m d = review (monthDay leap) (MonthDay m d)
+monthAndDayToDayOfYear leap m d = monthDay leap # MonthDay m d
 
 {-# INLINE monthAndDayToDayOfYearValid #-}
 monthAndDayToDayOfYearValid :: Bool -> Month -> DayOfMonth -> Maybe DayOfYear
@@ -169,7 +169,7 @@ toOrdinalDate (view ordinalDate -> OrdinalDate y d) = (y, d)
 
 {-# INLINE fromOrdinalDate #-}
 fromOrdinalDate :: Year -> DayOfYear -> Day
-fromOrdinalDate y d = review ordinalDate (OrdinalDate y d)
+fromOrdinalDate y d = ordinalDate # OrdinalDate y d
 
 {-# INLINE fromOrdinalDateValid #-}
 fromOrdinalDateValid :: Year -> DayOfYear -> Maybe Day
@@ -181,7 +181,7 @@ sundayStartWeek (view sundayWeek -> SundayWeek y w d) = (y, w, d)
 
 {-# INLINE fromSundayStartWeek #-}
 fromSundayStartWeek :: Year -> WeekOfYear -> DayOfWeek -> Day
-fromSundayStartWeek y w d = review sundayWeek (SundayWeek y w d)
+fromSundayStartWeek y w d = sundayWeek # SundayWeek y w d
 
 {-# INLINE fromSundayStartWeekValid #-}
 fromSundayStartWeekValid :: Year -> WeekOfYear -> DayOfWeek -> Maybe Day
@@ -193,7 +193,7 @@ mondayStartWeek (view mondayWeek -> MondayWeek y w d) = (y, w, d)
 
 {-# INLINE fromMondayStartWeek #-}
 fromMondayStartWeek :: Year -> WeekOfYear -> DayOfWeek -> Day
-fromMondayStartWeek y w d = review mondayWeek (MondayWeek y w d)
+fromMondayStartWeek y w d = mondayWeek # MondayWeek y w d
 
 {-# INLINE fromMondayStartWeekValid #-}
 fromMondayStartWeekValid :: Year -> WeekOfYear -> DayOfWeek -> Maybe Day
@@ -208,7 +208,7 @@ toWeekDate (view weekDate -> WeekDate y w d) = (y, w, d)
 
 {-# INLINE fromWeekDate #-}
 fromWeekDate :: Year -> WeekOfYear -> DayOfWeek -> Day
-fromWeekDate y w d = review weekDate (WeekDate y w d)
+fromWeekDate y w d = weekDate # WeekDate y w d
 
 {-# INLINE fromWeekDateValid #-}
 fromWeekDateValid :: Year -> WeekOfYear -> DayOfWeek -> Maybe Day
@@ -236,7 +236,7 @@ picosecondsToDiffTime a = DiffTime (Micro $ div (a + 500000) 1000000)
 
 {-# INLINE mkUTCTime #-}
 mkUTCTime :: Day -> DiffTime -> UTCTime
-mkUTCTime d t = review utcTime (UTCTime d t)
+mkUTCTime d t = utcTime # UTCTime d t
 
 {-# INLINE unUTCTime #-}
 unUTCTime :: UTCTime -> UTCView

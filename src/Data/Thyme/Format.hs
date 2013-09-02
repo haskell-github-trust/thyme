@@ -206,7 +206,7 @@ instance FormatTime Day where
     {-# INLINEABLE showsTime #-}
     showsTime l d@(view ordinalDate -> ordinal)
         = showsTime l ordinal
-        . showsTime l (view yearMonthDay ordinal)
+        . showsTime l (ordinal ^. yearMonthDay)
         . showsTime l (toWeekOrdinal ordinal d)
         . showsTime l (toSundayOrdinal ordinal d)
         . showsTime l (toMondayOrdinal ordinal d)
@@ -226,9 +226,9 @@ instance FormatTime UTCTime where
     {-# INLINEABLE showsTime #-}
     showsTime l t = \ def c -> case c of
         's' -> shows . fst $ qr s (Micro 1000000)
-        _ -> showsTime l (view zonedTime (utc, t)) def c
+        _ -> showsTime l ((utc, t) ^. zonedTime) def c
       where
-        NominalDiffTime s = view posixTime t
+        NominalDiffTime s = t ^. posixTime
 #if BUG_FOR_BUG
         qr = microDivMod -- rounds down
 #else
@@ -238,12 +238,12 @@ instance FormatTime UTCTime where
 instance FormatTime UniversalTime where
     {-# INLINEABLE showsTime #-}
     showsTime l t = showsTime l $ ZonedTime lt utc {timeZoneName = "UT1"} where
-        lt = view (ut1LocalTime 0) t
+        lt = t ^. ut1LocalTime 0
 
 instance FormatTime AbsoluteTime where
     {-# INLINEABLE showsTime #-}
     showsTime l t = showsTime l $ ZonedTime lt utc {timeZoneName = "TAI"} where
-        lt = view (from (absoluteTime $ const zeroV) . utcLocalTime utc) t
+        lt = t ^. from (absoluteTime $ const zeroV) . utcLocalTime utc
 
 ------------------------------------------------------------------------
 
@@ -539,12 +539,12 @@ instance ParseTime LocalTime where
 instance ParseTime Day where
     {-# INLINE buildTime #-}
     buildTime tp@TimeParse {..}
-        | tp ^. flag IsOrdinalDate = review ordinalDate (buildTime tp)
-        | tp ^. flag IsGregorian = review gregorian (buildTime tp)
-        | tp ^. flag IsWeekDate = review weekDate (buildTime tp)
-        | tp ^. flag IsSundayWeek = review sundayWeek (buildTime tp)
-        | tp ^. flag IsMondayWeek = review mondayWeek (buildTime tp)
-        | otherwise = review ordinalDate (buildTime tp)
+        | tp ^. flag IsOrdinalDate = ordinalDate # buildTime tp
+        | tp ^. flag IsGregorian = gregorian # buildTime tp
+        | tp ^. flag IsWeekDate = weekDate # buildTime tp
+        | tp ^. flag IsSundayWeek = sundayWeek # buildTime tp
+        | tp ^. flag IsMondayWeek = mondayWeek # buildTime tp
+        | otherwise = ordinalDate # buildTime tp
         -- TODO: Better conflict handling when multiple flags are set?
 
 instance ParseTime TimeZone where
@@ -558,8 +558,8 @@ instance ParseTime ZonedTime where
 instance ParseTime UTCTime where
     {-# INLINE buildTime #-}
     buildTime tp@TimeParse {..} = if tp ^. flag IsPOSIXTime
-        then review posixTime tpPOSIXTime
-        else view (from zonedTime . _2) (buildTime tp)
+        then posixTime # tpPOSIXTime
+        else buildTime tp ^. from zonedTime . _2
 
 instance ParseTime UniversalTime where
     {-# INLINE buildTime #-}
@@ -567,7 +567,7 @@ instance ParseTime UniversalTime where
 
 instance ParseTime AbsoluteTime where
     {-# INLINE buildTime #-}
-    buildTime = view (absoluteTime $ const zeroV) <$> buildTime
+    buildTime tp = buildTime tp ^. absoluteTime (const zeroV)
 
 ------------------------------------------------------------------------
 

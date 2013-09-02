@@ -45,12 +45,12 @@ yearMonthDay = iso fromOrdinal toOrdinal where
     {-# INLINEABLE fromOrdinal #-}
     fromOrdinal :: OrdinalDate -> YearMonthDay
     fromOrdinal (OrdinalDate y yd) = YearMonthDay y m d where
-        MonthDay m d = view (monthDay (isLeapYear y)) yd
+        MonthDay m d = yd ^. monthDay (isLeapYear y)
 
     {-# INLINEABLE toOrdinal #-}
     toOrdinal :: YearMonthDay -> OrdinalDate
     toOrdinal (YearMonthDay y m d) = OrdinalDate y $
-        review (monthDay (isLeapYear y)) (MonthDay m d)
+        monthDay (isLeapYear y) # MonthDay m d
 
 {-# INLINE gregorian #-}
 gregorian :: Iso' Day YearMonthDay
@@ -190,7 +190,7 @@ monthDay leap = iso fromOrdinal toOrdinal where
 
 {-# INLINEABLE monthDayValid #-}
 monthDayValid :: Bool -> MonthDay -> Maybe DayOfYear
-monthDayValid leap md@(MonthDay m d) = review (monthDay leap) md
+monthDayValid leap md@(MonthDay m d) = monthDay leap # md
     <$ guard (1 <= m && m <= 12 && 1 <= d && d <= monthLength leap m)
 
 {-# INLINEABLE monthLength #-}
@@ -234,7 +234,7 @@ toWeekOrdinal (OrdinalDate y0 yd) (ModifiedJulianDay mjd) =
     d = mjd + 2
     (d7div, d7mod) = divMod d 7
     foo :: Year -> {-WeekOfYear-1-}Int
-    foo y = bar $ review ordinalDate (OrdinalDate y 6)
+    foo y = bar $ ordinalDate # OrdinalDate y 6
     bar :: Day -> {-WeekOfYear-1-}Int
     bar (ModifiedJulianDay k) = d7div - div k 7
     w0 = bar $ ModifiedJulianDay (d - yd + 4)
@@ -246,13 +246,13 @@ toWeekOrdinal (OrdinalDate y0 yd) (ModifiedJulianDay mjd) =
 {-# INLINE lastWeekOfYear #-}
 lastWeekOfYear :: Year -> WeekOfYear
 lastWeekOfYear y = if wdWeek wd == 53 then 53 else 52 where
-    wd = view (from ordinalDate . weekDate) (OrdinalDate y 365)
+    wd = OrdinalDate y 365 ^. from ordinalDate . weekDate
 
 {-# INLINE fromWeekLast #-}
 fromWeekLast :: WeekOfYear -> WeekDate -> Day
 fromWeekLast wMax (WeekDate y w d) = ModifiedJulianDay mjd where
     -- pilfered and refactored
-    ModifiedJulianDay k = review ordinalDate (OrdinalDate y 6)
+    ModifiedJulianDay k = ordinalDate # OrdinalDate y 6
     mjd = k - mod k 7 - 10 + clip 1 7 d + clip 1 wMax w * 7
     clip a b = max a . min b
 
@@ -291,7 +291,7 @@ sundayWeek = iso toSunday fromSunday where
     {-# INLINEABLE fromSunday #-}
     fromSunday :: SundayWeek -> Day
     fromSunday (SundayWeek y w d) = ModifiedJulianDay (firstDay + yd) where
-        ModifiedJulianDay firstDay = review ordinalDate (OrdinalDate y 1)
+        ModifiedJulianDay firstDay = ordinalDate # OrdinalDate y 1
         -- following are all 0-based year days
         firstSunday = mod (4 - firstDay) 7
         yd = firstSunday + 7 * (w - 1) + d
@@ -308,7 +308,7 @@ toSundayOrdinal (OrdinalDate y yd) (ModifiedJulianDay mjd) =
 sundayWeekValid :: SundayWeek -> Maybe Day
 sundayWeekValid (SundayWeek y w d) = ModifiedJulianDay (firstDay + yd)
         <$ guard (0 <= d && d <= 6 && 0 <= yd && yd <= lastDay) where
-    ModifiedJulianDay firstDay = review ordinalDate (OrdinalDate y 1)
+    ModifiedJulianDay firstDay = ordinalDate # OrdinalDate y 1
     -- following are all 0-based year days
     firstSunday = mod (4 - firstDay) 7
     yd = firstSunday + 7 * (w - 1) + d
@@ -339,7 +339,7 @@ mondayWeek = iso toMonday fromMonday where
     {-# INLINEABLE fromMonday #-}
     fromMonday :: MondayWeek -> Day
     fromMonday (MondayWeek y w d) = ModifiedJulianDay (firstDay + yd) where
-        ModifiedJulianDay firstDay = review ordinalDate (OrdinalDate y 1)
+        ModifiedJulianDay firstDay = ordinalDate # OrdinalDate y 1
         -- following are all 0-based year days
         firstMonday = mod (5 - firstDay) 7
         yd = firstMonday + 7 * (w - 1) + d - 1
@@ -356,7 +356,7 @@ toMondayOrdinal (OrdinalDate y yd) (ModifiedJulianDay mjd) =
 mondayWeekValid :: MondayWeek -> Maybe Day
 mondayWeekValid (MondayWeek y w d) = ModifiedJulianDay (firstDay + yd)
         <$ guard (1 <= d && d <= 7 && 0 <= yd && yd <= lastDay) where
-    ModifiedJulianDay firstDay = review ordinalDate (OrdinalDate y 1)
+    ModifiedJulianDay firstDay = ordinalDate # OrdinalDate y 1
     -- following are all 0-based year days
     firstMonday = mod (5 - firstDay) 7
     yd = firstMonday + 7 * (w - 1) + d - 1

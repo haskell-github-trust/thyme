@@ -46,7 +46,7 @@ prop_formatTime (Spec spec) t@(review thyme -> t')
 prop_parseTime :: Spec -> UTCTime -> Property
 prop_parseTime (Spec spec) orig
         = printTestCase desc (fmap (review thyme) t == t') where
-    s = T.formatTime defaultTimeLocale spec (review thyme orig)
+    s = T.formatTime defaultTimeLocale spec (thyme # orig)
     t = parseTime defaultTimeLocale spec s :: Maybe UTCTime
     t' = T.parseTime defaultTimeLocale spec s
     tp = P.parseOnly (timeParser defaultTimeLocale spec) . utf8String

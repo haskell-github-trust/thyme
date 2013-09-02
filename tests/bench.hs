@@ -33,10 +33,10 @@ main = do
     utcs <- unGen (vectorOf samples arbitrary) <$> newStdGen <*> pure 0
     let utcs' = review thyme <$> (utcs :: [UTCTime])
     now <- getCurrentTime
-    let now' = review thyme now
+    let now' = thyme # now
     let strs = T.formatTime defaultTimeLocale spec <$> utcs'
     let dt = fromSeconds' 86405
-    let dt' = review thyme dt
+    let dt' = thyme # dt
     let days = utctDay . unUTCTime <$> utcs
     let days' = T.utctDay <$> utcs'
     let mons = ((isLeapYear . ymdYear) &&& ymdMonth) . view gregorian <$> days
