@@ -18,7 +18,7 @@ import qualified Data.Time as T
 {-# INLINEABLE getTimeZone #-}
 getTimeZone :: UTCTime -> IO T.TimeZone
 getTimeZone time = T.getTimeZone (T.UTCTime day dayTime) where
-    day = T.ModifiedJulianDay (fromIntegral mjd)
+    day = T.ModifiedJulianDay (toInteger mjd)
     dayTime = fromRational (simply view seconds dt)
     UTCTime (ModifiedJulianDay mjd) dt = view utcTime time
 

@@ -28,15 +28,15 @@ type Days = Int
 -- | The Modified Julian Day is a standard count of days, with zero being
 -- the day 1858-11-17.
 newtype Day = ModifiedJulianDay
-    { toModifiedJulianDay :: Int64
+    { toModifiedJulianDay :: Int
     } deriving (Eq, Ord, Enum, Ix, NFData, Data, Typeable)
 
 instance AffineSpace Day where
     type Diff Day = Days
     {-# INLINE (.-.) #-}
-    ModifiedJulianDay a .-. ModifiedJulianDay b = fromIntegral (a - b)
+    ModifiedJulianDay a .-. ModifiedJulianDay b = a - b
     {-# INLINE (.+^) #-}
-    ModifiedJulianDay a .+^ d = ModifiedJulianDay (a + fromIntegral d)
+    ModifiedJulianDay a .+^ d = ModifiedJulianDay (a + d)
 
 {-# INLINE yearMonthDay #-}
 yearMonthDay :: Iso' OrdinalDate YearMonthDay
@@ -107,8 +107,7 @@ ordinalDate = iso toOrd fromOrd where
 
     {-# INLINEABLE toOrd #-}
     toOrd :: Day -> OrdinalDate
-    toOrd (ModifiedJulianDay mjd) = OrdinalDate
-            (fromIntegral year) (fromIntegral yd) where
+    toOrd (ModifiedJulianDay mjd) = OrdinalDate year yd where
         -- pilfered
         a = mjd + 678575
         (quadcent, b) = divMod a 146097
@@ -123,9 +122,9 @@ ordinalDate = iso toOrd fromOrd where
     fromOrd :: OrdinalDate -> Day
     fromOrd (OrdinalDate year yd) = ModifiedJulianDay mjd where
         -- pilfered
-        y = fromIntegral (year - 1)
+        y = year - 1
         mjd = 365 * y + div y 4 - div y 100 + div y 400 - 678576
-            + clip 1 (if isLeapYear year then 366 else 365) (fromIntegral yd)
+            + clip 1 (if isLeapYear year then 366 else 365) yd
         clip a b = max a . min b
 
 ------------------------------------------------------------------------
@@ -229,16 +228,16 @@ weekDate = iso toWeek fromWeek where
 
 {-# INLINE toWeekOrdinal #-}
 toWeekOrdinal :: OrdinalDate -> Day -> WeekDate
-toWeekOrdinal (OrdinalDate y0 yd) (ModifiedJulianDay mjd) = WeekDate y1
-        (fromIntegral $ w1 + 1) (fromIntegral $ d7mod + 1) where
+toWeekOrdinal (OrdinalDate y0 yd) (ModifiedJulianDay mjd) =
+        WeekDate y1 (w1 + 1) (d7mod + 1) where
     -- pilfered and refactored; no idea what foo and bar mean
     d = mjd + 2
     (d7div, d7mod) = divMod d 7
-    foo :: Year -> {-WeekOfYear-1-}Int64
+    foo :: Year -> {-WeekOfYear-1-}Int
     foo y = bar $ review ordinalDate (OrdinalDate y 6)
-    bar :: Day -> {-WeekOfYear-1-}Int64
+    bar :: Day -> {-WeekOfYear-1-}Int
     bar (ModifiedJulianDay k) = d7div - div k 7
-    w0 = bar $ ModifiedJulianDay (d - fromIntegral yd + 4)
+    w0 = bar $ ModifiedJulianDay (d - yd + 4)
     (y1, w1) = case w0 of
         -1 -> (y0 - 1, foo (y0 - 1))
         52 | foo (y0 + 1) == 0 -> (y0 + 1, 0)
@@ -254,8 +253,7 @@ fromWeekLast :: WeekOfYear -> WeekDate -> Day
 fromWeekLast wMax (WeekDate y w d) = ModifiedJulianDay mjd where
     -- pilfered and refactored
     ModifiedJulianDay k = review ordinalDate (OrdinalDate y 6)
-    mjd = k - mod k 7 - 10 + clip 1 7 (fromIntegral d)
-        + fromIntegral (clip 1 wMax w) * 7
+    mjd = k - mod k 7 - 10 + clip 1 7 d + clip 1 wMax w * 7
     clip a b = max a . min b
 
 {-# INLINEABLE weekDateValid #-}
@@ -296,14 +294,14 @@ sundayWeek = iso toSunday fromSunday where
         ModifiedJulianDay firstDay = review ordinalDate (OrdinalDate y 1)
         -- following are all 0-based year days
         firstSunday = mod (4 - firstDay) 7
-        yd = firstSunday + 7 * (fromIntegral w - 1) + fromIntegral d
+        yd = firstSunday + 7 * (w - 1) + d
 
 {-# INLINE toSundayOrdinal #-}
 toSundayOrdinal :: OrdinalDate -> Day -> SundayWeek
-toSundayOrdinal (OrdinalDate y yd) (ModifiedJulianDay mjd) = SundayWeek y
-        (fromIntegral $ d7div - div k 7) (fromIntegral d7mod) where
+toSundayOrdinal (OrdinalDate y yd) (ModifiedJulianDay mjd) =
+        SundayWeek y (d7div - div k 7) d7mod where
     d = mjd + 3
-    k = d - fromIntegral yd
+    k = d - yd
     (d7div, d7mod) = divMod d 7
 
 {-# INLINEABLE sundayWeekValid #-}
@@ -313,7 +311,7 @@ sundayWeekValid (SundayWeek y w d) = ModifiedJulianDay (firstDay + yd)
     ModifiedJulianDay firstDay = review ordinalDate (OrdinalDate y 1)
     -- following are all 0-based year days
     firstSunday = mod (4 - firstDay) 7
-    yd = firstSunday + 7 * (fromIntegral w - 1) + fromIntegral d
+    yd = firstSunday + 7 * (w - 1) + d
     lastDay = if isLeapYear y then 365 else 364
 
 ------------------------------------------------------------------------
@@ -344,14 +342,14 @@ mondayWeek = iso toMonday fromMonday where
         ModifiedJulianDay firstDay = review ordinalDate (OrdinalDate y 1)
         -- following are all 0-based year days
         firstMonday = mod (5 - firstDay) 7
-        yd = firstMonday + 7 * (fromIntegral w - 1) + fromIntegral d - 1
+        yd = firstMonday + 7 * (w - 1) + d - 1
 
 {-# INLINE toMondayOrdinal #-}
 toMondayOrdinal :: OrdinalDate -> Day -> MondayWeek
-toMondayOrdinal (OrdinalDate y yd) (ModifiedJulianDay mjd) = MondayWeek y
-        (fromIntegral $ d7div - div k 7) (fromIntegral $ d7mod + 1) where
+toMondayOrdinal (OrdinalDate y yd) (ModifiedJulianDay mjd) =
+        MondayWeek y (d7div - div k 7) (d7mod + 1) where
     d = mjd + 2
-    k = d - fromIntegral yd
+    k = d - yd
     (d7div, d7mod) = divMod d 7
 
 {-# INLINEABLE mondayWeekValid #-}
@@ -361,6 +359,6 @@ mondayWeekValid (MondayWeek y w d) = ModifiedJulianDay (firstDay + yd)
     ModifiedJulianDay firstDay = review ordinalDate (OrdinalDate y 1)
     -- following are all 0-based year days
     firstMonday = mod (5 - firstDay) 7
-    yd = firstMonday + 7 * (fromIntegral w - 1) + fromIntegral d - 1
+    yd = firstMonday + 7 * (w - 1) + d - 1
     lastDay = if isLeapYear y then 365 else 364
 

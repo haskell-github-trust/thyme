@@ -146,14 +146,15 @@ ut1LocalTime long = iso localise globalise where
     {-# INLINEABLE localise #-}
     localise :: UniversalTime -> LocalTime
     localise (UniversalRep (NominalDiffTime t)) = LocalTime
-            (ModifiedJulianDay day) (view timeOfDay (DiffTime dt)) where
+            (ModifiedJulianDay $ fromIntegral day)
+            (view timeOfDay (DiffTime dt)) where
         (day, dt) = microDivMod (t ^+^ (long / 360) *^ posixDay) posixDay
 
     {-# INLINEABLE globalise #-}
     globalise :: LocalTime -> UniversalTime
     globalise (LocalTime day tod) = UniversalRep . NominalDiffTime $
             Micro (mjd * usDay) ^+^ dt ^-^ (long / 360) *^ posixDay where
-        ModifiedJulianDay mjd = day
+        ModifiedJulianDay (fromIntegral -> mjd) = day
         DiffTime dt = review timeOfDay tod
 
 ------------------------------------------------------------------------

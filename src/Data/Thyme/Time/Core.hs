@@ -39,7 +39,7 @@ instance Thyme T.Day Day where
     {-# INLINE thyme #-}
     thyme = iso
         (ModifiedJulianDay . fromInteger . T.toModifiedJulianDay)
-        (T.ModifiedJulianDay . fromIntegral . toModifiedJulianDay)
+        (T.ModifiedJulianDay . toInteger . toModifiedJulianDay)
 
 instance Thyme T.UniversalTime UniversalTime where
     {-# INLINE thyme #-}
