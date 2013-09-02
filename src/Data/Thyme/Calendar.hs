@@ -12,7 +12,7 @@
 module Data.Thyme.Calendar
     ( Years, Months, Days
     -- * Days
-    , Day (..)
+    , Day (..), modifiedJulianDay
     -- * Gregorian calendar
     , Year, Month, DayOfMonth
     , YearMonthDay (..)
@@ -74,6 +74,5 @@ gregorianYearsRollover n (YearMonthDay ((+) n -> y') 2 29)
 gregorianYearsRollover n (YearMonthDay y m d) = YearMonthDay (y + n) m d
 
 -- * Lenses
-thymeLenses ''Day
 thymeLenses ''YearMonthDay
 

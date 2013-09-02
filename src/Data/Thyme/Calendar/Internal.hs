@@ -38,6 +38,10 @@ instance AffineSpace Day where
     {-# INLINE (.+^) #-}
     ModifiedJulianDay a .+^ d = ModifiedJulianDay (a + d)
 
+{-# INLINE modifiedJulianDay #-}
+modifiedJulianDay :: Iso' Day Int
+modifiedJulianDay = iso toModifiedJulianDay ModifiedJulianDay
+
 {-# INLINE yearMonthDay #-}
 yearMonthDay :: Iso' OrdinalDate YearMonthDay
 yearMonthDay = iso fromOrdinal toOrdinal where
