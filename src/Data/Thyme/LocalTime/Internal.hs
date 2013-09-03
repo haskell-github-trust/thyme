@@ -54,6 +54,10 @@ instance Bounded TimeOfDay where
     minBound = TimeOfDay 0 0 zeroV
     maxBound = TimeOfDay 23 59 (60999999 ^. microDiffTime)
 
+{-# INLINE minuteLength #-}
+minuteLength :: Hour -> Minute -> DiffTime
+minuteLength h m = fromSeconds' $ if h == 23 && m == 59 then 61 else 60
+
 -- | Hour zero
 midnight :: TimeOfDay
 midnight = TimeOfDay 0 0 zeroV
@@ -64,9 +68,9 @@ midday = TimeOfDay 12 0 zeroV
 
 {-# INLINE makeTimeOfDayValid #-}
 makeTimeOfDayValid :: Hour -> Minute -> DiffTime -> Maybe TimeOfDay
-makeTimeOfDayValid h m s@(DiffTime u) = TimeOfDay h m s
+makeTimeOfDayValid h m s = TimeOfDay h m s
     <$ guard (0 <= h && h <= 23 && 0 <= m && m <= 59)
-    <* guard (Micro 0 <= u && u < Micro 61000000)
+    <* guard (zeroV <= s && s < minuteLength h m)
 
 {-# INLINE timeOfDay #-}
 timeOfDay :: Iso' DiffTime TimeOfDay
