@@ -7,6 +7,8 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_HADDOCK hide #-}
 
+#include "thyme.h"
+
 module Data.Thyme.Clock.Internal where
 
 import Prelude
@@ -102,8 +104,7 @@ fromSeconds' = simply review seconds
 
 ------------------------------------------------------------------------
 
-newtype DiffTime = DiffTime Micro
-    deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable, Random, Arbitrary, AdditiveGroup)
+newtype DiffTime = DiffTime Micro deriving (INSTANCES_MICRO, AdditiveGroup)
 
 #if SHOW_INTERNAL
 deriving instance Show DiffTime
@@ -137,8 +138,7 @@ microDiffTime = iso (DiffTime . Micro) (\ (DiffTime (Micro u)) -> u)
 
 ------------------------------------------------------------------------
 
-newtype NominalDiffTime = NominalDiffTime Micro
-    deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable, Random, Arbitrary, AdditiveGroup)
+newtype NominalDiffTime = NominalDiffTime Micro deriving (INSTANCES_MICRO, AdditiveGroup)
 
 #if SHOW_INTERNAL
 deriving instance Show NominalDiffTime
@@ -177,8 +177,8 @@ posixDayLength = NominalDiffTime (toMicro 86400)
 
 ------------------------------------------------------------------------
 
-newtype UniversalTime = UniversalRep NominalDiffTime -- since MJD epoch
-    deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable, Random, Arbitrary)
+-- Represented as a 'NominalDiffTime' since MJD epoch.
+newtype UniversalTime = UniversalRep NominalDiffTime deriving (INSTANCES_MICRO)
 
 {-# INLINE modJulianDate #-}
 modJulianDate :: Iso' UniversalTime Rational
@@ -188,13 +188,13 @@ modJulianDate = iso
 
 ------------------------------------------------------------------------
 
-newtype UTCTime = UTCRep NominalDiffTime -- since MJD epoch
-    deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable, Random, Arbitrary)
+-- Represented as a 'NominalDiffTime' since MJD epoch.
+newtype UTCTime = UTCRep NominalDiffTime deriving (INSTANCES_MICRO)
 
 data UTCView = UTCTime
     { utctDay :: {-# UNPACK #-}!Day
     , utctDayTime :: {-# UNPACK #-}!DiffTime
-    } deriving (Eq, Ord, Data, Typeable, Show)
+    } deriving (INSTANCES_USUAL, Show)
 
 instance NFData UTCView
 

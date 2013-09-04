@@ -6,6 +6,8 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_HADDOCK hide #-}
 
+#include "thyme.h"
+
 module Data.Thyme.Calendar.Internal where
 
 import Prelude
@@ -31,7 +33,7 @@ type Days = Int
 -- the day 1858-11-17.
 newtype Day = ModifiedJulianDay
     { toModifiedJulianDay :: Int
-    } deriving (Eq, Ord, Enum, Ix, NFData, Data, Typeable)
+    } deriving (INSTANCES_NEWTYPE)
 
 instance AffineSpace Day where
     type Diff Day = Days
@@ -88,7 +90,7 @@ data YearMonthDay = YearMonthDay
     { ymdYear :: {-# UNPACK #-}!Year
     , ymdMonth :: {-# UNPACK #-}!Month
     , ymdDay :: {-# UNPACK #-}!DayOfMonth
-    } deriving (Eq, Ord, Data, Typeable, Show)
+    } deriving (INSTANCES_USUAL, Show)
 
 instance NFData YearMonthDay
 
@@ -103,7 +105,7 @@ type DayOfYear = Int
 data OrdinalDate = OrdinalDate
     { odYear :: {-# UNPACK #-}!Year
     , odDay :: {-# UNPACK #-}!DayOfYear
-    } deriving (Eq, Ord, Data, Typeable, Show)
+    } deriving (INSTANCES_USUAL, Show)
 
 instance NFData OrdinalDate
 
@@ -169,7 +171,7 @@ randomIsoR l r = over _1 (^. l) . randomR (over both (l #) r)
 data MonthDay = MonthDay
     { mdMonth :: {-# UNPACK #-}!Month
     , mdDay :: {-# UNPACK #-}!DayOfMonth
-    } deriving (Eq, Ord, Data, Typeable, Show)
+    } deriving (INSTANCES_USUAL, Show)
 
 instance NFData MonthDay
 
@@ -229,7 +231,7 @@ data WeekDate = WeekDate
     { wdYear :: {-# UNPACK #-}!Year
     , wdWeek :: {-# UNPACK #-}!WeekOfYear
     , wdDay :: {-# UNPACK #-}!DayOfWeek
-    } deriving (Eq, Ord, Data, Typeable, Show)
+    } deriving (INSTANCES_USUAL, Show)
 
 instance NFData WeekDate
 
@@ -295,7 +297,7 @@ data SundayWeek = SundayWeek
     { swYear :: {-# UNPACK #-}!Year
     , swWeek :: {-# UNPACK #-}!WeekOfYear
     , swDay :: {-# UNPACK #-}!DayOfWeek
-    } deriving (Eq, Ord, Data, Typeable, Show)
+    } deriving (INSTANCES_USUAL, Show)
 
 instance NFData SundayWeek
 
@@ -343,7 +345,7 @@ data MondayWeek = MondayWeek
     { mwYear :: {-# UNPACK #-}!Year
     , mwWeek :: {-# UNPACK #-}!WeekOfYear
     , mwDay :: {-# UNPACK #-}!DayOfWeek
-    } deriving (Eq, Ord, Data, Typeable, Show)
+    } deriving (INSTANCES_USUAL, Show)
 
 instance NFData MondayWeek
 

@@ -7,6 +7,8 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# OPTIONS_HADDOCK hide #-}
 
+#include "thyme.h"
+
 module Data.Thyme.LocalTime.Internal where
 
 import Prelude hiding ((.))
@@ -37,7 +39,7 @@ data TimeOfDay = TimeOfDay
     { todHour :: {-# UNPACK #-}!Hour
     , todMin :: {-# UNPACK #-}!Minute
     , todSec :: {-# UNPACK #-}!DiffTime
-    } deriving (Eq, Ord, Data, Typeable)
+    } deriving (INSTANCES_USUAL)
 
 instance NFData TimeOfDay
 
@@ -129,7 +131,7 @@ dayFraction = from timeOfDay . iso toRatio fromRatio where
 data LocalTime = LocalTime
     { localDay :: {-# UNPACK #-}!Day
     , localTimeOfDay :: {-only 3 words…-} {-# UNPACK #-}!TimeOfDay
-    } deriving (Eq, Ord, Data, Typeable)
+    } deriving (INSTANCES_USUAL)
 
 instance NFData LocalTime
 
@@ -180,7 +182,7 @@ ut1LocalTime long = iso localise globalise where
 data ZonedTime = ZonedTime
     { zonedTimeToLocalTime :: {-only 4 words…-} {-# UNPACK #-}!LocalTime
     , zonedTimeZone :: !TimeZone
-    } deriving (Eq, Ord, Data, Typeable)
+    } deriving (INSTANCES_USUAL)
 
 instance NFData ZonedTime where
     rnf ZonedTime {..} = rnf zonedTimeZone

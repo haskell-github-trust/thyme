@@ -6,6 +6,8 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
 
+#include "thyme.h"
+
 module Data.Thyme.Clock.TAI
     ( AbsoluteTime
     , taiEpoch
@@ -43,8 +45,7 @@ import System.Locale
 import System.Random (Random)
 import Test.QuickCheck
 
-newtype AbsoluteTime = AbsoluteTime DiffTime
-    deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable, Random, Arbitrary, AdditiveGroup)
+newtype AbsoluteTime = AbsoluteTime DiffTime deriving (INSTANCES_MICRO)
 
 instance Show AbsoluteTime where
     {-# INLINEABLE showsPrec #-}

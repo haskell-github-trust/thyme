@@ -5,6 +5,8 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_HADDOCK hide #-}
 
+#include "thyme.h"
+
 module Data.Micro where
 
 import Prelude
@@ -29,8 +31,7 @@ import Text.ParserCombinators.ReadP
 import Text.Read
 #endif
 
-newtype Micro = Micro Int64
-    deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable, Random, Arbitrary)
+newtype Micro = Micro Int64 deriving (INSTANCES_MICRO)
 
 #if SHOW_INTERNAL
 deriving instance Show Micro

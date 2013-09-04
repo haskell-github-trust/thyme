@@ -1,6 +1,9 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ViewPatterns #-}
+
+#include "thyme.h"
 
 module Data.Thyme.Calendar.WeekdayOfMonth where
 
@@ -22,7 +25,7 @@ data WeekdayOfMonth = WeekdayOfMonth
     , womMonth :: {-# UNPACK #-}!Month
     , womNth :: {-# UNPACK #-}!Int -- ^ ±1–5, negative means n-th last
     , womDayOfWeek :: {-# UNPACK #-}!DayOfWeek
-    } deriving (Eq, Ord, Data, Typeable, Show)
+    } deriving (INSTANCES_USUAL, Show)
 
 instance NFData WeekdayOfMonth
 

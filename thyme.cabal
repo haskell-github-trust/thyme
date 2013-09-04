@@ -37,6 +37,7 @@ flag Werror
     manual: True
 
 library
+    include-dirs: include
     hs-source-dirs: src
     exposed-modules:
         Data.Thyme
