@@ -78,7 +78,7 @@ main = do
                 , nf (uncurry T.dayOfYearToMonthAndDay <$>) ords ) :
 
             -- Clock
-            ( "addUTCTime", 85
+            ( "addUTCTime", 95
                 , nf (addUTCTime dt <$>) utcs
                 , nf (T.addUTCTime dt' <$>) utcs' ) :
 
@@ -91,16 +91,16 @@ main = do
                 , nf (T.utcTimeToPOSIXSeconds <$>) utcs' ) :
 
             -- LocalTime
-            ( "timeToTimeOfDay", 70
+            ( "timeToTimeOfDay", 45
                 , nf (timeToTimeOfDay <$>) (utctDayTime . unUTCTime <$> utcs)
                 , nf (T.timeToTimeOfDay <$>) (T.utctDayTime <$> utcs') ) :
 
-            ( "utcToLocalTime", 30
+            ( "utcToLocalTime", 20
                 , nf (utcToLocalTime utc <$>) utcs
                 , nf (T.utcToLocalTime T.utc <$>) utcs' ) :
 
             -- Format
-            ( "formatTime", 9
+            ( "formatTime", 8
                 , nf (formatTime defaultTimeLocale spec <$>) utcs
                 , nf (T.formatTime defaultTimeLocale spec <$>) utcs' ) :
 
