@@ -16,6 +16,8 @@ import Data.Int
 import Data.Ix
 import Data.Ratio
 import Data.VectorSpace
+import System.Random
+import Test.QuickCheck
 
 #if !SHOW_INTERNAL
 import Control.Monad
@@ -28,7 +30,7 @@ import Text.Read
 #endif
 
 newtype Micro = Micro Int64
-    deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable)
+    deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable, Random, Arbitrary)
 
 #if SHOW_INTERNAL
 deriving instance Show Micro

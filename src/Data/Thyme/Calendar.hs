@@ -22,11 +22,15 @@ module Data.Thyme.Calendar
     ) where
 
 import Prelude hiding ((.))
+import Control.Applicative
 import Control.Category
 import Control.Lens
+import Data.AdditiveGroup
 import Data.Thyme.Calendar.Internal
 import Data.Thyme.Clock.Internal
 import Data.Thyme.TH
+import System.Random
+import Test.QuickCheck
 
 -- "Data.Thyme.Calendar.Internal" cannot import "Data.Thyme.Clock.Internal",
 -- therefore these orphan 'Bounded' instances must live here.
@@ -37,6 +41,24 @@ instance Bounded Day where
 instance Bounded YearMonthDay where
     minBound = minBound ^. gregorian
     maxBound = maxBound ^. gregorian
+
+instance Random Day where
+    randomR r = over _1 (^. _utctDay) . randomR range where
+        -- upper bound is one Micro second before the next day
+        range = r & _2 %~ succ & both %~ toMidnight & _2 %~ pred
+        toMidnight = (utcTime #) . flip UTCTime zeroV
+    random = randomR (minBound, maxBound)
+
+instance Random YearMonthDay where
+    randomR = randomIsoR gregorian
+    random = over _1 (^. gregorian) . random
+
+instance Arbitrary Day where
+    arbitrary = ModifiedJulianDay
+        <$> choose ((minBound, maxBound) & both %~ toModifiedJulianDay)
+
+instance Arbitrary YearMonthDay where
+    arbitrary = view gregorian <$> arbitrary
 
 ------------------------------------------------------------------------
 

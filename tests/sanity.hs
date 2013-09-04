@@ -36,15 +36,15 @@ utf8String = Text.encodeUtf8 . Text.pack
 
 ------------------------------------------------------------------------
 
-prop_formatTime :: Spec -> UTCTime -> Property
-prop_formatTime (Spec spec) t@(review thyme -> t')
+prop_formatTime :: Spec -> RecentTime -> Property
+prop_formatTime (Spec spec) (RecentTime t@(review thyme -> t'))
         = printTestCase desc (s == s') where
     s = formatTime defaultTimeLocale spec t
     s' = T.formatTime defaultTimeLocale spec t'
     desc = "thyme: " ++ s ++ "\ntime:  " ++ s'
 
-prop_parseTime :: Spec -> UTCTime -> Property
-prop_parseTime (Spec spec) orig
+prop_parseTime :: Spec -> RecentTime -> Property
+prop_parseTime (Spec spec) (RecentTime orig)
         = printTestCase desc (fmap (review thyme) t == t') where
     s = T.formatTime defaultTimeLocale spec (thyme # orig)
     t = parseTime defaultTimeLocale spec s :: Maybe UTCTime

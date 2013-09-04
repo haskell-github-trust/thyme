@@ -40,9 +40,11 @@ import Data.Thyme.Format.Internal
 import Data.Thyme.LocalTime
 import Data.VectorSpace
 import System.Locale
+import System.Random (Random)
+import Test.QuickCheck
 
 newtype AbsoluteTime = AbsoluteTime DiffTime
-    deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable, AdditiveGroup)
+    deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable, Random, Arbitrary, AdditiveGroup)
 
 instance Show AbsoluteTime where
     {-# INLINEABLE showsPrec #-}

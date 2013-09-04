@@ -18,13 +18,15 @@ import Control.Monad
 import Data.AffineSpace
 import Data.Data
 import Data.Micro
-import Data.Thyme.Calendar
+import Data.Thyme.Calendar.Internal
 import Data.Thyme.Clock.Internal
 #if !SHOW_INTERNAL
 import Data.Thyme.Format.Internal
 #endif
 import Data.Thyme.LocalTime.TimeZone
 import Data.VectorSpace
+import System.Random
+import Test.QuickCheck
 
 ------------------------------------------------------------------------
 -- * Time of day
@@ -53,6 +55,17 @@ instance Show TimeOfDay where
 instance Bounded TimeOfDay where
     minBound = TimeOfDay 0 0 zeroV
     maxBound = TimeOfDay 23 59 (60999999 ^. microDiffTime)
+
+instance Random TimeOfDay where
+    randomR = randomIsoR timeOfDay
+    random = over _1 (^. timeOfDay) . random
+
+instance Arbitrary TimeOfDay where
+    arbitrary = do
+        h <- choose (0, 23)
+        m <- choose (0, 59)
+        let DiffTime ml = minuteLength h m
+        TimeOfDay h m . DiffTime <$> choose (zeroV, pred ml)
 
 {-# INLINE minuteLength #-}
 minuteLength :: Hour -> Minute -> DiffTime

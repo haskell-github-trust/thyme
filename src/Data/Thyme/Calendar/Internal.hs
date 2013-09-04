@@ -20,6 +20,8 @@ import Data.Ix
 import Data.Thyme.Format.Internal
 import Data.Vector.Unboxed (Vector)
 import qualified Data.Vector.Unboxed as V
+import System.Random
+import Test.QuickCheck
 
 type Years = Int
 type Months = Int
@@ -157,6 +159,11 @@ monthDaysLeap = V.generate 366 go where
         m = maybe 12 id $ V.findIndex (yd <) first
         d = succ yd - V.unsafeIndex first (pred m)
 
+-- | No good home for this within the current hierarchy. This will do.
+{-# INLINEABLE randomIsoR #-}
+randomIsoR :: (Random s, RandomGen g) => Iso' s a -> (a, a) -> g -> (a, g)
+randomIsoR l r = over _1 (^. l) . randomR (over both (l #) r)
+
 ------------------------------------------------------------------------
 
 data MonthDay = MonthDay
@@ -169,6 +176,14 @@ instance NFData MonthDay
 instance Bounded MonthDay where
     minBound = MonthDay 1 1
     maxBound = MonthDay 12 31
+
+instance Random MonthDay where
+    randomR r g = randomIsoR (monthDay leap) r g' where
+        (isLeapYear -> leap, g') = random g
+    random = randomR (minBound, maxBound)
+
+instance Arbitrary MonthDay where
+    arbitrary = choose (minBound, maxBound)
 
 -- | Convert between day of year in the Gregorian or Julian calendars, and
 -- month and day of month. First arg is leap year flag.

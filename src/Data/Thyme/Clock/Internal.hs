@@ -21,6 +21,8 @@ import Data.Ix
 import Data.Micro
 import Data.Thyme.Calendar.Internal
 import Data.VectorSpace
+import System.Random
+import Test.QuickCheck
 
 #if !SHOW_INTERNAL
 import Control.Monad
@@ -101,7 +103,7 @@ fromSeconds' = simply review seconds
 ------------------------------------------------------------------------
 
 newtype DiffTime = DiffTime Micro
-    deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable, AdditiveGroup)
+    deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable, Random, Arbitrary, AdditiveGroup)
 
 #if SHOW_INTERNAL
 deriving instance Show DiffTime
@@ -136,7 +138,7 @@ microDiffTime = iso (DiffTime . Micro) (\ (DiffTime (Micro u)) -> u)
 ------------------------------------------------------------------------
 
 newtype NominalDiffTime = NominalDiffTime Micro
-    deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable, AdditiveGroup)
+    deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable, Random, Arbitrary, AdditiveGroup)
 
 #if SHOW_INTERNAL
 deriving instance Show NominalDiffTime
@@ -176,7 +178,7 @@ posixDayLength = NominalDiffTime (toMicro 86400)
 ------------------------------------------------------------------------
 
 newtype UniversalTime = UniversalRep NominalDiffTime -- since MJD epoch
-    deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable)
+    deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable, Random, Arbitrary)
 
 {-# INLINE modJulianDate #-}
 modJulianDate :: Iso' UniversalTime Rational
@@ -187,7 +189,7 @@ modJulianDate = iso
 ------------------------------------------------------------------------
 
 newtype UTCTime = UTCRep NominalDiffTime -- since MJD epoch
-    deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable)
+    deriving (Eq, Ord, Enum, Ix, Bounded, NFData, Data, Typeable, Random, Arbitrary)
 
 data UTCView = UTCTime
     { utctDay :: {-# UNPACK #-}!Day

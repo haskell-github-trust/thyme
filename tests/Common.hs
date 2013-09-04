@@ -4,7 +4,9 @@ module Common where
 import Prelude
 import Control.Applicative
 import Control.Lens
+import Data.AdditiveGroup
 import Data.Thyme
+import Data.Thyme.Clock.POSIX
 import System.Exit
 import Test.QuickCheck
 import qualified Test.QuickCheck.Gen as Gen
@@ -14,22 +16,16 @@ exit b = exitWith $ if b then ExitSuccess else ExitFailure 1
 
 ------------------------------------------------------------------------
 
-instance Arbitrary Day where
-    arbitrary = ModifiedJulianDay <$> arbitrary
+-- FIXME: We disagree with time on how many digits to use for year.
+newtype RecentTime = RecentTime UTCTime deriving (Show)
 
-instance Arbitrary DiffTime where
-    arbitrary = view microDiffTime <$> arbitrary
-
-instance Arbitrary NominalDiffTime where
-    arbitrary = view microNominalDiffTime <$> arbitrary
-
-instance Arbitrary UTCTime where
-    arbitrary = fmap (review utcTime) $ UTCTime
-            <$> (ModifiedJulianDay <$> choose (mjd0, mjd1))
-            <*> (view microDiffTime <$> choose (0, 86400999999)) where
-        -- FIXME: We disagree with time on how many digits to use for year.
-        ModifiedJulianDay mjd0 = review gregorian $ YearMonthDay 1000 1 1
-        ModifiedJulianDay mjd1 = review gregorian $ YearMonthDay 9999 12 31
+instance Arbitrary RecentTime where
+    arbitrary = fmap (RecentTime . review utcTime) $ UTCTime
+            <$> choose (minDay, maxDay)
+            <*> choose (zeroV, pred dayLength) where
+        minDay = gregorian # YearMonthDay 1000 1 1
+        maxDay = gregorian # YearMonthDay 9999 12 13
+        dayLength = posixDayLength ^. from microNominalDiffTime . microDiffTime
 
 ------------------------------------------------------------------------
 

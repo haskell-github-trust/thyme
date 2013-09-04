@@ -14,6 +14,8 @@ import Data.Data
 import Data.Thyme.Calendar
 import Data.Thyme.Calendar.Internal
 import Data.Thyme.TH
+import System.Random
+import Test.QuickCheck
 
 data WeekdayOfMonth = WeekdayOfMonth
     { womYear :: {-# UNPACK #-}!Year
@@ -27,6 +29,13 @@ instance NFData WeekdayOfMonth
 instance Bounded WeekdayOfMonth where
     minBound = minBound ^. weekdayOfMonth
     maxBound = maxBound ^. weekdayOfMonth
+
+instance Random WeekdayOfMonth where
+    randomR = randomIsoR weekdayOfMonth
+    random = over _1 (^. weekdayOfMonth) . random
+
+instance Arbitrary WeekdayOfMonth where
+    arbitrary = view weekdayOfMonth <$> arbitrary
 
 {-# INLINE weekdayOfMonth #-}
 weekdayOfMonth :: Iso' Day WeekdayOfMonth
