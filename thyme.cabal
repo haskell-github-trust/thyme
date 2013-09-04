@@ -1,5 +1,5 @@
 name:           thyme
-version:        0.2.4.1
+version:        0.3.0.0
 synopsis:       A faster time library
 description:
     Thyme is a rewrite of the fine @time@ library, with a particular focus
@@ -63,6 +63,7 @@ library
         Data.Thyme.LocalTime.TimeZone
         Data.Thyme.TH
     build-depends:
+        QuickCheck >= 2.4,
         attoparsec >= 0.10,
         base >= 4.5 && < 5,
         bytestring >= 0.9,
@@ -70,10 +71,9 @@ library
         deepseq >= 1.2,
         lens >= 3.9,
         old-locale >= 1.0,
-        QuickCheck >= 2.4,
         random,
-        text >= 0.11,
         template-haskell >= 2.6,
+        text >= 0.11,
         time >= 1.4,
         transformers,
         vector >= 0.9,
