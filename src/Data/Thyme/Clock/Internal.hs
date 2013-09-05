@@ -33,74 +33,54 @@ import Text.ParserCombinators.ReadP (char)
 import Text.Read (readPrec)
 #endif
 
--- | Workaround for GHC refusing to match RULES for functions with equality
--- constraints; see <http://hackage.haskell.org/trac/ghc/ticket/7611>.
-class (HasBasis t, Basis t ~ ()) => TimeDiff t where
-    microTimeDiff :: t -> Micro
-instance TimeDiff DiffTime where microTimeDiff (DiffTime d) = d
-instance TimeDiff NominalDiffTime where microTimeDiff (NominalDiffTime d) = d
-
--- | Time interval as a 'Rational' number of seconds. Compose with 'simple'
--- or 'simply' 'view' / 'review' to avoid ambiguous type variables.
-{-# INLINE seconds #-}
-seconds :: (HasBasis s, Basis s ~ (), HasBasis t, Basis t ~ ()) => Iso s t (Scalar s) (Scalar t)
-seconds = iso (`decompose'` ()) (*^ basisValue ())
-
--- | Convert a time interval to some 'Fractional' type.
+-- | Time differences, encompassing both 'DiffTime' and 'NominalDiffTime'.
 --
--- @
--- toSeconds :: (HasBasis s, Basis s ~ (), Scalar s ~ a, Real a, Fractional n) => s -> n
--- @
+-- FIXME: still affected by <http://hackage.haskell.org/trac/ghc/ticket/7611>?
+class (HasBasis t, Basis t ~ (), Scalar t ~ Rational) => TimeDiff t where
+    -- | Escape hatch; avoid.
+    microseconds :: Iso' t Int64
+
+-- | Convert a time difference to some 'Fractional' type.
 {-# INLINE toSeconds #-}
-toSeconds :: (TimeDiff s, Real (Scalar s), Fractional n) => s -> n
-toSeconds = realToFrac . simply view seconds
+toSeconds :: (TimeDiff t, Fractional n) => t -> n
+toSeconds = (* recip 1000000) . fromIntegral . view microseconds
 
--- | Make a time interval from some 'Real' type. 'Rational'-avoiding rewrite
--- rules included for 'Double', 'Float', 'Integer', 'Int' and 'Int64'.
+-- | Make a time difference from some 'Real' type.
 --
--- @
--- fromSeconds :: (HasBasis t, Basis t ~ (), Scalar t ~ b, Real n, Fractional b) => n -> t
--- @
+-- Where speed is a concern, make sure @n@ is one of 'Float', 'Double',
+-- 'Int', 'Int64' or 'Integer', for which @RULES@ have been provided.
 {-# INLINE fromSeconds #-}
-fromSeconds :: (TimeDiff t, Real n, Fractional (Scalar t)) => n -> t
-fromSeconds = simply review seconds . realToFrac
+fromSeconds :: (Real n, TimeDiff t) => n -> t
+fromSeconds = fromSeconds' . toRational
 
 -- | Type-restricted 'toSeconds' to avoid constraint-defaulting warnings.
 {-# INLINE toSeconds' #-}
-toSeconds' :: (HasBasis s, Basis s ~ ()) => s -> Scalar s
-toSeconds' = simply view seconds
+toSeconds' :: (TimeDiff t) => t -> Rational
+toSeconds' = (`decompose'` ())
 
 -- | Type-restricted 'fromSeconds' to avoid constraint-defaulting warnings.
 {-# INLINE fromSeconds' #-}
-fromSeconds' :: (HasBasis t, Basis t ~ ()) => Scalar t -> t
-fromSeconds' = simply review seconds
+fromSeconds' :: (TimeDiff t) => Rational -> t
+fromSeconds' = (*^ basisValue ())
+
+------------------------------------------------------------------------
+-- not for public consumption
+
+fromSecondsRealFrac :: (RealFrac n, TimeDiff t) => n -> n -> t
+fromSecondsRealFrac _ = review microseconds . round . (*) 1000000
+
+fromSecondsIntegral :: (Integral n, TimeDiff t) => n -> n -> t
+fromSecondsIntegral _ = review microseconds . (*) 1000000 . fromIntegral
 
 {-# RULES
 
-"toSeconds∷DiffTime→Fractional"
-    toSeconds = (/ 1000000) . fromIntegral . review microDiffTime
-"toSeconds∷NominalDiffTime→Fractional"
-    toSeconds = (/ 1000000) . fromIntegral . review microNominalDiffTime
+"fromSeconds∷Float"     fromSeconds = fromSecondsRealFrac (0 :: Float)
+"fromSeconds∷Double"    fromSeconds = fromSecondsRealFrac (0 :: Double)
+"fromSeconds∷Int"       fromSeconds = fromSecondsIntegral (0 :: Int)
+"fromSeconds∷Int64"     fromSeconds = fromSecondsIntegral (0 :: Int64)
+"fromSeconds∷Integer"   fromSeconds = fromSecondsIntegral (0 :: Integer)
 
-"fromSeconds∷Double→DiffTime"
-    fromSeconds = view microDiffTime . round . (*) (1000000 :: Double)
-"fromSeconds∷Double→NominalDiffTime"
-    fromSeconds = view microNominalDiffTime . round . (*) (1000000 :: Double)
-
-"fromSeconds∷Float→DiffTime"
-    fromSeconds = view microDiffTime . round . (*) (1000000 :: Float)
-"fromSeconds∷Float→NominalDiffTime"
-    fromSeconds = view microNominalDiffTime . round . (*) (1000000 :: Float)
-
-"fromSeconds∷Integer→{,Nominal}DiffTime"
-    fromSeconds = fromSeconds . (fromInteger :: Integer -> Int64)
-"fromSeconds∷Int→{,Nominal}DiffTime"
-    fromSeconds = fromSeconds . (fromIntegral :: Int -> Int64)
-
-"fromSeconds∷Int64→DiffTime"
-    fromSeconds = view microDiffTime . (*) 1000000
-"fromSeconds∷Int64→NominalDiffTime"
-    fromSeconds = view microNominalDiffTime . (*) 1000000 #-}
+  #-}
 
 ------------------------------------------------------------------------
 
@@ -132,9 +112,9 @@ instance HasBasis DiffTime where
     {-# INLINE decompose' #-}
     decompose' (DiffTime a) = decompose' a
 
-{-# INLINE microDiffTime #-}
-microDiffTime :: Iso' Int64 DiffTime
-microDiffTime = iso (DiffTime . Micro) (\ (DiffTime (Micro u)) -> u)
+instance TimeDiff DiffTime where
+    {-# INLINE microseconds #-}
+    microseconds = iso (\ (DiffTime (Micro u)) -> u) (DiffTime . Micro)
 
 ------------------------------------------------------------------------
 
@@ -166,14 +146,13 @@ instance HasBasis NominalDiffTime where
     {-# INLINE decompose' #-}
     decompose' (NominalDiffTime a) = decompose' a
 
-{-# INLINE microNominalDiffTime #-}
-microNominalDiffTime :: Iso' Int64 NominalDiffTime
-microNominalDiffTime = iso (NominalDiffTime . Micro)
-    (\ (NominalDiffTime (Micro u)) -> u)
+instance TimeDiff NominalDiffTime where
+    {-# INLINE microseconds #-}
+    microseconds = iso (\ (NominalDiffTime (Micro u)) -> u) (NominalDiffTime . Micro)
 
 {-# INLINE posixDayLength #-}
 posixDayLength :: NominalDiffTime
-posixDayLength = NominalDiffTime (toMicro 86400)
+posixDayLength = microseconds # 86400000000
 
 ------------------------------------------------------------------------
 

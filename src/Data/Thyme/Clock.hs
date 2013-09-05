@@ -5,10 +5,9 @@
 -- @'Data.VectorSpace.Scalar' 'DiffTime' ≡ 'Data.VectorSpace.Scalar'
 -- 'NominalDiffTime' ≡ 'Rational'@.
 --
---  Convert between time intervals and 'Rational's with 'seconds', or more
---  generally between any 'Real' or 'Fractional' using 'fromSeconds' and
---  'toSeconds'. If you must convert between 'DiffTime' and
---  'NominalDiffTime', compose 'microDiffTime' and 'microNominalDiffTime'.
+--  Using 'fromSeconds' and 'toSeconds' to convert between 'TimeDiff's and
+--  other numeric types. If you really must coerce between 'DiffTime' and
+--  'NominalDiffTime', @'view' ('microseconds' . 'from' 'microseconds')@.
 --
 -- 'UTCTime' is an instance of 'Data.AffineSpace.AffineSpace', with
 -- @'Data.AffineSpace.Diff' 'UTCTime' ≡ 'NominalDiffTime'@.
@@ -23,17 +22,15 @@ module Data.Thyme.Clock (
 
     -- * Absolute intervals
     , DiffTime
-    , microDiffTime
 
     -- * UTC
     , UTCTime, UTCView (..)
     , utcTime
     , NominalDiffTime
-    , microNominalDiffTime
     , module Data.Thyme.Clock
 
     -- * Time interval conversion
-    , seconds
+    , TimeDiff (..)
     , toSeconds, fromSeconds
     , toSeconds', fromSeconds'
 

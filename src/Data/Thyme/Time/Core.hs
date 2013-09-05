@@ -48,7 +48,7 @@ instance Thyme T.UniversalTime UniversalTime where
 instance Thyme T.DiffTime DiffTime where
     {-# INLINE thyme #-}
     thyme = iso (round . (*) 1000000)
-        (T.picosecondsToDiffTime . (*) 1000000 . toInteger) . microDiffTime
+        (T.picosecondsToDiffTime . (*) 1000000 . toInteger) . from microseconds
 
 instance Thyme T.UTCTime UTCView where
     {-# INLINE thyme #-}
@@ -63,7 +63,7 @@ instance Thyme T.UTCTime UTCTime where
 instance Thyme T.NominalDiffTime NominalDiffTime where
     {-# INLINE thyme #-}
     thyme = iso (round . (*) 1000000) -- no picosecondsToNominalDiffTime D:
-        (fromRational . (% 1000000) . toInteger) . microNominalDiffTime
+        (fromRational . (% 1000000) . toInteger) . from microseconds
 
 instance Thyme T.AbsoluteTime AbsoluteTime where
     {-# INLINE thyme #-}
@@ -77,10 +77,10 @@ instance Thyme T.TimeZone TimeZone where
 
 instance Thyme T.TimeOfDay TimeOfDay where
     {-# INLINE thyme #-}
-    thyme = iso ( \ (T.TimeOfDay h m s) -> TimeOfDay h m
-            . view microDiffTime . round $ s * 1000000 )
-        ( \ (TimeOfDay h m s) -> T.TimeOfDay h m . fromRational
-            . (% 1000000) . toInteger $ microDiffTime # s )
+    thyme = iso ( \ (T.TimeOfDay h m s) -> TimeOfDay h m $
+            microseconds # round (s * 1000000) )
+        ( \ (TimeOfDay h m s) -> T.TimeOfDay h m . fromRational $
+            toInteger (s ^. microseconds) % 1000000 )
 
 instance Thyme T.LocalTime LocalTime where
     {-# INLINE thyme #-}

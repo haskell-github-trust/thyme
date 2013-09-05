@@ -25,7 +25,7 @@ instance Arbitrary RecentTime where
             <*> choose (zeroV, pred dayLength) where
         minDay = gregorian # YearMonthDay 1000 1 1
         maxDay = gregorian # YearMonthDay 9999 12 13
-        dayLength = posixDayLength ^. from microNominalDiffTime . microDiffTime
+        dayLength = posixDayLength ^. microseconds . from microseconds
 
 ------------------------------------------------------------------------
 

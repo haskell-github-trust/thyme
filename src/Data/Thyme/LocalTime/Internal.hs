@@ -56,7 +56,7 @@ instance Show TimeOfDay where
 
 instance Bounded TimeOfDay where
     minBound = TimeOfDay 0 0 zeroV
-    maxBound = TimeOfDay 23 59 (60999999 ^. microDiffTime)
+    maxBound = TimeOfDay 23 59 (microseconds # 60999999)
 
 instance Random TimeOfDay where
     randomR = randomIsoR timeOfDay

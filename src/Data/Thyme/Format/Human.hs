@@ -38,8 +38,8 @@ humanTimeDiff d = humanTimeDiffs d ""
 
 -- | Display 'DiffTime' or 'NominalDiffTime' in a human-readable form.
 humanTimeDiffs :: (TimeDiff d) => d -> ShowS
-humanTimeDiffs (microTimeDiff -> signed@(Micro (Micro . abs -> us)))
-        = (if signed < Micro 0 then (:) '-' else id) . diff where
+humanTimeDiffs td = (if signed < 0 then (:) '-' else id) . diff where
+    signed@(Micro . abs -> us) = td ^. microseconds
     diff = maybe id id . getFirst . fold $
         zipWith (approx us . unit) (tail units) units
 
