@@ -67,7 +67,7 @@ library
         bytestring >= 0.9,
         containers,
         deepseq >= 1.2,
-        lens >= 3.8,
+        lens >= 3.9,
         old-locale >= 1.0,
         QuickCheck >= 2.4,
         random,
