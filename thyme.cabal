@@ -104,6 +104,22 @@ test-suite sanity
         vector-space
     ghc-options: -Wall
 
+test-suite rewrite
+    type: exitcode-stdio-1.0
+    hs-source-dirs: tests
+    main-is: rewrite.hs
+    build-depends:
+        Cabal,
+        base,
+        containers,
+        directory,
+        filepath,
+        random,
+        system-posix-redirect >= 1.1,
+        text,
+        thyme
+    ghc-options: -Wall
+
 benchmark bench
     type: exitcode-stdio-1.0
     hs-source-dirs: tests
