@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import Prelude
-import Control.Monad
 import Data.Int
 import Data.Map (Map)
 import qualified Data.Map as Map
@@ -30,8 +29,7 @@ main = do
 hook :: PackageDescription -> LocalBuildInfo -> UserHooks -> BuildFlags -> IO ()
 hook pd lbi uh bf = do
     -- more reliable way to force a rebuild?
-    forM_ ["hi", "o"] $ \ suf -> removeFile $
-        buildDir lbi </> "rewrite" </> "rewrite-tmp" </> "Main" <.> suf
+    removeDirectoryRecursive (buildDir lbi </> "rewrite" </> "rewrite-tmp")
 
     (err, (out, _)) <- redirectStderr . redirectStdout $
         buildHook simpleUserHooks pd lbi uh bf
