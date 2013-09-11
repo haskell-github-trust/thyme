@@ -61,16 +61,16 @@ useless = do
 
 wanted :: Map Text ()
 wanted = Map.fromList $ flip (,) () `fmap`
-    [ "fromSeconds∷Float"
-    , "fromSeconds∷Double"
-    , "fromSeconds∷Int"
-    , "fromSeconds∷Int64"
-    , "fromSeconds∷Integer"
-    , "realToFrac∷DiffTime→NominalDiffTime"
-    , "realToFrac∷NominalDiffTime→DiffTime"
-    , "realToFrac∷DiffTime→Fractional"
-    , "realToFrac∷NominalDiffTime→Fractional"
-    , "realToFrac∷Real→DiffTime"
-    , "realToFrac∷Real→NominalDiffTime"
+    [ "fromSeconds/Float"
+    , "fromSeconds/Double"
+    , "fromSeconds/Int"
+    , "fromSeconds/Int64"
+    , "fromSeconds/Integer"
+    , "realToFrac/DiffTime-NominalDiffTime"
+    , "realToFrac/NominalDiffTime-DiffTime"
+    , "realToFrac/DiffTime-Fractional"
+    , "realToFrac/NominalDiffTime-Fractional"
+    , "realToFrac/Real-DiffTime"
+    , "realToFrac/Real-NominalDiffTime"
     ]
 

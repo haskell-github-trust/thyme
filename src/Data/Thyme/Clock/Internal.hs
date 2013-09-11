@@ -74,11 +74,11 @@ fromSecondsIntegral _ = review microseconds . (*) 1000000 . fromIntegral
 
 {-# RULES
 
-"fromSeconds∷Float"     fromSeconds = fromSecondsRealFrac (0 :: Float)
-"fromSeconds∷Double"    fromSeconds = fromSecondsRealFrac (0 :: Double)
-"fromSeconds∷Int"       fromSeconds = fromSecondsIntegral (0 :: Int)
-"fromSeconds∷Int64"     fromSeconds = fromSecondsIntegral (0 :: Int64)
-"fromSeconds∷Integer"   fromSeconds = fromSecondsIntegral (0 :: Integer)
+"fromSeconds/Float"     fromSeconds = fromSecondsRealFrac (0 :: Float)
+"fromSeconds/Double"    fromSeconds = fromSecondsRealFrac (0 :: Double)
+"fromSeconds/Int"       fromSeconds = fromSecondsIntegral (0 :: Int)
+"fromSeconds/Int64"     fromSeconds = fromSecondsIntegral (0 :: Int64)
+"fromSeconds/Integer"   fromSeconds = fromSecondsIntegral (0 :: Integer)
 
   #-}
 

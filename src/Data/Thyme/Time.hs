@@ -85,18 +85,18 @@ deriving instance RealFrac NominalDiffTime
 
 {-# RULES
 
-"realToFrac∷DiffTime→NominalDiffTime"
+"realToFrac/DiffTime-NominalDiffTime"
     realToFrac = \ (DiffTime d) -> NominalDiffTime d
-"realToFrac∷NominalDiffTime→DiffTime"
+"realToFrac/NominalDiffTime-DiffTime"
     realToFrac = \ (NominalDiffTime d) -> DiffTime d
 
-"realToFrac∷DiffTime→Fractional"
+"realToFrac/DiffTime-Fractional"
     realToFrac = toSeconds :: (Fractional n) => DiffTime -> n
-"realToFrac∷NominalDiffTime→Fractional"
+"realToFrac/NominalDiffTime-Fractional"
     realToFrac = toSeconds :: (Fractional n) => NominalDiffTime -> n
 
-"realToFrac∷Real→DiffTime"
+"realToFrac/Real-DiffTime"
     realToFrac = fromSeconds :: (Real n) => n -> DiffTime
-"realToFrac∷Real→NominalDiffTime"
+"realToFrac/Real-NominalDiffTime"
     realToFrac = fromSeconds :: (Real n) => n -> NominalDiffTime #-}
 
