@@ -1,6 +1,11 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 import Prelude
+#if !MIN_VERSION_base(4,6,0)
+    hiding (catch)
+#endif
+import Control.Exception
 import Data.Int
 import Data.Map (Map)
 import qualified Data.Map as Map
@@ -30,6 +35,7 @@ hook :: PackageDescription -> LocalBuildInfo -> UserHooks -> BuildFlags -> IO ()
 hook pd lbi uh bf = do
     -- more reliable way to force a rebuild?
     removeDirectoryRecursive (buildDir lbi </> "rewrite" </> "rewrite-tmp")
+        `catch` \ e -> return () `const` (e :: IOException)
 
     (err, (out, _)) <- redirectStderr . redirectStdout $
         buildHook simpleUserHooks pd lbi uh bf
