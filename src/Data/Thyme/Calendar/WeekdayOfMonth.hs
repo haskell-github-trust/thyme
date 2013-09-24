@@ -1,5 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ViewPatterns #-}
 
@@ -17,6 +18,7 @@ import Data.Data
 import Data.Thyme.Calendar
 import Data.Thyme.Calendar.Internal
 import Data.Thyme.TH
+import GHC.Generics (Generic)
 import System.Random
 import Test.QuickCheck
 

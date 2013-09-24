@@ -5,6 +5,7 @@ hlint --cpp-include=include \
 	--cpp-define=SHOW_INTERNAL=1 \
 	-XNoUnboxedTuples \
 	-i "Evaluate" \
+	-i "Unused LANGUAGE pragma" \
 	-i "Reduce duplication" \
 	-i "Redundant lambda" \
 	-i "Use camelCase" \

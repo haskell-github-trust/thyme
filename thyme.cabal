@@ -80,6 +80,8 @@ library
         transformers,
         vector >= 0.9,
         vector-space >= 0.8
+    if impl(ghc < 7.6.1)
+        build-depends: ghc-prim
     ghc-options: -Wall
     if flag(bug-for-bug)
         cpp-options: -DBUG_FOR_BUG=1

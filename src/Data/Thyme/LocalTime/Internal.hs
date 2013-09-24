@@ -1,5 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -27,6 +28,7 @@ import Data.Thyme.Format.Internal
 #endif
 import Data.Thyme.LocalTime.TimeZone
 import Data.VectorSpace
+import GHC.Generics (Generic)
 import System.Random
 import Test.QuickCheck
 

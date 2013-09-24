@@ -1,5 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -22,6 +23,7 @@ import Data.Ix
 import Data.Thyme.Format.Internal
 import Data.Vector.Unboxed (Vector)
 import qualified Data.Vector.Unboxed as V
+import GHC.Generics (Generic)
 import System.Random
 import Test.QuickCheck
 

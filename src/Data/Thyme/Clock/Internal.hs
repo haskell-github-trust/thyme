@@ -1,5 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-} -- workaround
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -23,6 +24,7 @@ import Data.Ix
 import Data.Micro
 import Data.Thyme.Calendar.Internal
 import Data.VectorSpace
+import GHC.Generics (Generic)
 import System.Random
 import Test.QuickCheck
 

@@ -1,5 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -18,6 +19,7 @@ import Data.Int
 import Data.Ix
 import Data.Ratio
 import Data.VectorSpace
+import GHC.Generics (Generic)
 import System.Random
 import Test.QuickCheck
 

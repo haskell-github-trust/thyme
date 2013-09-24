@@ -1,5 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
@@ -41,6 +42,7 @@ import Data.Thyme.Clock.Internal
 import Data.Thyme.Format.Internal
 import Data.Thyme.LocalTime
 import Data.VectorSpace
+import GHC.Generics (Generic)
 import System.Locale
 import System.Random (Random)
 import Test.QuickCheck
