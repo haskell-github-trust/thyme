@@ -10,8 +10,7 @@ install:
 script:
   - cabal test --show-details=always
   - cabal bench || true
-  - ./.travis.hlint
 
 env:
-  - mode="-fWerror --enable-tests --enable-benchmarks"
+  - mode="-fWerror -fHLint --enable-tests --enable-benchmarks -O2"
 

@@ -28,6 +28,11 @@ flag bug-for-bug
     default: True
     manual: True
 
+flag HLint
+    description: include HLint as a Cabal test-suite
+    default: False
+    manual: True
+
 flag show-internal
     description: instance Show of internal representation
     default: False
@@ -123,6 +128,16 @@ test-suite rewrite
         text,
         thyme
     ghc-options: -Wall
+
+test-suite hlint
+    type: exitcode-stdio-1.0
+    main-is: hlint.hs
+    ghc-options: -threaded -rtsopts -with-rtsopts=-N
+    hs-source-dirs: tests
+    if flag(HLint)
+        build-depends: base, hlint >= 1.8.53
+    else
+        buildable: False
 
 benchmark bench
     type: exitcode-stdio-1.0
