@@ -28,6 +28,7 @@ import Text.Printf
 
 import Common
 
+{-# ANN main "HLint: ignore Use list literal" #-}
 main :: IO ()
 main = do
     utcs <- unGen (vectorOf samples arbitrary) <$> newStdGen <*> pure 0

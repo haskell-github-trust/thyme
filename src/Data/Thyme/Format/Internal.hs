@@ -41,6 +41,7 @@ utf8String = Text.encodeUtf8 . Text.pack
 shows02 :: Int -> ShowS
 shows02 n = if n < 10 then (:) '0' . shows n else shows n
 
+{-# ANN shows_2 "HLint: ignore Use camelCase" #-}
 {-# INLINE shows_2 #-}
 shows_2 :: Int -> ShowS
 shows_2 n = if n < 10 then (:) ' ' . shows n else shows n

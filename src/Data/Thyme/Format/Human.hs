@@ -37,6 +37,7 @@ humanTimeDiff :: (TimeDiff d) => d -> String
 humanTimeDiff d = humanTimeDiffs d ""
 
 -- | Display 'DiffTime' or 'NominalDiffTime' in a human-readable form.
+{-# ANN humanTimeDiffs "HLint: ignore Use fromMaybe" #-}
 humanTimeDiffs :: (TimeDiff d) => d -> ShowS
 humanTimeDiffs td = (if signed < 0 then (:) '-' else id) . diff where
     signed@(Micro . abs -> us) = td ^. microseconds

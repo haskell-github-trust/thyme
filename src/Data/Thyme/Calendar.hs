@@ -72,6 +72,7 @@ gregorianMonthsClip n (YearMonthDay y m d) = YearMonthDay y' m'
         $ min (gregorianMonthLength y' m') d where
     ((+) y -> y', (+) 1 -> m') = divMod (m + n - 1) 12
 
+{-# ANN gregorianMonthsRollover "HLint: ignore Use if" #-}
 {-# INLINEABLE gregorianMonthsRollover #-}
 gregorianMonthsRollover :: Months -> YearMonthDay -> YearMonthDay
 gregorianMonthsRollover n (YearMonthDay y m d) = case d <= len of

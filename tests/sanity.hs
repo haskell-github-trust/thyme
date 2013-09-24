@@ -58,6 +58,7 @@ prop_ShowRead a = (a, "") `elem` reads (show a)
 
 ------------------------------------------------------------------------
 
+{-# ANN main "HLint: ignore Use list literal" #-}
 main :: IO ()
 main = (exit . all isSuccess <=< sequence) $
         quickCheckResult (prop_ShowRead :: Day -> Bool) :

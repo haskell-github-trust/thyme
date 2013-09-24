@@ -4,14 +4,10 @@ SRC="$(sed -ne 's/^\W*hs-source-dirs:\W*\(.*\)$/\1/p' *.cabal)"
 hlint --cpp-include=include \
 	--cpp-define=SHOW_INTERNAL=1 \
 	-XNoUnboxedTuples \
-	-i "Evaluate" \
 	-i "Unused LANGUAGE pragma" \
 	-i "Reduce duplication" \
 	-i "Redundant lambda" \
-	-i "Use camelCase" \
-	-i "Use fromMaybe" \
 	-i "Use if" \
 	-i "Use import/export shortcut" \
-	-i "Use list literal" \
 	${SRC:-.}
 

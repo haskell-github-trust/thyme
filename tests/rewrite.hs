@@ -31,6 +31,8 @@ main = do
         [ "build", "--ghc-option=-ddump-rule-firings" ]
     useless
 
+{-# ANN hook ("HLint: ignore Evaluate" :: String) #-}
+{-# ANN hook ("HLint: ignore Use if" :: String) #-}
 hook :: PackageDescription -> LocalBuildInfo -> UserHooks -> BuildFlags -> IO ()
 hook pd lbi uh bf = do
     -- more reliable way to force a rebuild?

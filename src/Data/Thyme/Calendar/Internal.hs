@@ -147,6 +147,7 @@ monthLengths     = V.fromList [31,28,31,30,31,30,31,31,30,31,30,31]
 monthLengthsLeap = V.fromList [31,29,31,30,31,30,31,31,30,31,30,31]
                             -- J  F  M  A  M  J  J  A  S  O  N  D
 
+{-# ANN monthDays "HLint: ignore Use fromMaybe" #-}
 {-# NOINLINE monthDays #-}
 monthDays :: Vector ({-Month-}Int8, {-DayOfMonth-}Int8)
 monthDays = V.generate 365 go where
@@ -155,6 +156,7 @@ monthDays = V.generate 365 go where
         m = maybe 12 id $ V.findIndex (yd <) first
         d = succ yd - V.unsafeIndex first (pred m)
 
+{-# ANN monthDaysLeap "HLint: ignore Use fromMaybe" #-}
 {-# NOINLINE monthDaysLeap #-}
 monthDaysLeap :: Vector ({-Month-}Int8, {-DayOfMonth-}Int8)
 monthDaysLeap = V.generate 366 go where
