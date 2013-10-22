@@ -51,7 +51,7 @@ weekdayOfMonth = iso toWeekday fromWeekday where
     toWeekday day@(view ordinalDate -> ord) = WeekdayOfMonth y m n wd where
         YearMonthDay y m d = ord ^. yearMonthDay
         WeekDate _ _ wd = toWeekOrdinal ord day
-        n = div (d - 1) 7
+        n = 1 + div (d - 1) 7
 
     {-# INLINEABLE fromWeekday #-}
     fromWeekday :: WeekdayOfMonth -> Day
@@ -78,4 +78,3 @@ weekdayOfMonthValid (WeekdayOfMonth y m n wd) = (refDay .+^ s * offset)
 
 -- * Lenses
 thymeLenses ''WeekdayOfMonth
-
