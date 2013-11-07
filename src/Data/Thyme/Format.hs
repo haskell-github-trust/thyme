@@ -423,7 +423,7 @@ timeParser TimeLocale {..} = flip execStateT unixEpoch . go where
             lift (P.takeWhile P.isSpace) >> go (dropWhile P.isSpace rspec)
         c : rspec | isAscii c -> lift (P.char c) >> go rspec
         c : rspec -> lift (charU8 c) >> go rspec
-        "" -> lift P.skipSpace
+        "" -> return ()
 
     {-# INLINE micro #-}
     micro :: Parser Micro
@@ -450,19 +450,24 @@ timeParser TimeLocale {..} = flip execStateT unixEpoch . go where
         tpPOSIXTime = zeroV
         tpTimeZone = utc
 
+{-# INLINE buildTimeParser #-}
+buildTimeParser :: (ParseTime t) => TimeLocale -> String -> Parser t
+buildTimeParser l spec = buildTime
+    <$ P.skipSpace <*> timeParser l spec <* P.skipSpace <* P.endOfInput
+
 {-# INLINEABLE parseTime #-}
 parseTime :: (ParseTime t) => TimeLocale -> String -> String -> Maybe t
 parseTime l spec = either (const Nothing) Just
-    . P.parseOnly (buildTime <$> timeParser l spec) . utf8String
+    . P.parseOnly (buildTimeParser l spec) . utf8String
 
 {-# INLINEABLE readTime #-}
 readTime :: (ParseTime t) => TimeLocale -> String -> String -> t
 readTime l spec = either error id
-    . P.parseOnly (buildTime <$> timeParser l spec) . utf8String
+    . P.parseOnly (buildTimeParser l spec) . utf8String
 
 {-# INLINEABLE readsTime #-}
 readsTime :: (ParseTime t) => TimeLocale -> String -> ReadS t
-readsTime l spec = parserToReadS (buildTime <$> timeParser l spec)
+readsTime l = parserToReadS . buildTimeParser l
 
 ------------------------------------------------------------------------
 
