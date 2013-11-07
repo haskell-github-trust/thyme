@@ -309,8 +309,10 @@ timeParser TimeLocale {..} = flip execStateT unixEpoch . go where
             -- Hour
             'H' -> lift (dec0 2) >>= setHour24
             'I' -> lift (dec0 2) >>= setHour12
-            'k' -> lift (dec_ 2 <|> dec_ 1) >>= setHour24
-            'l' -> lift (dec_ 2 <|> dec_ 1) >>= setHour12
+            'k' -> (lift (dec_ 2) >>= setHour24)
+                <|> (lift (dec_ 1) >>= setHour24)
+            'l' -> (lift (dec_ 2) >>= setHour12)
+                <|> (lift (dec_ 1) >>= setHour12)
             -- Minute
             'M' -> lift (dec0 2) >>= assign _tpMinute >> go rspec
             -- Second
@@ -320,8 +322,7 @@ timeParser TimeLocale {..} = flip execStateT unixEpoch . go where
                 >>= assign _tpSecFrac >> go rspec
 
             -- Year
-            -- FIXME: should full years / centuries be fixed width?
-            'Y' -> lift (negative P.decimal) >>= setYear
+            'Y' -> fullYear
             'y' -> lift (dec0 2) >>= setCenturyYear
             'C' -> lift (dec0 2) >>= setCentury
             -- Month
@@ -331,14 +332,15 @@ timeParser TimeLocale {..} = flip execStateT unixEpoch . go where
             'm' -> lift (dec0 2) >>= setMonth
             -- DayOfMonth
             'd' -> lift (dec0 2) >>= setDayOfMonth
-            'e' -> lift (dec_ 2 <|> dec_ 1) >>= setDayOfMonth
+            'e' -> (lift (dec_ 2) >>= setDayOfMonth)
+                <|> (lift (dec_ 1) >>= setDayOfMonth)
             -- DayOfYear
             'j' -> lift (dec0 3) >>= assign _tpDayOfYear
                 >> flag IsOrdinalDate .= True >> go rspec
 
             -- Year (WeekDate)
             -- FIXME: problematic if input contains both %Y and %G
-            'G' -> flag IsWeekDate .= True >> lift (dec0 4) >>= setYear
+            'G' -> flag IsWeekDate .= True >> fullYear
             'g' -> flag IsWeekDate .= True >> lift (dec0 2) >>= setCenturyYear
             'f' -> flag IsWeekDate .= True >> lift (dec0 2) >>= setCentury
             -- WeekOfYear
@@ -377,6 +379,15 @@ timeParser TimeLocale {..} = flip execStateT unixEpoch . go where
                 flag PostMeridiem .= pm
                 flag TwelveHour .= True
                 go rspec
+            -- NOTE: if a greedy parse fails or causes a later failure,
+            -- then backtrack and only accept 4-digit years; see #5.
+            fullYear = year (negative P.decimal) <|> year (dec0 4) where
+                year p = do
+                    (c, y) <- (`divMod` 100) <$> lift p
+                    flag HasCentury .= True
+                    _tpCentury .= c
+                    _tpCenturyYear .= y
+                    go rspec
             setHour12 h = do
                 flag TwelveHour .= True
                 _tpHour .= h
@@ -384,11 +395,6 @@ timeParser TimeLocale {..} = flip execStateT unixEpoch . go where
             setHour24 h = do
                 flag TwelveHour .= False
                 _tpHour .= h
-                go rspec
-            setYear ((`divMod` 100) -> (c, y)) = do
-                flag HasCentury .= True
-                _tpCentury .= c
-                _tpCenturyYear .= y
                 go rspec
             setCenturyYear y = do _tpCenturyYear .= y; go rspec
             setCentury c = do
