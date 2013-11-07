@@ -49,7 +49,7 @@ prop_parseTime (Spec spec) (RecentTime orig)
     s = T.formatTime defaultTimeLocale spec (thyme # orig)
     t = parseTime defaultTimeLocale spec s :: Maybe UTCTime
     t' = T.parseTime defaultTimeLocale spec s
-    tp = P.parseOnly (timeParser defaultTimeLocale spec) . utf8String
+    tp = P.parse (timeParser defaultTimeLocale spec) . utf8String
     desc = "input: " ++ show s ++ "\nthyme: " ++ show t
         ++ "\ntime:  " ++ show t' ++ "\nstate: " ++ show (tp s)
 
