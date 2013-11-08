@@ -54,36 +54,36 @@ main = do
                 , nf (addDays 28 <$>) days
                 , nf (T.addDays 28 <$>) days' ) :
 
-            ( "toOrdinalDate", 2.5
+            ( "toOrdinalDate", 2.7
                 , nf (toOrdinalDate <$>) days
                 , nf (T.toOrdinalDate <$>) days' ) :
 
-            ( "toGregorian", 3.5
+            ( "toGregorian", 4.3
                 , nf (toGregorian <$>) days
                 , nf (T.toGregorian <$>) days' ) :
 
-            ( "showGregorian", 3.3
+            ( "showGregorian", 3.8
                 , nf (showGregorian <$>) days
                 , nf (T.showGregorian <$>) days' ) :
 
-            ( "toWeekDate", 2.6
+            ( "toWeekDate", 2.5
                 , nf (toWeekDate <$>) days
                 , nf (T.toWeekDate <$>) days' ) :
 
-            ( "monthLength", 1.5
+            ( "monthLength", 1.8
                 , nf (uncurry monthLength <$>) mons
                 , nf (uncurry T.monthLength <$>) mons ) :
 
-            ( "dayOfYearToMonthAndDay", 2.2
+            ( "dayOfYearToMonthAndDay", 4.3
                 , nf (uncurry dayOfYearToMonthAndDay <$>) ords
                 , nf (uncurry T.dayOfYearToMonthAndDay <$>) ords ) :
 
             -- Clock
-            ( "addUTCTime", 95
+            ( "addUTCTime", 85
                 , nf (addUTCTime dt <$>) utcs
                 , nf (T.addUTCTime dt' <$>) utcs' ) :
 
-            ( "diffUTCTime", 21
+            ( "diffUTCTime", 22
                 , nf (diffUTCTime now <$>) utcs
                 , nf (T.diffUTCTime now' <$>) utcs' ) :
 
@@ -92,20 +92,20 @@ main = do
                 , nf (T.utcTimeToPOSIXSeconds <$>) utcs' ) :
 
             -- LocalTime
-            ( "timeToTimeOfDay", 45
+            ( "timeToTimeOfDay", 40
                 , nf (timeToTimeOfDay <$>) (utctDayTime . unUTCTime <$> utcs)
                 , nf (T.timeToTimeOfDay <$>) (T.utctDayTime <$> utcs') ) :
 
-            ( "utcToLocalTime", 20
+            ( "utcToLocalTime", 22
                 , nf (utcToLocalTime utc <$>) utcs
                 , nf (T.utcToLocalTime T.utc <$>) utcs' ) :
 
             -- Format
-            ( "formatTime", 8
+            ( "formatTime", 7.5
                 , nf (formatTime defaultTimeLocale spec <$>) utcs
                 , nf (T.formatTime defaultTimeLocale spec <$>) utcs' ) :
 
-            ( "parseTime", 4.5
+            ( "parseTime", 5.2
                 , nf (parse <$>) strs
                 , nf (parse' <$>) strs ) :
 
@@ -121,8 +121,10 @@ main = do
         ours <- flip analyseMean n =<< runBenchmark env us
         theirs <- flip analyseMean n =<< runBenchmark env them
         let ratio = theirs / ours
-        liftIO . void $ printf "%-23s: %6.1fns, %5.1f×; expected %4.1f× : %s\n"
-            name (ours * 1000000000 / fromIntegral samples) ratio expected
+        liftIO . void $ printf
+            "%-23s: %6.1fns, %5.1f×; expected %4.1f× : %+3.0f%% %s\n"
+            name (ours * 1000000000 / fromIntegral samples)
+            ratio expected ((ratio / expected - 1) * 100)
             (if ratio >= expected then "OK." else "oh noes. D:")
         return (ratio >= expected)
 
