@@ -2,6 +2,7 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MagicHash #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -25,6 +26,8 @@ import Data.Thyme.Format.Internal
 import Data.Vector.Unboxed (Vector)
 import qualified Data.Vector.Unboxed as V
 import GHC.Generics (Generic)
+import GHC.Prim
+import GHC.Types
 import System.Random
 import Test.QuickCheck
 
@@ -100,9 +103,14 @@ instance NFData YearMonthDay
 ------------------------------------------------------------------------
 
 -- | Gregorian leap year?
-{-# INLINE isLeapYear #-}
 isLeapYear :: Year -> Bool
-isLeapYear y = mod y 4 == 0 && (mod y 400 == 0 || mod y 100 /= 0)
+isLeapYear (I# y#) = isLeapYear# y#
+
+-- | INTERNAL: avoid GHC duplicating code for each of the possibilities.
+{-# NOINLINE isLeapYear# #-}
+isLeapYear# :: Int# -> Bool
+isLeapYear# y# = remInt# y# 4# ==# 0#
+    && (remInt# y# 400# ==# 0# || remInt# y# 100# /=# 0#)
 
 type DayOfYear = Int
 data OrdinalDate = OrdinalDate

@@ -86,6 +86,7 @@ library
         bytestring >= 0.9,
         containers,
         deepseq >= 1.2,
+        ghc-prim,
         mtl >= 1.1,
         old-locale >= 1.0,
         random,
@@ -93,8 +94,6 @@ library
         time >= 1.4,
         vector >= 0.9,
         vector-space >= 0.8
-    if impl(ghc < 7.6.1)
-        build-depends: ghc-prim
     if flag(lens)
         build-depends: lens >= 3.9
     else
