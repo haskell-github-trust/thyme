@@ -22,5 +22,7 @@ posixTime = iso (\ (UTCRep t) -> t ^-^ unixEpoch)
 -- TODO: reimplement without 'T.getPOSIXTime' to avoid 'Integer'?
 {-# INLINE getPOSIXTime #-}
 getPOSIXTime :: IO POSIXTime
-getPOSIXTime = fmap (NominalDiffTime . toMicro . toRational) T.getPOSIXTime
+getPOSIXTime = fmap (NominalDiffTime . us) T.getPOSIXTime where
+    us :: T.POSIXTime -> Micro
+    us t = Micro (round $ t * 1000000)
 

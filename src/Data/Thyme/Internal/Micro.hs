@@ -60,10 +60,6 @@ instance Read Micro where
         return . Micro . sign $ s * 1000000 + us
 #endif
 
-{-# INLINE toMicro #-}
-toMicro :: Rational -> Micro
-toMicro r = Micro (fromInteger $ 1000000 * numerator r `div` denominator r)
-
 {-# INLINE microQuotRem #-}
 {-# INLINE microDivMod #-}
 microQuotRem, microDivMod :: Micro -> Micro -> (Int64, Micro)

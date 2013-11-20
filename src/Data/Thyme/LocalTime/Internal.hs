@@ -98,14 +98,14 @@ timeOfDay = iso fromDiff toDiff where
     fromDiff :: DiffTime -> TimeOfDay
     fromDiff (DiffTime t) = TimeOfDay
             (fromIntegral h) (fromIntegral m) (DiffTime s) where
-        (h, ms) = microQuotRem t (toMicro 3600)
-        (m, s) = microQuotRem ms (toMicro 60)
+        (h, ms) = microQuotRem t (Micro 3600000000)
+        (m, s) = microQuotRem ms (Micro 60000000)
 
     {-# INLINEABLE toDiff #-}
     toDiff :: TimeOfDay -> DiffTime
     toDiff (TimeOfDay h m s) = s
-        ^+^ fromIntegral m *^ DiffTime (toMicro 60)
-        ^+^ fromIntegral h *^ DiffTime (toMicro 3600)
+        ^+^ fromIntegral m *^ DiffTime (Micro 60000000)
+        ^+^ fromIntegral h *^ DiffTime (Micro 3600000000)
 
 type Minutes = Int
 

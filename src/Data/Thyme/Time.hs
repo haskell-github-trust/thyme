@@ -66,7 +66,7 @@ instance Fractional Micro where
     {-# INLINE fromRational #-}
     Micro a / Micro b = Micro (quot (a * 1000) (b `quot` 1000))
     recip (Micro a) = Micro (quot 1000000 a)
-    fromRational = toMicro
+    fromRational r = Micro (round $ r * 1000000)
 
 instance RealFrac Micro where
     {-# INLINE properFraction #-}
