@@ -58,6 +58,7 @@ library
         Data.Thyme.Clock.TAI
         Data.Thyme.Format
         Data.Thyme.Format.Human
+        Data.Thyme.Format.Aeson
         Data.Thyme.LocalTime
         Data.Thyme.Time
         Data.Thyme.Time.Core
@@ -72,6 +73,7 @@ library
     build-depends:
         QuickCheck >= 2.4,
         attoparsec >= 0.10,
+        aeson >= 0.6,
         base >= 4.5 && < 5,
         bytestring >= 0.9,
         containers,
