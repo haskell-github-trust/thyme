@@ -11,9 +11,9 @@ module Data.Thyme.Format.Human
     ) where
 
 import Prelude
-import Control.Arrow
 import Control.Applicative
-import Control.Lens hiding (singular)
+import Control.Arrow
+import Control.Lens
 import Control.Monad
 import Data.AdditiveGroup
 import Data.AffineSpace
@@ -26,7 +26,7 @@ import Data.VectorSpace
 
 data Unit = Unit
     { unit :: Micro
-    , singular :: ShowS
+    , single :: ShowS
     , plural :: ShowS
     }
 thymeLenses ''Unit
@@ -63,7 +63,7 @@ approx us next Unit {..} = First $
         shows n . inflection <$ guard (us < next) where
     n = fst $ microQuotRem (us ^+^ half) unit where
         half = Micro . fst $ microQuotRem unit (Micro 2)
-    inflection = if n == 1 then singular else plural
+    inflection = if n == 1 then single else plural
 
 units :: [Unit]
 units = scanl (&)
@@ -82,6 +82,6 @@ units = scanl (&)
     , const (Unit maxBound id id) -- upper bound needed for humanTimeDiffs.diff
     ] where
     times :: String -> Rational -> Unit -> Unit
-    times ((++) . (:) ' ' -> singular) r Unit {unit}
-        = Unit {unit = r *^ unit, plural = singular . (:) 's', ..}
+    times ((++) . (:) ' ' -> single) r Unit {unit}
+        = Unit {unit = r *^ unit, plural = single . (:) 's', ..}
 
