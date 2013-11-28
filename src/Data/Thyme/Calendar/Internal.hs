@@ -151,19 +151,19 @@ monthLengthsLeap = V.fromList [31,29,31,30,31,30,31,31,30,31,30,31]
 {-# NOINLINE monthDays #-}
 monthDays :: Vector ({-Month-}Int8, {-DayOfMonth-}Int8)
 monthDays = V.generate 365 go where
-    first = V.prescanl' (+) 0 monthLengths
+    dom01 = V.prescanl' (+) 0 monthLengths
     go yd = (fromIntegral m, fromIntegral d) where
-        m = maybe 12 id $ V.findIndex (yd <) first
-        d = succ yd - V.unsafeIndex first (pred m)
+        m = maybe 12 id $ V.findIndex (yd <) dom01
+        d = succ yd - V.unsafeIndex dom01 (pred m)
 
 {-# ANN monthDaysLeap "HLint: ignore Use fromMaybe" #-}
 {-# NOINLINE monthDaysLeap #-}
 monthDaysLeap :: Vector ({-Month-}Int8, {-DayOfMonth-}Int8)
 monthDaysLeap = V.generate 366 go where
-    first = V.prescanl' (+) 0 monthLengthsLeap
+    dom01 = V.prescanl' (+) 0 monthLengthsLeap
     go yd = (fromIntegral m, fromIntegral d) where
-        m = maybe 12 id $ V.findIndex (yd <) first
-        d = succ yd - V.unsafeIndex first (pred m)
+        m = maybe 12 id $ V.findIndex (yd <) dom01
+        d = succ yd - V.unsafeIndex dom01 (pred m)
 
 -- | No good home for this within the current hierarchy. This will do.
 {-# INLINEABLE randomIsoR #-}
