@@ -14,6 +14,7 @@ module Data.Thyme.LocalTime.Internal where
 
 import Prelude hiding ((.))
 import Control.Applicative
+import Control.Arrow
 import Control.Category hiding (id)
 import Control.DeepSeq
 import Control.Lens
@@ -62,7 +63,7 @@ instance Bounded TimeOfDay where
 
 instance Random TimeOfDay where
     randomR = randomIsoR timeOfDay
-    random = over _1 (^. timeOfDay) . random
+    random = first (^. timeOfDay) . random
 
 instance Arbitrary TimeOfDay where
     arbitrary = do

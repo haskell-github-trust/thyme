@@ -570,7 +570,7 @@ instance ParseTime UTCTime where
     {-# INLINE buildTime #-}
     buildTime tp@TimeParse {..} = if tp ^. flag IsPOSIXTime
         then posixTime # tpPOSIXTime
-        else buildTime tp ^. from zonedTime . _2
+        else snd $ buildTime tp ^. from zonedTime
 
 instance ParseTime UniversalTime where
     {-# INLINE buildTime #-}

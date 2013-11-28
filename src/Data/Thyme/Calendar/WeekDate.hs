@@ -15,6 +15,7 @@ module Data.Thyme.Calendar.WeekDate
 
 import Prelude
 import Control.Applicative
+import Control.Arrow
 import Control.Lens
 import Data.Thyme.Calendar.OrdinalDate
 import Data.Thyme.Calendar.Internal
@@ -36,15 +37,15 @@ instance Bounded MondayWeek where
 
 instance Random WeekDate where
     randomR = randomIsoR weekDate
-    random = over _1 (^. weekDate) . random
+    random = first (^. weekDate) . random
 
 instance Random SundayWeek where
     randomR = randomIsoR sundayWeek
-    random = over _1 (^. sundayWeek) . random
+    random = first (^. sundayWeek) . random
 
 instance Random MondayWeek where
     randomR = randomIsoR mondayWeek
-    random = over _1 (^. mondayWeek) . random
+    random = first (^. mondayWeek) . random
 
 instance Arbitrary WeekDate where
     arbitrary = view weekDate <$> arbitrary

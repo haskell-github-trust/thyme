@@ -11,6 +11,7 @@ module Data.Thyme.Calendar.OrdinalDate
 
 import Prelude
 import Control.Applicative
+import Control.Arrow
 import Control.Lens
 import Control.Monad
 import Data.Thyme.Calendar
@@ -25,7 +26,7 @@ instance Bounded OrdinalDate where
 
 instance Random OrdinalDate where
     randomR = randomIsoR ordinalDate
-    random = over _1 (^. ordinalDate) . random
+    random = first (^. ordinalDate) . random
 
 instance Arbitrary OrdinalDate where
     arbitrary = view ordinalDate <$> arbitrary

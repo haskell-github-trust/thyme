@@ -10,6 +10,7 @@ module Data.Thyme.Calendar.WeekdayOfMonth where
 
 import Prelude
 import Control.Applicative
+import Control.Arrow
 import Control.DeepSeq
 import Control.Lens
 import Control.Monad
@@ -37,7 +38,7 @@ instance Bounded WeekdayOfMonth where
 
 instance Random WeekdayOfMonth where
     randomR = randomIsoR weekdayOfMonth
-    random = over _1 (^. weekdayOfMonth) . random
+    random = first (^. weekdayOfMonth) . random
 
 instance Arbitrary WeekdayOfMonth where
     arbitrary = view weekdayOfMonth <$> arbitrary

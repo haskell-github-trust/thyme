@@ -13,6 +13,7 @@ module Data.Thyme.Calendar.Internal where
 
 import Prelude
 import Control.Applicative
+import Control.Arrow
 import Control.DeepSeq
 import Control.Lens
 import Control.Monad
@@ -168,7 +169,7 @@ monthDaysLeap = V.generate 366 go where
 -- | No good home for this within the current hierarchy. This will do.
 {-# INLINEABLE randomIsoR #-}
 randomIsoR :: (Random s, RandomGen g) => Iso' s a -> (a, a) -> g -> (a, g)
-randomIsoR l r = over _1 (^. l) . randomR (over both (l #) r)
+randomIsoR l (x, y) = first (^. l) . randomR (l # x, l # y)
 
 ------------------------------------------------------------------------
 

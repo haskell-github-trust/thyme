@@ -23,8 +23,10 @@ module Data.Thyme.Calendar
 
 import Prelude hiding ((.))
 import Control.Applicative
+import Control.Arrow
 import Control.Category
 import Control.Lens
+import Control.Monad
 import Data.AdditiveGroup
 import Data.Thyme.Calendar.Internal
 import Data.Thyme.Clock.Internal
@@ -43,19 +45,19 @@ instance Bounded YearMonthDay where
     maxBound = maxBound ^. gregorian
 
 instance Random Day where
-    randomR r = over _1 (^. _utctDay) . randomR range where
+    randomR r = first (^. _utctDay) . randomR (range r) where
         -- upper bound is one Micro second before the next day
-        range = r & _2 %~ succ & both %~ toMidnight & _2 %~ pred
+        range = toMidnight *** pred . toMidnight . succ
         toMidnight = (utcTime #) . flip UTCTime zeroV
     random = randomR (minBound, maxBound)
 
 instance Random YearMonthDay where
     randomR = randomIsoR gregorian
-    random = over _1 (^. gregorian) . random
+    random = first (^. gregorian) . random
 
 instance Arbitrary Day where
     arbitrary = ModifiedJulianDay
-        <$> choose ((minBound, maxBound) & both %~ toModifiedJulianDay)
+        <$> choose (join (***) toModifiedJulianDay (minBound, maxBound))
 
 instance Arbitrary YearMonthDay where
     arbitrary = view gregorian <$> arbitrary
