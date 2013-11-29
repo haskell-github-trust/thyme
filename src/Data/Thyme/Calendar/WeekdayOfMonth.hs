@@ -1,9 +1,8 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ViewPatterns #-}
-
 #include "thyme.h"
 
 module Data.Thyme.Calendar.WeekdayOfMonth where
@@ -18,7 +17,6 @@ import Data.AffineSpace
 import Data.Data
 import Data.Thyme.Calendar
 import Data.Thyme.Calendar.Internal
-import Data.Thyme.TH
 import GHC.Generics (Generic)
 import System.Random
 import Test.QuickCheck
@@ -78,4 +76,8 @@ weekdayOfMonthValid (WeekdayOfMonth y m n wd) = (refDay .+^ s * offset)
     offset = (abs n - 1) * 7 + if wo < 0 then wo + 7 else wo
 
 -- * Lenses
-thymeLenses ''WeekdayOfMonth
+LENS(WeekdayOfMonth,womYear,Year)
+LENS(WeekdayOfMonth,womMonth,Month)
+LENS(WeekdayOfMonth,womNth,Int)
+LENS(WeekdayOfMonth,womDayOfWeek,DayOfWeek)
+

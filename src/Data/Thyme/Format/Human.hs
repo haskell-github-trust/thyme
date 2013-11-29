@@ -1,7 +1,8 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ViewPatterns #-}
+#include "thyme.h"
 
 module Data.Thyme.Format.Human
     ( humanTimeDiff
@@ -21,7 +22,6 @@ import Data.Foldable
 import Data.Thyme.Internal.Micro
 import Data.Monoid
 import Data.Thyme.Clock.Internal
-import Data.Thyme.TH
 import Data.VectorSpace
 
 data Unit = Unit
@@ -29,7 +29,7 @@ data Unit = Unit
     , single :: ShowS
     , plural :: ShowS
     }
-thymeLenses ''Unit
+LENS(Unit,plural,ShowS)
 
 -- | Display 'DiffTime' or 'NominalDiffTime' in a human-readable form.
 {-# INLINE humanTimeDiff #-}

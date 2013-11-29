@@ -1,4 +1,6 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE CPP #-}
+{-# LANGUAGE RecordWildCards #-}
+#include "thyme.h"
 
 -- | Julian or Gregorian.
 module Data.Thyme.Calendar.MonthDay
@@ -8,9 +10,10 @@ module Data.Thyme.Calendar.MonthDay
     ) where
 
 import Prelude
+import Control.Lens
 import Data.Thyme.Calendar.Internal
-import Data.Thyme.TH
 
 -- * Lenses
-thymeLenses ''MonthDay
+LENS(MonthDay,mdMonth,Month)
+LENS(MonthDay,mdDay,DayOfMonth)
 

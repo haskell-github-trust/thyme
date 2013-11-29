@@ -1,9 +1,9 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+#include "thyme.h"
 
 module Data.Thyme.Format
     ( FormatTime (..)
@@ -35,7 +35,6 @@ import Data.Thyme.Clock.POSIX
 import Data.Thyme.Clock.TAI
 import Data.Thyme.Format.Internal
 import Data.Thyme.LocalTime
-import Data.Thyme.TH
 import Data.VectorSpace
 import System.Locale
 
@@ -276,7 +275,20 @@ data TimeParse = TimeParse
     , tpTimeZone :: !TimeZone
     } deriving (Show)
 
-thymeLenses ''TimeParse
+LENS(TimeParse,tpCentury,Int)
+LENS(TimeParse,tpCenturyYear,Int{-YearOfCentury-})
+LENS(TimeParse,tpMonth,Month)
+LENS(TimeParse,tpWeekOfYear,WeekOfYear)
+LENS(TimeParse,tpDayOfMonth,DayOfMonth)
+LENS(TimeParse,tpDayOfWeek,DayOfWeek)
+LENS(TimeParse,tpDayOfYear,DayOfYear)
+LENS(TimeParse,tpFlags,Int{-BitSet TimeFlag-})
+LENS(TimeParse,tpHour,Hour)
+LENS(TimeParse,tpMinute,Minute)
+LENS(TimeParse,tpSecond,Int)
+LENS(TimeParse,tpSecFrac,DiffTime)
+LENS(TimeParse,tpPOSIXTime,POSIXTime)
+LENS(TimeParse,tpTimeZone,TimeZone)
 
 {-# INLINE flag #-}
 flag :: TimeFlag -> Lens' TimeParse Bool

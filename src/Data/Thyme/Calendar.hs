@@ -1,14 +1,13 @@
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+#include "thyme.h"
 
 -- | 'UTCTime' is not Y294K-compliant, and 'Bounded' instances for the
 -- various calendar types reflect this fact. That said, the calendar
 -- calculations by themselves work perfectly fine for a wider range of
 -- dates, subject to the size of 'Int' for your platform.
-
 module Data.Thyme.Calendar
     ( Years, Months, Days
     -- * Days
@@ -30,7 +29,6 @@ import Control.Monad
 import Data.AdditiveGroup
 import Data.Thyme.Calendar.Internal
 import Data.Thyme.Clock.Internal
-import Data.Thyme.TH
 import System.Random
 import Test.QuickCheck
 
@@ -99,5 +97,7 @@ gregorianYearsRollover n (YearMonthDay ((+) n -> y') 2 29)
 gregorianYearsRollover n (YearMonthDay y m d) = YearMonthDay (y + n) m d
 
 -- * Lenses
-thymeLenses ''YearMonthDay
+LENS(YearMonthDay,ymdYear,Year)
+LENS(YearMonthDay,ymdMonth,Month)
+LENS(YearMonthDay,ymdDay,DayOfMonth)
 

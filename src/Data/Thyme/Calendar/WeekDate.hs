@@ -1,5 +1,7 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE CPP #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+#include "thyme.h"
 
 -- | Various Week Date formats
 module Data.Thyme.Calendar.WeekDate
@@ -19,7 +21,6 @@ import Control.Arrow
 import Control.Lens
 import Data.Thyme.Calendar.OrdinalDate
 import Data.Thyme.Calendar.Internal
-import Data.Thyme.TH
 import System.Random
 import Test.QuickCheck
 
@@ -57,7 +58,16 @@ instance Arbitrary MondayWeek where
     arbitrary = view mondayWeek <$> arbitrary
 
 -- * Lenses
-thymeLenses ''WeekDate
-thymeLenses ''SundayWeek
-thymeLenses ''MondayWeek
+
+LENS(WeekDate,wdYear,Year)
+LENS(WeekDate,wdWeek,WeekOfYear)
+LENS(WeekDate,wdDay,DayOfWeek)
+
+LENS(SundayWeek,swYear,Year)
+LENS(SundayWeek,swWeek,WeekOfYear)
+LENS(SundayWeek,swDay,DayOfWeek)
+
+LENS(MondayWeek,mwYear,Year)
+LENS(MondayWeek,mwWeek,WeekOfYear)
+LENS(MondayWeek,mwDay,DayOfWeek)
 

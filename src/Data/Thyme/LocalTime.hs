@@ -1,7 +1,6 @@
-{-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TemplateHaskell #-}
+#include "thyme.h"
 
 module Data.Thyme.LocalTime
     ( module Data.Thyme.LocalTime.TimeZone
@@ -11,10 +10,10 @@ module Data.Thyme.LocalTime
 
 import Prelude
 import Control.Lens
+import Data.Thyme.Calendar
 import Data.Thyme.Clock
 import Data.Thyme.LocalTime.Internal
 import Data.Thyme.LocalTime.TimeZone
-import Data.Thyme.TH
 
 {-# INLINE getZonedTime #-}
 getZonedTime :: IO ZonedTime
@@ -26,11 +25,19 @@ utcToLocalZonedTime time = do
     tz <- getTimeZone time
     return $ (tz, time) ^. zonedTime
 
-------------------------------------------------------------------------
 -- * Lenses
 
-thymeLenses ''TimeZone
-thymeLenses ''TimeOfDay
-thymeLenses ''LocalTime
-thymeLenses ''ZonedTime
+LENS(TimeZone,timeZoneMinutes,Int)
+LENS(TimeZone,timeZoneSummerOnly,Bool)
+LENS(TimeZone,timeZoneName,String)
+
+LENS(TimeOfDay,todHour,Hour)
+LENS(TimeOfDay,todMin,Minute)
+LENS(TimeOfDay,todSec,DiffTime)
+
+LENS(LocalTime,localDay,Day)
+LENS(LocalTime,localTimeOfDay,TimeOfDay)
+
+LENS(ZonedTime,zonedTimeToLocalTime,LocalTime)
+LENS(ZonedTime,zonedTimeZone,TimeZone)
 
