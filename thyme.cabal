@@ -79,12 +79,12 @@ library
         containers,
         deepseq >= 1.2,
         lens >= 3.9,
+        mtl >= 1.1,
         old-locale >= 1.0,
         random,
         template-haskell >= 2.6,
         text >= 0.11,
         time >= 1.4,
-        transformers,
         vector >= 0.9,
         vector-space >= 0.8
     if impl(ghc < 7.6.1)
@@ -151,11 +151,11 @@ benchmark bench
         base,
         criterion,
         lens,
+        mtl,
         old-locale,
         random,
         thyme,
         time,
-        transformers,
         vector-space
     ghc-options: -Wall
 

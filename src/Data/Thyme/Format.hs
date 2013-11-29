@@ -19,8 +19,8 @@ module Data.Thyme.Format
 import Prelude
 import Control.Applicative
 import Control.Lens
-import Control.Monad.Trans.Class
-import Control.Monad.Trans.State.Strict
+import Control.Monad.Trans
+import Control.Monad.State.Strict
 import Data.Attoparsec.ByteString.Char8 (Parser)
 import qualified Data.Attoparsec.ByteString.Char8 as P
 import Data.Bits

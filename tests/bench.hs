@@ -3,7 +3,7 @@ import Control.Arrow
 import Control.Applicative
 import Control.Lens
 import Control.Monad
-import Control.Monad.IO.Class
+import Control.Monad.Trans
 import Criterion
 import Criterion.Analysis
 import Criterion.Config
