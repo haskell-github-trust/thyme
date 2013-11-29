@@ -4,13 +4,12 @@
 -- 'Data.Int.Int64', which gives a usable range from @-290419-11-07
 -- 19:59:05.224192 UTC@ to @294135-11-26 04:00:54.775807 UTC@ in the future.
 --
--- Conversions are provided as 'Control.Lens.Iso.Iso''s from the @lens@
--- package, while 'Data.AdditiveGroup.AdditiveGroup',
--- 'Data.VectorSpace.VectorSpace' and 'Data.AffineSpace.AffineSpace' from
--- @vector-space@ allow for more principled calculations instead of 'Num',
--- 'Fractional' & al. Check each module for usage examples, and see
--- <http://hackage.haskell.org/package/lens> or
--- <http://hackage.haskell.org/package/vector-space> for further details.
+-- Conversions are provided as @Iso'@s from the
+-- <http://hackage.haskell.org/package/lens lens> package, while
+-- 'Data.AdditiveGroup.AdditiveGroup', 'Data.VectorSpace.VectorSpace' and
+-- 'Data.AffineSpace.AffineSpace' from
+-- <http://hackage.haskell.org/package/vector-space vector-space> allow for
+-- more principled operations instead of 'Num', 'Fractional' & al.
 --
 -- Thyme uses strict and unpacked tuples throughout, e.g. 'YearMonthDay' or
 -- 'Data.Thyme.Calendar.WeekDate.WeekDate'. Descriptive 'Int' synonyms such
