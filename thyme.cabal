@@ -33,6 +33,11 @@ flag HLint
     default: False
     manual: True
 
+flag lens
+    description: use the full lens package
+    default: False
+    manual: True
+
 flag show-internal
     description: instance Show of internal representation
     default: False
@@ -46,6 +51,8 @@ flag Werror
 library
     include-dirs: include
     hs-source-dirs: src
+    if !flag(lens)
+        hs-source-dirs: lens
     exposed-modules:
         Data.Thyme
         Data.Thyme.Calendar
@@ -69,6 +76,8 @@ library
         Data.Thyme.Format.Internal
         Data.Thyme.LocalTime.Internal
         Data.Thyme.LocalTime.TimeZone
+    if !flag(lens)
+        other-modules: Control.Lens
     build-depends:
         QuickCheck >= 2.4,
         attoparsec >= 0.10,
@@ -77,7 +86,6 @@ library
         bytestring >= 0.9,
         containers,
         deepseq >= 1.2,
-        lens >= 3.9,
         mtl >= 1.1,
         old-locale >= 1.0,
         random,
@@ -87,6 +95,10 @@ library
         vector-space >= 0.8
     if impl(ghc < 7.6.1)
         build-depends: ghc-prim
+    if flag(lens)
+        build-depends: lens >= 3.9
+    else
+        build-depends: profunctors >= 3.1.2
     ghc-options: -Wall
     if flag(bug-for-bug)
         cpp-options: -DBUG_FOR_BUG=1
@@ -98,19 +110,26 @@ library
 test-suite sanity
     type: exitcode-stdio-1.0
     hs-source-dirs: tests
+    if !flag(lens)
+        hs-source-dirs: lens
     main-is: sanity.hs
     other-modules: Common
+    if !flag(lens)
+        other-modules: Control.Lens
     build-depends:
         QuickCheck,
         attoparsec,
         base,
         bytestring,
-        lens,
         old-locale,
         text,
         thyme,
         time,
         vector-space
+    if flag(lens)
+        build-depends: lens
+    else
+        build-depends: profunctors, mtl
     ghc-options: -Wall
 
 test-suite rewrite
@@ -142,19 +161,26 @@ test-suite hlint
 benchmark bench
     type: exitcode-stdio-1.0
     hs-source-dirs: tests
+    if !flag(lens)
+        hs-source-dirs: lens
     main-is: bench.hs
     other-modules: Common
+    if !flag(lens)
+        other-modules: Control.Lens
     build-depends:
         QuickCheck,
         base,
         criterion,
-        lens,
         mtl,
         old-locale,
         random,
         thyme,
         time,
         vector-space
+    if flag(lens)
+        build-depends: lens
+    else
+        build-depends: profunctors
     ghc-options: -Wall
 
 -- vim: et sw=4 ts=4 sts=4:
