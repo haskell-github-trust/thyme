@@ -20,9 +20,11 @@ import qualified Data.Text as T
 import Data.Thyme
 import System.Locale
 
--- Copypasta sans change from aeson-0.6.2.1:Data.Aeson.Types.Class
--- Copyright:   (c) 2011, 2012 Bryan O'Sullivan
+-- Copyright:   (c) 2011, 2012, 2013 Bryan O'Sullivan
 --              (c) 2011 MailRank, Inc.
+
+------------------------------------------------------------------------
+-- Copypasta from aeson-0.7.0.0:Data.Aeson.Types.Internal
 
 -- | A newtype wrapper for 'UTCTime' that uses the same non-standard
 -- serialization format as Microsoft .NET, whose @System.DateTime@
@@ -35,11 +37,13 @@ newtype DotNetTime = DotNetTime {
       fromDotNetTime :: UTCTime
     } deriving (Eq, Ord, Read, Show, Typeable, FormatTime)
 
+------------------------------------------------------------------------
+-- Copypasta from aeson-0.7.0.0:Data.Aeson.Types.Instances
+
 instance ToJSON DotNetTime where
     toJSON (DotNetTime t) =
-        String (pack (secs ++ msecs ++ ")/"))
+        String (pack (secs ++ formatMillis t ++ ")/"))
       where secs  = formatTime defaultTimeLocale "/Date(%s" t
-            msecs = take 3 $ formatTime defaultTimeLocale "%q" t
     {-# INLINE toJSON #-}
 
 instance FromJSON DotNetTime where
@@ -54,11 +58,13 @@ instance FromJSON DotNetTime where
 instance ToJSON ZonedTime where
     toJSON t = String $ pack $ formatTime defaultTimeLocale format t
       where
-        format = "%FT%T" ++ milliseconds ++ tzFormat
-        milliseconds = take 4 $ formatTime defaultTimeLocale "%Q" t
+        format = "%FT%T." ++ formatMillis t ++ tzFormat
         tzFormat
           | 0 == timeZoneMinutes (zonedTimeZone t) = "Z"
           | otherwise = "%z"
+
+formatMillis :: (FormatTime t) => t -> String
+formatMillis t = take 3 . formatTime defaultTimeLocale "%q" $ t
 
 instance FromJSON ZonedTime where
     parseJSON (String t) =
@@ -83,7 +89,7 @@ instance FromJSON ZonedTime where
 
 instance ToJSON UTCTime where
     toJSON t = String (pack (take 23 str ++ "Z"))
-      where str = formatTime defaultTimeLocale "%FT%T%Q" t
+      where str = formatTime defaultTimeLocale "%FT%T.%q" t
     {-# INLINE toJSON #-}
 
 instance FromJSON UTCTime where
