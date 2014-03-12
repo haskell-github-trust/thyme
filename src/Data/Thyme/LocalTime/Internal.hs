@@ -20,7 +20,7 @@ import Control.Lens
 import Control.Monad
 import Data.AffineSpace
 import Data.Data
-import Data.Micro
+import Data.Thyme.Internal.Micro
 import Data.Thyme.Calendar.Internal
 import Data.Thyme.Clock.Internal
 #if !SHOW_INTERNAL

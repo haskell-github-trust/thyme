@@ -18,7 +18,7 @@ import Control.Monad
 import Data.AdditiveGroup
 import Data.AffineSpace
 import Data.Foldable
-import Data.Micro
+import Data.Thyme.Internal.Micro
 import Data.Monoid
 import Data.Thyme.Clock.Internal
 import Data.Thyme.TH

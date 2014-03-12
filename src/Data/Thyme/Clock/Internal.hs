@@ -21,7 +21,7 @@ import Data.Basis
 import Data.Data
 import Data.Int
 import Data.Ix
-import Data.Micro
+import Data.Thyme.Internal.Micro
 import Data.Thyme.Calendar.Internal
 import Data.VectorSpace
 import GHC.Generics (Generic)

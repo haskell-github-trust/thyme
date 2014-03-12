@@ -27,7 +27,7 @@ import Data.Bits
 import qualified Data.ByteString.Char8 as S
 import Data.Char
 import Data.Int
-import Data.Micro
+import Data.Thyme.Internal.Micro
 import Data.Thyme.Calendar
 import Data.Thyme.Calendar.Internal
 import Data.Thyme.Clock.Internal
