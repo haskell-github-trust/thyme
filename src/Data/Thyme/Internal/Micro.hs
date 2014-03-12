@@ -8,7 +8,8 @@
 
 #include "thyme.h"
 
-module Data.Micro where
+-- | FOR INTERNAL USE ONLY.
+module Data.Thyme.Internal.Micro where
 
 import Prelude
 import Control.DeepSeq

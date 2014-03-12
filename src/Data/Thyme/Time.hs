@@ -34,7 +34,7 @@ module Data.Thyme.Time
     ) where
 
 import Prelude
-import Data.Micro
+import Data.Thyme.Internal.Micro
 import Data.Ratio
 import Data.Thyme
 import Data.Thyme.Clock.Internal

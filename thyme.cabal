@@ -59,11 +59,11 @@ library
         Data.Thyme.Format
         Data.Thyme.Format.Human
         Data.Thyme.Format.Aeson
+        Data.Thyme.Internal.Micro
         Data.Thyme.LocalTime
         Data.Thyme.Time
         Data.Thyme.Time.Core
     other-modules:
-        Data.Micro
         Data.Thyme.Calendar.Internal
         Data.Thyme.Clock.Internal
         Data.Thyme.Format.Internal

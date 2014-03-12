@@ -6,7 +6,7 @@ module Data.Thyme.Clock.POSIX
 import Prelude
 import Control.Lens
 import Data.AdditiveGroup
-import Data.Micro
+import Data.Thyme.Internal.Micro
 import Data.Thyme.Clock.Internal
 import qualified Data.Time.Clock.POSIX as T
 import Data.VectorSpace

@@ -15,7 +15,7 @@ import Prelude
 import Control.Lens
 import Data.AffineSpace
 import Data.Int
-import Data.Micro
+import Data.Thyme.Internal.Micro
 import Data.Ratio
 import Data.Thyme
 import Data.Thyme.Calendar.OrdinalDate
