@@ -1,6 +1,10 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE ViewPatterns #-}
 
+#if HLINT
+#include "cabal_macros.h"
+#endif
+
 import Prelude
 import Control.Lens
 import Control.Monad

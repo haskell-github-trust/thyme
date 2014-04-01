@@ -2,6 +2,10 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_HADDOCK hide #-}
 
+#if HLINT
+#include "cabal_macros.h"
+#endif
+
 module Data.Thyme.Format.Internal where
 
 import Prelude

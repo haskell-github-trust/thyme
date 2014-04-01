@@ -154,7 +154,7 @@ test-suite hlint
     ghc-options: -threaded -rtsopts -with-rtsopts=-N
     hs-source-dirs: tests
     if flag(HLint)
-        build-depends: base, hlint >= 1.8.53
+        build-depends: base, hlint >= 1.8.59
     else
         buildable: False
 

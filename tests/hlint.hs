@@ -7,8 +7,9 @@ import System.Exit
 main :: IO ()
 main = (`unless` exitFailure) . null =<< hlint
     [ "src", "tests"
-    , "--cpp-define=HLINT"
+    , "--cpp-define=HLINT=1"
     , "--cpp-include=include"
+    , "--cpp-include=dist/build/autogen"
     , "--cpp-define=SHOW_INTERNAL=1"
     , "-XNoUnboxedTuples"
     , "-i", "Unused LANGUAGE pragma"

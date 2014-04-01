@@ -8,6 +8,9 @@
 {-# LANGUAGE ViewPatterns #-}
 
 #include "thyme.h"
+#if HLINT
+#include "cabal_macros.h"
+#endif
 
 module Data.Thyme.Clock.TAI
     ( AbsoluteTime

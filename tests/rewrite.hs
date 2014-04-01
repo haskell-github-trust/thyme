@@ -1,6 +1,10 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 
+#if HLINT
+#include "cabal_macros.h"
+#endif
+
 import Prelude
 #if !MIN_VERSION_base(4,6,0)
     hiding (catch)
