@@ -94,6 +94,8 @@ library
         time >= 1.4,
         vector >= 0.9,
         vector-space >= 0.8
+    if os(windows)
+        build-depends: Win32
     if flag(lens)
         build-depends: lens >= 3.9
     else
