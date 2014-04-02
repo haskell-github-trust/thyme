@@ -1,5 +1,6 @@
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ViewPatterns #-}
 
 -- | This module provides just the compatibility wrappers for the things
@@ -73,7 +74,8 @@ instance Thyme T.AbsoluteTime AbsoluteTime where
 
 instance Thyme T.TimeZone TimeZone where
     {-# INLINE thyme #-}
-    thyme = id
+    thyme = iso (\ T.TimeZone {..} -> TimeZone {..})
+        (\ TimeZone {..} -> T.TimeZone {..})
 
 instance Thyme T.TimeOfDay TimeOfDay where
     {-# INLINE thyme #-}
