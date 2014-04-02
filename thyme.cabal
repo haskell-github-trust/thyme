@@ -74,8 +74,6 @@ library
         Data.Thyme.Calendar.Internal
         Data.Thyme.Clock.Internal
         Data.Thyme.Format.Internal
-        Data.Thyme.LocalTime.Internal
-        Data.Thyme.LocalTime.TimeZone
     if !flag(lens)
         other-modules: Control.Lens
     build-depends:
