@@ -50,12 +50,15 @@ instance Random MondayWeek where
 
 instance Arbitrary WeekDate where
     arbitrary = view weekDate <$> arbitrary
+    shrink wd = view weekDate <$> shrink (weekDate # wd)
 
 instance Arbitrary SundayWeek where
     arbitrary = view sundayWeek <$> arbitrary
+    shrink sw = view sundayWeek <$> shrink (sundayWeek # sw)
 
 instance Arbitrary MondayWeek where
     arbitrary = view mondayWeek <$> arbitrary
+    shrink mw = view mondayWeek <$> shrink (mondayWeek # mw)
 
 -- * Lenses
 

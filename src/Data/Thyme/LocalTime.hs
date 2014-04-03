@@ -70,6 +70,10 @@ instance Random TimeZone where
 
 instance Arbitrary TimeZone where
     arbitrary = choose (minBound, maxBound)
+    shrink tz@TimeZone {..}
+        = [ tz {timeZoneSummerOnly = s} | s <- shrink timeZoneSummerOnly ]
+        ++ [ tz {timeZoneMinutes = m} | m <- shrink timeZoneMinutes ]
+        ++ [ tz {timeZoneName = n} | n <- shrink timeZoneName ]
 
 -- | Text representing the offset of this timezone, e.g. \"-0800\" or
 -- \"+0400\" (like %z in 'formatTime')
@@ -140,6 +144,9 @@ instance Arbitrary TimeOfDay where
         m <- choose (0, 59)
         let DiffTime ml = minuteLength h m
         TimeOfDay h m . DiffTime <$> choose (zeroV, pred ml)
+    shrink tod = view timeOfDay . (^+^) noon
+            <$> shrink (timeOfDay # tod ^-^ noon) where
+        noon = timeOfDay # midday -- shrink towards midday
 
 {-# INLINE minuteLength #-}
 minuteLength :: Hour -> Minute -> DiffTime
@@ -222,6 +229,9 @@ instance Random LocalTime where
 
 instance Arbitrary LocalTime where
     arbitrary = choose (minBound, maxBound)
+    shrink lt@LocalTime {..}
+        = [ lt {localDay = d} | d <- shrink localDay ]
+        ++ [ lt {localTimeOfDay = d} | d <- shrink localTimeOfDay ]
 
 {-# INLINE utcLocalTime #-}
 utcLocalTime :: TimeZone -> Iso' UTCTime LocalTime
@@ -282,6 +292,9 @@ instance Random ZonedTime where
 
 instance Arbitrary ZonedTime where
     arbitrary = choose (minBound, maxBound)
+    shrink zt@ZonedTime {..}
+        = [ zt {zonedTimeToLocalTime = lt} | lt <- shrink zonedTimeToLocalTime ]
+        ++ [ zt {zonedTimeZone = tz} | tz <- shrink zonedTimeZone ]
 
 {-# INLINE zonedTime #-}
 zonedTime :: Iso' (TimeZone, UTCTime) ZonedTime

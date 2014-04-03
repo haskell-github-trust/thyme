@@ -40,6 +40,7 @@ instance Random WeekdayOfMonth where
 
 instance Arbitrary WeekdayOfMonth where
     arbitrary = view weekdayOfMonth <$> arbitrary
+    shrink wom = view weekdayOfMonth <$> shrink (weekdayOfMonth # wom)
 
 {-# INLINE weekdayOfMonth #-}
 weekdayOfMonth :: Iso' Day WeekdayOfMonth

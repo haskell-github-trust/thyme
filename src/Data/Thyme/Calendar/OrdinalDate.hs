@@ -30,6 +30,7 @@ instance Random OrdinalDate where
 
 instance Arbitrary OrdinalDate where
     arbitrary = view ordinalDate <$> arbitrary
+    shrink od = view ordinalDate <$> shrink (ordinalDate # od)
 
 {-# INLINE ordinalDateValid #-}
 ordinalDateValid :: OrdinalDate -> Maybe Day

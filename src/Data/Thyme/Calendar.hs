@@ -56,9 +56,11 @@ instance Random YearMonthDay where
 instance Arbitrary Day where
     arbitrary = ModifiedJulianDay
         <$> choose (join (***) toModifiedJulianDay (minBound, maxBound))
+    shrink (ModifiedJulianDay mjd) = ModifiedJulianDay <$> shrink mjd
 
 instance Arbitrary YearMonthDay where
     arbitrary = view gregorian <$> arbitrary
+    shrink ymd = view gregorian <$> shrink (gregorian # ymd)
 
 ------------------------------------------------------------------------
 

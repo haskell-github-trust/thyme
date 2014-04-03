@@ -199,6 +199,7 @@ instance Random MonthDay where
 
 instance Arbitrary MonthDay where
     arbitrary = choose (minBound, maxBound)
+    shrink md = view (monthDay True) <$> shrink (monthDay True # md)
 
 -- | Convert between day of year in the Gregorian or Julian calendars, and
 -- month and day of month. First arg is leap year flag.
