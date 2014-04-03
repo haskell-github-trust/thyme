@@ -78,7 +78,13 @@ instance VectorSpace Micro where
     type Scalar Micro = Rational
     {-# INLINE (*^) #-}
     s *^ Micro a = Micro . fromInteger $
-        toInteger a * numerator s `quot` denominator s
+        case compare (2 * abs r) (denominator s) of
+            LT -> n
+            EQ -> if even n then n else m
+            GT -> m
+      where
+        (n, r) = quotRem (toInteger a * numerator s) (denominator s)
+        m = if r < 0 then n - 1 else n + 1
 
 instance HasBasis Micro where
     type Basis Micro = ()
