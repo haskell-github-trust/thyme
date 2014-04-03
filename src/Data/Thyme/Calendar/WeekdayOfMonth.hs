@@ -42,6 +42,11 @@ instance Arbitrary WeekdayOfMonth where
     arbitrary = view weekdayOfMonth <$> arbitrary
     shrink wom = view weekdayOfMonth <$> shrink (weekdayOfMonth # wom)
 
+instance CoArbitrary WeekdayOfMonth where
+    coarbitrary (WeekdayOfMonth y m n d)
+        = coarbitrary y . coarbitrary m
+        . coarbitrary n . coarbitrary d
+
 {-# INLINE weekdayOfMonth #-}
 weekdayOfMonth :: Iso' Day WeekdayOfMonth
 weekdayOfMonth = iso toWeekday fromWeekday where

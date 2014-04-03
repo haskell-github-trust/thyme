@@ -4,6 +4,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MagicHash #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_HADDOCK hide #-}
@@ -39,7 +40,7 @@ type Days = Int
 -- the day 1858-11-17.
 newtype Day = ModifiedJulianDay
     { toModifiedJulianDay :: Int
-    } deriving (INSTANCES_NEWTYPE)
+    } deriving (INSTANCES_NEWTYPE, CoArbitrary)
 
 instance AffineSpace Day where
     type Diff Day = Days
@@ -200,6 +201,9 @@ instance Random MonthDay where
 instance Arbitrary MonthDay where
     arbitrary = choose (minBound, maxBound)
     shrink md = view (monthDay True) <$> shrink (monthDay True # md)
+
+instance CoArbitrary MonthDay where
+    coarbitrary (MonthDay m d) = coarbitrary m . coarbitrary d
 
 -- | Convert between day of year in the Gregorian or Julian calendars, and
 -- month and day of month. First arg is leap year flag.

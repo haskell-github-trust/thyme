@@ -75,6 +75,10 @@ instance Arbitrary TimeZone where
         ++ [ tz {timeZoneMinutes = m} | m <- shrink timeZoneMinutes ]
         ++ [ tz {timeZoneName = n} | n <- shrink timeZoneName ]
 
+instance CoArbitrary TimeZone where
+    coarbitrary (TimeZone m s n)
+        = coarbitrary m . coarbitrary s . coarbitrary n
+
 -- | Text representing the offset of this timezone, e.g. \"-0800\" or
 -- \"+0400\" (like %z in 'formatTime')
 {-# INLINEABLE timeZoneOffsetString #-}
@@ -147,6 +151,10 @@ instance Arbitrary TimeOfDay where
     shrink tod = view timeOfDay . (^+^) noon
             <$> shrink (timeOfDay # tod ^-^ noon) where
         noon = timeOfDay # midday -- shrink towards midday
+
+instance CoArbitrary TimeOfDay where
+    coarbitrary (TimeOfDay h m s)
+        = coarbitrary h . coarbitrary m . coarbitrary s
 
 {-# INLINE minuteLength #-}
 minuteLength :: Hour -> Minute -> DiffTime
@@ -233,6 +241,9 @@ instance Arbitrary LocalTime where
         = [ lt {localDay = d} | d <- shrink localDay ]
         ++ [ lt {localTimeOfDay = d} | d <- shrink localTimeOfDay ]
 
+instance CoArbitrary LocalTime where
+    coarbitrary (LocalTime d t) = coarbitrary d . coarbitrary t
+
 {-# INLINE utcLocalTime #-}
 utcLocalTime :: TimeZone -> Iso' UTCTime LocalTime
 utcLocalTime TimeZone {..} = utcTime . iso localise globalise where
@@ -295,6 +306,9 @@ instance Arbitrary ZonedTime where
     shrink zt@ZonedTime {..}
         = [ zt {zonedTimeToLocalTime = lt} | lt <- shrink zonedTimeToLocalTime ]
         ++ [ zt {zonedTimeZone = tz} | tz <- shrink zonedTimeZone ]
+
+instance CoArbitrary ZonedTime where
+    coarbitrary (ZonedTime lt tz) = coarbitrary lt . coarbitrary tz
 
 {-# INLINE zonedTime #-}
 zonedTime :: Iso' (TimeZone, UTCTime) ZonedTime

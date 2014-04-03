@@ -60,6 +60,18 @@ instance Arbitrary MondayWeek where
     arbitrary = view mondayWeek <$> arbitrary
     shrink mw = view mondayWeek <$> shrink (mondayWeek # mw)
 
+instance CoArbitrary WeekDate where
+    coarbitrary (WeekDate y w d)
+        = coarbitrary y . coarbitrary w . coarbitrary d
+
+instance CoArbitrary SundayWeek where
+    coarbitrary (SundayWeek y w d)
+        = coarbitrary y . coarbitrary w . coarbitrary d
+
+instance CoArbitrary MondayWeek where
+    coarbitrary (MondayWeek y w d)
+        = coarbitrary y . coarbitrary w . coarbitrary d
+
 -- * Lenses
 
 LENS(WeekDate,wdYear,Year)

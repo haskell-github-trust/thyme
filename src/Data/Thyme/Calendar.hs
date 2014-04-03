@@ -62,6 +62,10 @@ instance Arbitrary YearMonthDay where
     arbitrary = view gregorian <$> arbitrary
     shrink ymd = view gregorian <$> shrink (gregorian # ymd)
 
+instance CoArbitrary YearMonthDay where
+    coarbitrary (YearMonthDay y m d)
+        = coarbitrary y . coarbitrary m . coarbitrary d
+
 ------------------------------------------------------------------------
 
 {-# INLINE gregorianMonthLength #-}

@@ -32,6 +32,9 @@ instance Arbitrary OrdinalDate where
     arbitrary = view ordinalDate <$> arbitrary
     shrink od = view ordinalDate <$> shrink (ordinalDate # od)
 
+instance CoArbitrary OrdinalDate where
+    coarbitrary (OrdinalDate y d) = coarbitrary y . coarbitrary d
+
 {-# INLINE ordinalDateValid #-}
 ordinalDateValid :: OrdinalDate -> Maybe Day
 ordinalDateValid od@(OrdinalDate y d) = ordinalDate # od
