@@ -54,6 +54,23 @@ instance Show TimeZone where
         then timeZoneOffsetString tz else timeZoneName
 #endif
 
+instance Bounded TimeZone where
+    minBound = TimeZone (-12 * 60) minBound "AAAA"
+    maxBound = TimeZone (13 * 60) maxBound "ZZZZ"
+
+instance Random TimeZone where
+    randomR (l, u) g0 = (TimeZone minutes summer name, g3) where
+        (minutes, g1) = randomR (timeZoneMinutes l, timeZoneMinutes u) g0
+        (summer, g2) = randomR (timeZoneSummerOnly l, timeZoneSummerOnly u) g1
+        -- slightly dubious interpretation of ‘range’
+        (name, g3) = foldr randChar ([], g2) . take 4 $ zipWith (,)
+            (timeZoneName l ++ "AAAA") (timeZoneName u ++ "ZZZZ")
+        randChar nR (ns, g) = (: ns) `first` randomR nR g
+    random = randomR (minBound, maxBound)
+
+instance Arbitrary TimeZone where
+    arbitrary = choose (minBound, maxBound)
+
 -- | Text representing the offset of this timezone, e.g. \"-0800\" or
 -- \"+0400\" (like %z in 'formatTime')
 {-# INLINEABLE timeZoneOffsetString #-}
@@ -195,6 +212,17 @@ instance Show LocalTime where
     showsPrec p (LocalTime d t) = showsPrec p d . (:) ' ' . showsPrec p t
 #endif
 
+instance Bounded LocalTime where
+    minBound = minBound ^. utcLocalTime maxBound
+    maxBound = maxBound ^. utcLocalTime minBound
+
+instance Random LocalTime where
+    randomR = randomIsoR (utcLocalTime utc)
+    random = randomR (minBound, maxBound)
+
+instance Arbitrary LocalTime where
+    arbitrary = choose (minBound, maxBound)
+
 {-# INLINE utcLocalTime #-}
 utcLocalTime :: TimeZone -> Iso' UTCTime LocalTime
 utcLocalTime TimeZone {..} = utcTime . iso localise globalise where
@@ -239,6 +267,21 @@ data ZonedTime = ZonedTime
 
 instance NFData ZonedTime where
     rnf ZonedTime {..} = rnf zonedTimeZone
+
+instance Bounded ZonedTime where
+    minBound = ZonedTime minBound maxBound
+    maxBound = ZonedTime maxBound minBound
+
+instance Random ZonedTime where
+    randomR (l, u) g0 = (view zonedTime . (,) tz)
+            `first` randomR (l', u') g1 where
+        (tz, g1) = random g0 -- ignore TimeZone from l and u
+        l' = snd $ zonedTime # l
+        u' = snd $ zonedTime # u
+    random = randomR (minBound, maxBound)
+
+instance Arbitrary ZonedTime where
+    arbitrary = choose (minBound, maxBound)
 
 {-# INLINE zonedTime #-}
 zonedTime :: Iso' (TimeZone, UTCTime) ZonedTime
