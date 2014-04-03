@@ -32,6 +32,9 @@ import GHC.Generics (Generic)
 import System.Random
 import Test.QuickCheck
 
+type Minutes = Int
+type Hours = Int
+
 ------------------------------------------------------------------------
 -- * Time zones
 
@@ -61,11 +64,11 @@ timeZoneOffsetString TimeZone {..} = sign : (shows02 h . shows02 m) "" where
         then ('-', negate timeZoneMinutes) else ('+', timeZoneMinutes)
 
 -- | Create a nameless non-summer timezone for this number of minutes
-minutesToTimeZone :: Int -> TimeZone
+minutesToTimeZone :: Minutes -> TimeZone
 minutesToTimeZone m = TimeZone m False ""
 
 -- | Create a nameless non-summer timezone for this number of hours
-hoursToTimeZone :: Int -> TimeZone
+hoursToTimeZone :: Hours -> TimeZone
 hoursToTimeZone i = minutesToTimeZone (60 * i)
 
 utc :: TimeZone
@@ -155,8 +158,6 @@ timeOfDay = iso fromDiff toDiff where
     toDiff (TimeOfDay h m s) = s
         ^+^ fromIntegral m *^ DiffTime (Micro 60000000)
         ^+^ fromIntegral h *^ DiffTime (Micro 3600000000)
-
-type Minutes = Int
 
 -- | Add some minutes to a 'TimeOfDay'; result comes with a day adjustment.
 {-# INLINE addMinutes #-}
@@ -274,7 +275,7 @@ utcToLocalZonedTime time = do
 
 -- * Lenses
 
-LENS(TimeZone,timeZoneMinutes,Int)
+LENS(TimeZone,timeZoneMinutes,Minutes)
 LENS(TimeZone,timeZoneSummerOnly,Bool)
 LENS(TimeZone,timeZoneName,String)
 
