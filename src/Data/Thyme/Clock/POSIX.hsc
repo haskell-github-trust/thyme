@@ -38,10 +38,15 @@ posixTime = iso (\ (UTCRep t) -> t ^-^ unixEpoch)
 getPOSIXTime :: IO POSIXTime
 #ifdef mingw32_HOST_OS
 
+-- On Windows, the equlvalent of POSIX time is "file time", defined as
+-- the number of 100-nanosecond intervals that have elapsed since
+-- 12:00 AM January 1, 1601 (UTC). We can convert this into a POSIX
+-- time by adjusting the offset to be relative to the POSIX epoch.
 getPOSIXTime = do
     FILETIME ft <- System.Win32.Time.getSystemTimeAsFileTime
-    return . NominalDiffTime . Micro $
-        fromIntegral ft - 116444736000000000{-win32_epoch_adjust-}
+    return . NominalDiffTime . Micro . fromIntegral $
+        quot ft 10 - 11644473600000000{-ftEpoch ^. microseconds-}
+--  ftEpoch = utcTime # UTCTime (gregorian # YearMonthDay 1601 1 1) zeroV
 
 #else
 
