@@ -2,6 +2,7 @@
 
 #ifndef mingw32_HOST_OS
 #include <sys/time.h>
+#include <stdlib.h>
 #endif
 
 module Data.Thyme.Clock.POSIX
@@ -46,6 +47,7 @@ getPOSIXTime = do
 #else
 
 getPOSIXTime = allocaBytes #{size struct timeval} $ \ ptv -> do
+    memset ptv 0 #{size struct timeval}
     throwErrnoIfMinus1_ "gettimeofday" $ gettimeofday ptv nullPtr
     sec <- #{peek struct timeval, tv_sec} ptv :: IO CLong
     usec <- #{peek struct timeval, tv_usec} ptv :: IO CLong
@@ -54,6 +56,9 @@ getPOSIXTime = allocaBytes #{size struct timeval} $ \ ptv -> do
 
 foreign import ccall unsafe "time.h gettimeofday"
     gettimeofday :: Ptr () -> Ptr () -> IO CInt
+
+foreign import ccall unsafe "stdlib.h memset"
+    memset :: Ptr () -> CInt -> CSize -> IO ()
 
 #endif
 
