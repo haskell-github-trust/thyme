@@ -20,6 +20,7 @@ import Control.DeepSeq
 import Control.Lens
 import Control.Monad
 import Data.AffineSpace
+import Data.Bits ((.&.))
 import Data.Data
 import Data.Int
 import Data.Ix
@@ -30,7 +31,7 @@ import GHC.Generics (Generic)
 import GHC.Prim
 import GHC.Types
 import System.Random
-import Test.QuickCheck
+import Test.QuickCheck hiding ((.&.))
 
 type Years = Int
 type Months = Int
@@ -105,13 +106,9 @@ instance NFData YearMonthDay
 
 -- | Gregorian leap year?
 isLeapYear :: Year -> Bool
-isLeapYear (I# y#) = isLeapYear# y#
-
--- | INTERNAL: avoid GHC duplicating code for each of the possibilities.
-{-# NOINLINE isLeapYear# #-}
-isLeapYear# :: Int# -> Bool
-isLeapYear# y# = remInt# y# 4# ==# 0#
-    && (remInt# y# 400# ==# 0# || remInt# y# 100# /=# 0#)
+isLeapYear y = y .&. 3 == 0  &&  (r100 /= 0 || d100 .&. 3 == 0)
+  where
+    (d100,r100) = y `quotRem` 100
 
 type DayOfYear = Int
 data OrdinalDate = OrdinalDate
