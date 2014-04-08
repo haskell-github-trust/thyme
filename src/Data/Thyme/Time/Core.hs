@@ -252,6 +252,14 @@ addUTCTime = flip (.+^)
 diffUTCTime :: UTCTime -> UTCTime -> NominalDiffTime
 diffUTCTime = (.-.)
 
+{-# INLINE toMicroseconds #-}
+toMicroseconds :: (TimeDiff t) => t -> Int64
+toMicroseconds = view microseconds
+
+{-# INLINE fromMicroseconds #-}
+fromMicroseconds :: (TimeDiff t) => Int64 -> t
+fromMicroseconds = review microseconds
+
 ------------------------------------------------------------------------
 -- * @Data.Time.Clock.POSIX@
 
