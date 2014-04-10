@@ -63,7 +63,7 @@ instance Random TimeZone where
         (minutes, g1) = randomR (timeZoneMinutes l, timeZoneMinutes u) g0
         (summer, g2) = randomR (timeZoneSummerOnly l, timeZoneSummerOnly u) g1
         -- slightly dubious interpretation of ‘range’
-        (name, g3) = foldr randChar ([], g2) . take 4 $ zipWith (,)
+        (name, g3) = foldr randChar ([], g2) . take 4 $ zip
             (timeZoneName l ++ "AAAA") (timeZoneName u ++ "ZZZZ")
         randChar nR (ns, g) = (: ns) `first` randomR nR g
     random = randomR (minBound, maxBound)
