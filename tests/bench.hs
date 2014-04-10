@@ -1,3 +1,9 @@
+{-# LANGUAGE CPP #-}
+
+#if HLINT
+#include "cabal_macros.h"
+#endif
+
 import Prelude
 import Control.Arrow
 import Control.Applicative
@@ -21,9 +27,14 @@ import qualified Data.Time.Calendar.MonthDay as T
 import qualified Data.Time.Clock.POSIX as T
 import Test.QuickCheck as QC
 import Test.QuickCheck.Gen as QC
+#if MIN_VERSION_QuickCheck(2,7,0)
+import Test.QuickCheck.Random as QC
+#endif
 import System.Locale
 
+#if !MIN_VERSION_QuickCheck(2,7,0)
 import System.Random
+#endif
 import Text.Printf
 
 import Common
@@ -31,7 +42,12 @@ import Common
 {-# ANN main "HLint: ignore Use list literal" #-}
 main :: IO ()
 main = do
-    utcs <- unGen (vectorOf samples arbitrary) <$> newStdGen <*> pure 0
+    utcs <- unGen (vectorOf samples arbitrary)
+#if MIN_VERSION_QuickCheck(2,7,0)
+        <$> QC.newQCGen <*> pure 0
+#else
+        <$> newStdGen <*> pure 0
+#endif
     let utcs' = review thyme <$> (utcs :: [UTCTime])
     now <- getCurrentTime
     let now' = thyme # now

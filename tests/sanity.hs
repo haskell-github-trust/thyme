@@ -42,14 +42,22 @@ utf8String = Text.encodeUtf8 . Text.pack
 
 prop_formatTime :: Spec -> RecentTime -> Property
 prop_formatTime (Spec spec) (RecentTime t@(review thyme -> t'))
+#if MIN_VERSION_QuickCheck(2,7,0)
+        = counterexample desc (s == s') where
+#else
         = printTestCase desc (s == s') where
+#endif
     s = formatTime defaultTimeLocale spec t
     s' = T.formatTime defaultTimeLocale spec t'
     desc = "thyme: " ++ s ++ "\ntime:  " ++ s'
 
 prop_parseTime :: Spec -> RecentTime -> Property
 prop_parseTime (Spec spec) (RecentTime orig)
+#if MIN_VERSION_QuickCheck(2,7,0)
+        = counterexample desc (fmap (review thyme) t == t') where
+#else
         = printTestCase desc (fmap (review thyme) t == t') where
+#endif
     s = T.formatTime defaultTimeLocale spec (thyme # orig)
     t = parseTime defaultTimeLocale spec s :: Maybe UTCTime
     t' = T.parseTime defaultTimeLocale spec s
