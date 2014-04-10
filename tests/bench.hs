@@ -56,6 +56,8 @@ main = do
     let dt' = thyme # dt
     let days = utctDay . unUTCTime <$> utcs
     let days' = T.utctDay <$> utcs'
+    let years = view (gregorian . _ymdYear) <$> days
+    let years' = (\ (y, _m, _d) -> y) . T.toGregorian <$> days'
     let mons = ((isLeapYear . ymdYear) &&& ymdMonth) . view gregorian <$> days
     let ords = ((isLeapYear . odYear) &&& odDay) . view ordinalDate <$> days
 
@@ -93,6 +95,10 @@ main = do
             ( "dayOfYearToMonthAndDay", 4.3
                 , nf (uncurry dayOfYearToMonthAndDay <$>) ords
                 , nf (uncurry T.dayOfYearToMonthAndDay <$>) ords ) :
+
+            ( "isLeapYear", 1.5
+                , nf (isLeapYear <$>) years
+                , nf (T.isLeapYear <$>) years' ) :
 
             -- Clock
             ( "addUTCTime", 85
