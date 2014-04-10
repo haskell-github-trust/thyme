@@ -5,6 +5,7 @@ import Prelude
 import Control.Applicative
 import Control.Lens
 import Data.AdditiveGroup
+import Data.Char
 import Data.Thyme
 import Data.Thyme.Clock.POSIX
 import System.Exit
@@ -56,7 +57,7 @@ instance Arbitrary Spec where
             -- , (2, pure $ spec {-aggregate-}"crXx")
             , (1, pure $ spec {-UTCTime-}"s")
             ] :: Gen (Gen String)
-        fmap (Spec . unwords) . listOf1 $ frequency
+        fmap (Spec . dropWhile isSpace . unwords) . listOf1 $ frequency
             [(16, time), (4, string), (1, pure "%%")]
       where
         spec = Gen.elements . fmap (\ c -> ['%', c])
