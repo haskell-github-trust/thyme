@@ -52,8 +52,8 @@ getPOSIXTime = do
 
 getPOSIXTime = allocaBytes #{size struct timeval} $ \ ptv -> do
     throwErrnoIfMinus1_ "gettimeofday" $ gettimeofday ptv nullPtr
-    sec <- #{peek struct timeval, tv_sec} ptv :: IO CLong
-    usec <- #{peek struct timeval, tv_usec} ptv :: IO CLong
+    CTime sec <- #{peek struct timeval, tv_sec} ptv
+    CSUSeconds usec <- #{peek struct timeval, tv_usec} ptv
     return . NominalDiffTime . Micro $
         1000000 * fromIntegral sec + fromIntegral usec
 
