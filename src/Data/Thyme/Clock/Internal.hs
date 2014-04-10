@@ -52,7 +52,7 @@ toSeconds = (* recip 1000000) . fromIntegral . view microseconds
 --
 -- [@Performance@] Try to make sure @n@ is one of 'Float', 'Double', 'Int',
 -- 'Int64' or 'Integer', for which rewrite @RULES@ have been provided.
-{-# INLINE fromSeconds #-}
+{-# INLINE[0] fromSeconds #-}
 fromSeconds :: (Real n, TimeDiff t) => n -> t
 fromSeconds = fromSeconds' . toRational
 
@@ -77,11 +77,11 @@ fromSecondsIntegral _ = review microseconds . (*) 1000000 . fromIntegral
 
 {-# RULES
 
-"fromSeconds/Float"     fromSeconds = fromSecondsRealFrac (0 :: Float)
-"fromSeconds/Double"    fromSeconds = fromSecondsRealFrac (0 :: Double)
-"fromSeconds/Int"       fromSeconds = fromSecondsIntegral (0 :: Int)
-"fromSeconds/Int64"     fromSeconds = fromSecondsIntegral (0 :: Int64)
-"fromSeconds/Integer"   fromSeconds = fromSecondsIntegral (0 :: Integer)
+"fromSeconds/Float"    [~0] fromSeconds = fromSecondsRealFrac (0 :: Float)
+"fromSeconds/Double"   [~0] fromSeconds = fromSecondsRealFrac (0 :: Double)
+"fromSeconds/Int"      [~0] fromSeconds = fromSecondsIntegral (0 :: Int)
+"fromSeconds/Int64"    [~0] fromSeconds = fromSecondsIntegral (0 :: Int64)
+"fromSeconds/Integer"  [~0] fromSeconds = fromSecondsIntegral (0 :: Integer)
 
   #-}
 
