@@ -24,7 +24,7 @@ import System.Locale
 --              (c) 2011 MailRank, Inc.
 
 ------------------------------------------------------------------------
--- Copypasta from aeson-0.7.0.0:Data.Aeson.Types.Internal
+-- Copypasta from aeson-0.7.1.0:Data.Aeson.Types.Internal
 
 -- | A newtype wrapper for 'UTCTime' that uses the same non-standard
 -- serialization format as Microsoft .NET, whose @System.DateTime@
@@ -38,7 +38,7 @@ newtype DotNetTime = DotNetTime {
     } deriving (Eq, Ord, Read, Show, Typeable, FormatTime)
 
 ------------------------------------------------------------------------
--- Copypasta from aeson-0.7.0.0:Data.Aeson.Types.Instances
+-- Copypasta from aeson-0.7.1.0:Data.Aeson.Types.Instances
 
 instance ToJSON DotNetTime where
     toJSON (DotNetTime t) =
@@ -88,8 +88,9 @@ instance FromJSON ZonedTime where
     parseJSON v = typeMismatch "ZonedTime" v
 
 instance ToJSON UTCTime where
-    toJSON t = String (pack (take 23 str ++ "Z"))
-      where str = formatTime defaultTimeLocale "%FT%T.%q" t
+    toJSON t = String $ pack $ formatTime defaultTimeLocale format t
+      where
+        format = "%FT%T." ++ formatMillis t ++ "Z"
     {-# INLINE toJSON #-}
 
 instance FromJSON UTCTime where
