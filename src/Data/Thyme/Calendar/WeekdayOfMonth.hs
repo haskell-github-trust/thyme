@@ -5,7 +5,10 @@
 {-# LANGUAGE ViewPatterns #-}
 #include "thyme.h"
 
-module Data.Thyme.Calendar.WeekdayOfMonth where
+module Data.Thyme.Calendar.WeekdayOfMonth
+    ( Year, Month, DayOfWeek
+    , module Data.Thyme.Calendar.WeekdayOfMonth
+    ) where
 
 import Prelude
 import Control.Applicative
