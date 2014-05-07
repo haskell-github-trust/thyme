@@ -175,6 +175,7 @@ benchmark bench
         random,
         thyme,
         time,
+        vector,
         vector-space
     if flag(lens)
         build-depends: lens

@@ -25,6 +25,7 @@ import qualified Data.Time.Calendar.OrdinalDate as T
 import qualified Data.Time.Calendar.WeekDate as T
 import qualified Data.Time.Calendar.MonthDay as T
 import qualified Data.Time.Clock.POSIX as T
+import qualified Data.Vector as V
 import Test.QuickCheck as QC
 import Test.QuickCheck.Gen as QC
 #if MIN_VERSION_QuickCheck(2,7,0)
@@ -42,13 +43,14 @@ import Common
 {-# ANN main "HLint: ignore Use list literal" #-}
 main :: IO ()
 main = do
-    utcs <- unGen (vectorOf samples arbitrary)
+    -- unboxed vectors made things a little too unfair for time
+    utcs <- fmap V.fromList $ unGen (vectorOf samples arbitrary)
 #if MIN_VERSION_QuickCheck(2,7,0)
         <$> QC.newQCGen <*> pure 0
 #else
         <$> newStdGen <*> pure 0
 #endif
-    let utcs' = review thyme <$> (utcs :: [UTCTime])
+    let utcs' = review thyme <$> utcs
     now <- getCurrentTime
     let now' = thyme # now
     let strs = T.formatTime defaultTimeLocale spec <$> utcs'
