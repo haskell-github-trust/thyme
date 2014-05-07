@@ -23,6 +23,10 @@ import Data.Int
 import Data.Ix
 import Data.Thyme.Internal.Micro
 import Data.Thyme.Calendar.Internal
+import Data.Vector.Generic (Vector)
+import Data.Vector.Generic.Mutable (MVector)
+import qualified Data.Vector.Unboxed as VU
+import qualified Data.Vector.Unboxed.Mutable as VUM
 import Data.VectorSpace
 import GHC.Generics (Generic)
 import System.Random

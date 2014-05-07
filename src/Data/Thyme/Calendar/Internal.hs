@@ -25,8 +25,10 @@ import Data.Data
 import Data.Int
 import Data.Ix
 import Data.Thyme.Format.Internal
-import Data.Vector.Unboxed (Vector)
-import qualified Data.Vector.Unboxed as V
+import Data.Vector.Generic (Vector)
+import Data.Vector.Generic.Mutable (MVector)
+import qualified Data.Vector.Unboxed as VU
+import qualified Data.Vector.Unboxed.Mutable as VUM
 import GHC.Generics (Generic)
 import System.Random
 import Test.QuickCheck hiding ((.&.))
@@ -146,28 +148,28 @@ ordinalDate = iso toOrd fromOrd where
 
 {-# NOINLINE monthLengths #-}
 {-# NOINLINE monthLengthsLeap #-}
-monthLengths, monthLengthsLeap :: Vector Days
-monthLengths     = V.fromList [31,28,31,30,31,30,31,31,30,31,30,31]
-monthLengthsLeap = V.fromList [31,29,31,30,31,30,31,31,30,31,30,31]
+monthLengths, monthLengthsLeap :: VU.Vector Days
+monthLengths     = VU.fromList [31,28,31,30,31,30,31,31,30,31,30,31]
+monthLengthsLeap = VU.fromList [31,29,31,30,31,30,31,31,30,31,30,31]
                             -- J  F  M  A  M  J  J  A  S  O  N  D
 
 {-# ANN monthDays "HLint: ignore Use fromMaybe" #-}
 {-# NOINLINE monthDays #-}
-monthDays :: Vector ({-Month-}Int8, {-DayOfMonth-}Int8)
-monthDays = V.generate 365 go where
-    dom01 = V.prescanl' (+) 0 monthLengths
+monthDays :: VU.Vector ({-Month-}Int8, {-DayOfMonth-}Int8)
+monthDays = VU.generate 365 go where
+    dom01 = VU.prescanl' (+) 0 monthLengths
     go yd = (fromIntegral m, fromIntegral d) where
-        m = maybe 12 id $ V.findIndex (yd <) dom01
-        d = succ yd - V.unsafeIndex dom01 (pred m)
+        m = maybe 12 id $ VU.findIndex (yd <) dom01
+        d = succ yd - VU.unsafeIndex dom01 (pred m)
 
 {-# ANN monthDaysLeap "HLint: ignore Use fromMaybe" #-}
 {-# NOINLINE monthDaysLeap #-}
-monthDaysLeap :: Vector ({-Month-}Int8, {-DayOfMonth-}Int8)
-monthDaysLeap = V.generate 366 go where
-    dom01 = V.prescanl' (+) 0 monthLengthsLeap
+monthDaysLeap :: VU.Vector ({-Month-}Int8, {-DayOfMonth-}Int8)
+monthDaysLeap = VU.generate 366 go where
+    dom01 = VU.prescanl' (+) 0 monthLengthsLeap
     go yd = (fromIntegral m, fromIntegral d) where
-        m = maybe 12 id $ V.findIndex (yd <) dom01
-        d = succ yd - V.unsafeIndex dom01 (pred m)
+        m = maybe 12 id $ VU.findIndex (yd <) dom01
+        d = succ yd - VU.unsafeIndex dom01 (pred m)
 
 -- | No good home for this within the current hierarchy. This will do.
 {-# INLINEABLE randomIsoR #-}
@@ -211,13 +213,13 @@ monthDay leap = iso fromOrdinal toOrdinal where
     {-# INLINE fromOrdinal #-}
     fromOrdinal :: DayOfYear -> MonthDay
     fromOrdinal (max 0 . min lastDay . pred -> i) = MonthDay m d where
-        (fromIntegral -> m, fromIntegral -> d) = V.unsafeIndex table i
+        (fromIntegral -> m, fromIntegral -> d) = VU.unsafeIndex table i
 
     {-# INLINE toOrdinal #-}
     toOrdinal :: MonthDay -> DayOfYear
     toOrdinal (MonthDay month day) = div (367 * m - 362) 12 + k + d where
         m = max 1 . min 12 $ month
-        l = V.unsafeIndex lengths (pred m)
+        l = VU.unsafeIndex lengths (pred m)
         d = max 1 . min l $ day
         k = if m <= 2 then 0 else ok
 
@@ -228,7 +230,7 @@ monthDayValid leap md@(MonthDay m d) = monthDay leap # md
 
 {-# INLINEABLE monthLength #-}
 monthLength :: Bool -> Month -> Days
-monthLength leap = V.unsafeIndex ls . max 0 . min 11 . pred where
+monthLength leap = VU.unsafeIndex ls . max 0 . min 11 . pred where
     ls = if leap then monthLengthsLeap else monthLengths
 
 ------------------------------------------------------------------------

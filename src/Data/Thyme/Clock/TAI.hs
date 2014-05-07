@@ -44,6 +44,10 @@ import Data.Thyme.Calendar
 import Data.Thyme.Clock.Internal
 import Data.Thyme.Format.Internal
 import Data.Thyme.LocalTime
+import Data.Vector.Generic (Vector)
+import Data.Vector.Generic.Mutable (MVector)
+import qualified Data.Vector.Unboxed as VU
+import qualified Data.Vector.Unboxed.Mutable as VUM
 import Data.VectorSpace
 import GHC.Generics (Generic)
 import System.Locale

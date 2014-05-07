@@ -19,6 +19,10 @@ import Data.Data
 import Data.Int
 import Data.Ix
 import Data.Ratio
+import Data.Vector.Generic (Vector)
+import Data.Vector.Generic.Mutable (MVector)
+import qualified Data.Vector.Unboxed as VU
+import qualified Data.Vector.Unboxed.Mutable as VUM
 import Data.VectorSpace
 import GHC.Generics (Generic)
 import System.Random
