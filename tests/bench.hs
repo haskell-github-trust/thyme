@@ -62,6 +62,8 @@ main = do
     let years' = (\ (y, _m, _d) -> y) . T.toGregorian <$> days'
     let mons = ((isLeapYear . ymdYear) &&& ymdMonth) . view gregorian <$> days
     let ords = ((isLeapYear . odYear) &&& odDay) . view ordinalDate <$> days
+    let pxs = utcTimeToPOSIXSeconds <$> utcs
+    let pxs' = T.utcTimeToPOSIXSeconds <$> utcs'
 
     let config = defaultConfig {cfgVerbosity = Last (Just Quiet)}
     (exit . and <=< withConfig config) $ do
@@ -114,6 +116,11 @@ main = do
             ( "utcTimeToPOSIXSeconds", 10
                 , nf (utcTimeToPOSIXSeconds <$>) utcs
                 , nf (T.utcTimeToPOSIXSeconds <$>) utcs' ) :
+
+            -- toSeconds
+            ( "toSeconds", 45
+                , nf ((toSeconds :: NominalDiffTime -> Double) <$>) pxs
+                , nf ((realToFrac :: T.NominalDiffTime -> Double) <$>) pxs' ) :
 
             -- LocalTime
             ( "timeToTimeOfDay", 40
