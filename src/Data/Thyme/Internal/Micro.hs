@@ -74,13 +74,13 @@ instance AdditiveGroup Micro where
     {-# INLINE zeroV #-}
     zeroV = Micro 0
     {-# INLINE (^+^) #-}
-    Micro a ^+^ Micro b = Micro (a + b)
+    (^+^) = \ (Micro a) (Micro b) -> Micro (a + b)
     {-# INLINE negateV #-}
-    negateV (Micro a) = Micro (negate a)
+    negateV = \ (Micro a) -> Micro (negate a)
 
 instance VectorSpace Micro where
     type Scalar Micro = Rational
-    {-# INLINE (*^) #-}
+    {-# INLINEABLE (*^) #-}
     s *^ Micro a = Micro . fromInteger $
         case compare (2 * abs r) (denominator s) of
             LT -> n
@@ -93,9 +93,9 @@ instance VectorSpace Micro where
 instance HasBasis Micro where
     type Basis Micro = ()
     {-# INLINE basisValue #-}
-    basisValue () = Micro 1000000
+    basisValue = \ _ -> Micro 1000000
     {-# INLINE decompose #-}
-    decompose (Micro a) = [((), fromIntegral a % 1000000)]
+    decompose = \ (Micro a) -> [((), fromIntegral a % 1000000)]
     {-# INLINE decompose' #-}
-    decompose' (Micro a) = const (fromIntegral a % 1000000)
+    decompose' = \ (Micro a) _ -> fromIntegral a % 1000000
 

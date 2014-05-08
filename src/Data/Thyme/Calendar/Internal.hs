@@ -46,9 +46,9 @@ newtype Day = ModifiedJulianDay
 instance AffineSpace Day where
     type Diff Day = Days
     {-# INLINE (.-.) #-}
-    ModifiedJulianDay a .-. ModifiedJulianDay b = a - b
+    (.-.) = \ (ModifiedJulianDay a) (ModifiedJulianDay b) -> a - b
     {-# INLINE (.+^) #-}
-    ModifiedJulianDay a .+^ d = ModifiedJulianDay (a + d)
+    (.+^) = \ (ModifiedJulianDay a) d -> ModifiedJulianDay (a + d)
 
 {-# INLINE modifiedJulianDay #-}
 modifiedJulianDay :: Iso' Day Int

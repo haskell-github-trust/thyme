@@ -69,9 +69,9 @@ taiEpoch = AbsoluteTime zeroV
 instance AffineSpace AbsoluteTime where
     type Diff AbsoluteTime = DiffTime
     {-# INLINE (.-.) #-}
-    AbsoluteTime a .-. AbsoluteTime b = a ^-^ b
+    (.-.) = \ (AbsoluteTime a) (AbsoluteTime b) -> a ^-^ b
     {-# INLINE (.+^) #-}
-    AbsoluteTime a .+^ d = AbsoluteTime (a ^+^ d)
+    (.+^) = \ (AbsoluteTime a) d -> AbsoluteTime (a ^+^ d)
 
 type LeapSecondTable = Either UTCTime AbsoluteTime -> DiffTime
 

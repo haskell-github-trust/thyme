@@ -119,16 +119,16 @@ instance Read DiffTime where
 instance VectorSpace DiffTime where
     type Scalar DiffTime = Rational
     {-# INLINE (*^) #-}
-    s *^ DiffTime t = DiffTime (s *^ t)
+    (*^) = \ s (DiffTime t) -> DiffTime (s *^ t)
 
 instance HasBasis DiffTime where
     type Basis DiffTime = ()
     {-# INLINE basisValue #-}
-    basisValue () = DiffTime (basisValue ())
+    basisValue = \ _ -> DiffTime (basisValue ())
     {-# INLINE decompose #-}
-    decompose (DiffTime a) = decompose a
+    decompose = \ (DiffTime a) -> decompose a
     {-# INLINE decompose' #-}
-    decompose' (DiffTime a) = decompose' a
+    decompose' = \ (DiffTime a) -> decompose' a
 
 instance TimeDiff DiffTime where
     {-# INLINE microseconds #-}
@@ -167,16 +167,16 @@ instance Read NominalDiffTime where
 instance VectorSpace NominalDiffTime where
     type Scalar NominalDiffTime = Rational
     {-# INLINE (*^) #-}
-    s *^ NominalDiffTime t = NominalDiffTime (s *^ t)
+    (*^) = \ s (NominalDiffTime t) -> NominalDiffTime (s *^ t)
 
 instance HasBasis NominalDiffTime where
     type Basis NominalDiffTime = ()
     {-# INLINE basisValue #-}
-    basisValue () = NominalDiffTime (basisValue ())
+    basisValue = \ _ -> NominalDiffTime (basisValue ())
     {-# INLINE decompose #-}
-    decompose (NominalDiffTime a) = decompose a
+    decompose = \ (NominalDiffTime a) -> decompose a
     {-# INLINE decompose' #-}
-    decompose' (NominalDiffTime a) = decompose' a
+    decompose' = \ (NominalDiffTime a) -> decompose' a
 
 instance TimeDiff NominalDiffTime where
     {-# INLINE microseconds #-}
@@ -251,9 +251,9 @@ _utctDayTime = utcTime . lens utctDayTime (\ (UTCTime d _) t -> UTCTime d t)
 instance AffineSpace UTCTime where
     type Diff UTCTime = NominalDiffTime
     {-# INLINE (.-.) #-}
-    UTCRep a .-. UTCRep b = a ^-^ b
+    (.-.) = \ (UTCRep a) (UTCRep b) -> a ^-^ b
     {-# INLINE (.+^) #-}
-    UTCRep a .+^ d = UTCRep (a ^+^ d)
+    (.+^) = \ (UTCRep a) d -> UTCRep (a ^+^ d)
 
 -- | View 'UTCTime' as an 'UTCView', comprising a 'Day' along with
 -- a 'DiffTime' offset since midnight.
