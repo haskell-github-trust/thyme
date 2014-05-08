@@ -73,9 +73,11 @@ fromSeconds' = (*^ basisValue ())
 ------------------------------------------------------------------------
 -- not for public consumption
 
+{-# INLINE fromSecondsRealFrac #-}
 fromSecondsRealFrac :: (RealFrac n, TimeDiff t) => n -> n -> t
 fromSecondsRealFrac _ = review microseconds . round . (*) 1000000
 
+{-# INLINE fromSecondsIntegral #-}
 fromSecondsIntegral :: (Integral n, TimeDiff t) => n -> n -> t
 fromSecondsIntegral _ = review microseconds . (*) 1000000 . fromIntegral
 
