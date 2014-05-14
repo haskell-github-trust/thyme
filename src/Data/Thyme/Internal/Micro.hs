@@ -2,7 +2,9 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_HADDOCK hide #-}
 
@@ -19,10 +21,11 @@ import Data.Data
 import Data.Int
 import Data.Ix
 import Data.Ratio
-import Data.Vector.Generic (Vector)
-import Data.Vector.Generic.Mutable (MVector)
-import qualified Data.Vector.Unboxed as VU
-import qualified Data.Vector.Unboxed.Mutable as VUM
+#if __GLASGOW_HASKELL__ != 706
+import qualified Data.Vector.Generic
+import qualified Data.Vector.Generic.Mutable
+#endif
+import Data.Vector.Unboxed.Deriving
 import Data.VectorSpace
 import GHC.Generics (Generic)
 import System.Random
@@ -39,6 +42,9 @@ import Text.Read
 #endif
 
 newtype Micro = Micro Int64 deriving (INSTANCES_MICRO)
+
+derivingUnbox "Micro" [t| Micro -> Int64 |]
+    [| \ (Micro a) -> a |] [| Micro |]
 
 #if SHOW_INTERNAL
 deriving instance Show Micro

@@ -2,8 +2,10 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
 
@@ -44,10 +46,11 @@ import Data.Thyme.Calendar
 import Data.Thyme.Clock.Internal
 import Data.Thyme.Format.Internal
 import Data.Thyme.LocalTime
-import Data.Vector.Generic (Vector)
-import Data.Vector.Generic.Mutable (MVector)
-import qualified Data.Vector.Unboxed as VU
-import qualified Data.Vector.Unboxed.Mutable as VUM
+#if __GLASGOW_HASKELL__ != 706
+import qualified Data.Vector.Generic
+import qualified Data.Vector.Generic.Mutable
+#endif
+import Data.Vector.Unboxed.Deriving
 import Data.VectorSpace
 import GHC.Generics (Generic)
 import System.Locale
@@ -55,6 +58,9 @@ import System.Random (Random)
 import Test.QuickCheck
 
 newtype AbsoluteTime = AbsoluteTime DiffTime deriving (INSTANCES_MICRO)
+
+derivingUnbox "AbsoluteTime" [t| AbsoluteTime -> DiffTime |]
+    [| \ (AbsoluteTime a) -> a |] [| AbsoluteTime |]
 
 instance Show AbsoluteTime where
     {-# INLINEABLE showsPrec #-}

@@ -3,8 +3,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MagicHash #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_HADDOCK hide #-}
@@ -25,10 +27,12 @@ import Data.Data
 import Data.Int
 import Data.Ix
 import Data.Thyme.Format.Internal
-import Data.Vector.Generic (Vector)
-import Data.Vector.Generic.Mutable (MVector)
+#if __GLASGOW_HASKELL__ != 706
+import qualified Data.Vector.Generic
+import qualified Data.Vector.Generic.Mutable
+#endif
 import qualified Data.Vector.Unboxed as VU
-import qualified Data.Vector.Unboxed.Mutable as VUM
+import Data.Vector.Unboxed.Deriving
 import GHC.Generics (Generic)
 import System.Random
 import Test.QuickCheck hiding ((.&.))
@@ -396,4 +400,34 @@ mondayWeekValid (MondayWeek y w d) = ModifiedJulianDay (firstDay + yd)
     firstMonday = mod (5 - firstDay) 7
     yd = firstMonday + 7 * (w - 1) + d - 1
     lastDay = if isLeapYear y then 365 else 364
+
+------------------------------------------------------------------------
+-- Unbox instances at the end avoids TH-related declaration order issues
+
+derivingUnbox "Day" [t| Day -> Int |]
+    [| toModifiedJulianDay |] [| ModifiedJulianDay |]
+
+derivingUnbox "YearMonthDay" [t| YearMonthDay -> (Year, Month, DayOfMonth) |]
+    [| \ YearMonthDay {..} -> (ymdYear, ymdMonth, ymdDay) |]
+    [| \ (ymdYear, ymdMonth, ymdDay) -> YearMonthDay {..} |]
+
+derivingUnbox "OrdinalDate" [t| OrdinalDate -> (Year, DayOfYear) |]
+    [| \ OrdinalDate {..} -> (odYear, odDay) |]
+    [| \ (odYear, odDay) -> OrdinalDate {..} |]
+
+derivingUnbox "MonthDay" [t| MonthDay -> (Month, DayOfMonth) |]
+    [| \ MonthDay {..} -> (mdMonth, mdDay) |]
+    [| \ (mdMonth, mdDay) -> MonthDay {..} |]
+
+derivingUnbox "WeekDate" [t| WeekDate -> (Year, WeekOfYear, DayOfWeek) |]
+    [| \ WeekDate {..} -> (wdYear, wdWeek, wdDay) |]
+    [| \ (wdYear, wdWeek, wdDay) -> WeekDate {..} |]
+
+derivingUnbox "SundayWeek" [t| SundayWeek -> (Year, WeekOfYear, DayOfWeek) |]
+    [| \ SundayWeek {..} -> (swYear, swWeek, swDay) |]
+    [| \ (swYear, swWeek, swDay) -> SundayWeek {..} |]
+
+derivingUnbox "MondayWeek" [t| MondayWeek -> (Year, WeekOfYear, DayOfWeek) |]
+    [| \ MondayWeek {..} -> (mwYear, mwWeek, mwDay) |]
+    [| \ (mwYear, mwWeek, mwDay) -> MondayWeek {..} |]
 

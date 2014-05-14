@@ -1,9 +1,12 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
@@ -27,6 +30,11 @@ import Data.Thyme.Clock
 import Data.Thyme.Clock.Internal
 import Data.Thyme.Format.Internal
 import qualified Data.Time as T
+#if __GLASGOW_HASKELL__ != 706
+import qualified Data.Vector.Generic
+import qualified Data.Vector.Generic.Mutable
+#endif
+import Data.Vector.Unboxed.Deriving
 import Data.VectorSpace
 import GHC.Generics (Generic)
 import System.Random
@@ -120,6 +128,10 @@ data TimeOfDay = TimeOfDay
     , todMin :: {-# UNPACK #-}!Minute
     , todSec :: {-# UNPACK #-}!DiffTime
     } deriving (INSTANCES_USUAL)
+
+derivingUnbox "TimeOfDay" [t| TimeOfDay -> (Hour, Minute, DiffTime) |]
+    [| \ TimeOfDay {..} -> (todHour, todMin, todSec) |]
+    [| \ (todHour, todMin, todSec) -> TimeOfDay {..} |]
 
 instance NFData TimeOfDay
 
@@ -217,6 +229,10 @@ data LocalTime = LocalTime
     { localDay :: {-# UNPACK #-}!Day
     , localTimeOfDay :: {-only 3 words…-} {-# UNPACK #-}!TimeOfDay
     } deriving (INSTANCES_USUAL)
+
+derivingUnbox "LocalTime" [t| LocalTime -> (Day, TimeOfDay) |]
+    [| \ LocalTime {..} -> (localDay, localTimeOfDay) |]
+    [| \ (localDay, localTimeOfDay) -> LocalTime {..} |]
 
 instance NFData LocalTime
 

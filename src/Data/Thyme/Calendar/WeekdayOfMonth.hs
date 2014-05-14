@@ -1,8 +1,12 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
+
 #include "thyme.h"
 
 module Data.Thyme.Calendar.WeekdayOfMonth
@@ -20,6 +24,11 @@ import Data.AffineSpace
 import Data.Data
 import Data.Thyme.Calendar
 import Data.Thyme.Calendar.Internal
+#if __GLASGOW_HASKELL__ != 706
+import qualified Data.Vector.Generic
+import qualified Data.Vector.Generic.Mutable
+#endif
+import Data.Vector.Unboxed.Deriving
 import GHC.Generics (Generic)
 import System.Random
 import Test.QuickCheck
@@ -30,6 +39,11 @@ data WeekdayOfMonth = WeekdayOfMonth
     , womNth :: {-# UNPACK #-}!Int -- ^ ±1–5, negative means n-th last
     , womDayOfWeek :: {-# UNPACK #-}!DayOfWeek
     } deriving (INSTANCES_USUAL, Show)
+
+derivingUnbox "WeekdayOfMonth"
+    [t| WeekdayOfMonth -> (Year, Month, Int, DayOfWeek) |]
+    [| \ WeekdayOfMonth {..} -> (womYear, womMonth, womNth, womDayOfWeek) |]
+    [| \ (womYear, womMonth, womNth, womDayOfWeek) -> WeekdayOfMonth {..} |]
 
 instance NFData WeekdayOfMonth
 

@@ -3,7 +3,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-} -- workaround
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_HADDOCK hide #-}
@@ -23,10 +26,11 @@ import Data.Int
 import Data.Ix
 import Data.Thyme.Internal.Micro
 import Data.Thyme.Calendar.Internal
-import Data.Vector.Generic (Vector)
-import Data.Vector.Generic.Mutable (MVector)
-import qualified Data.Vector.Unboxed as VU
-import qualified Data.Vector.Unboxed.Mutable as VUM
+#if __GLASGOW_HASKELL__ != 706
+import qualified Data.Vector.Generic
+import qualified Data.Vector.Generic.Mutable
+#endif
+import Data.Vector.Unboxed.Deriving
 import Data.VectorSpace
 import GHC.Generics (Generic)
 import System.Random
@@ -104,6 +108,9 @@ fromSecondsIntegral _ = review microseconds . (*) 1000000 . fromIntegral
 -- @
 newtype DiffTime = DiffTime Micro deriving (INSTANCES_MICRO, AdditiveGroup)
 
+derivingUnbox "DiffTime" [t| DiffTime -> Micro |]
+    [| \ (DiffTime a) -> a |] [| DiffTime |]
+
 #if SHOW_INTERNAL
 deriving instance Show DiffTime
 deriving instance Read DiffTime
@@ -151,6 +158,9 @@ instance TimeDiff DiffTime where
 -- type 'Scalar' 'NominalDiffTime' = 'Rational'
 -- @
 newtype NominalDiffTime = NominalDiffTime Micro deriving (INSTANCES_MICRO, AdditiveGroup)
+
+derivingUnbox "NominalDiffTime" [t| NominalDiffTime -> Micro |]
+    [| \ (NominalDiffTime a) -> a |] [| NominalDiffTime |]
 
 #if SHOW_INTERNAL
 deriving instance Show NominalDiffTime
@@ -200,6 +210,9 @@ posixDayLength = microseconds # 86400000000
 -- <http://en.wikipedia.org/wiki/DUT1 DUT1>.
 newtype UniversalTime = UniversalRep NominalDiffTime deriving (INSTANCES_MICRO)
 
+derivingUnbox "UnversalTime" [t| UniversalTime -> NominalDiffTime |]
+    [| \ (UniversalRep a) -> a |] [| UniversalRep |]
+
 -- | View 'UniversalTime' as a fractional number of days since the
 -- <http://en.wikipedia.org/wiki/Julian_day#Variants Modified Julian Date epoch>.
 {-# INLINE modJulianDate #-}
@@ -232,11 +245,18 @@ modJulianDate = iso
 -- <https://github.com/liyang/thyme/issues/3 cannot represent leap seconds>.
 newtype UTCTime = UTCRep NominalDiffTime deriving (INSTANCES_MICRO)
 
+derivingUnbox "UTCTime" [t| UTCTime -> NominalDiffTime |]
+    [| \ (UTCRep a) -> a |] [| UTCRep |]
+
 -- | Unpacked 'UTCTime', partly for compatibility with @time@.
 data UTCView = UTCTime
     { utctDay :: {-# UNPACK #-}!Day
     , utctDayTime :: {-# UNPACK #-}!DiffTime
     } deriving (INSTANCES_USUAL, Show)
+
+derivingUnbox "UTCView" [t| UTCView -> (Day, DiffTime) |]
+    [| \ UTCTime {..} -> (utctDay, utctDayTime) |]
+    [| \ (utctDay, utctDayTime) -> UTCTime {..} |]
 
 instance NFData UTCView
 
