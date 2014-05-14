@@ -11,10 +11,10 @@ license:        BSD3
 license-file:   LICENSE
 author:         Liyang HU, Ashley Yakeley
 maintainer:     thyme@liyang.hu
-copyright:      © 2013 Liyang HU
+copyright:      © 2013−2014 Liyang HU
 category:       Data, System
 build-type:     Simple
-cabal-version:  >= 1.8
+cabal-version:  >= 1.10
 stability:      experimental
 extra-source-files:
     include/thyme.h
@@ -49,6 +49,7 @@ flag Werror
     manual: True
 
 library
+    default-language: Haskell2010
     include-dirs: include
     hs-source-dirs: src
     if !flag(lens)
@@ -108,6 +109,7 @@ library
         ghc-options: -Werror
 
 test-suite sanity
+    default-language: Haskell2010
     type: exitcode-stdio-1.0
     hs-source-dirs: tests
     if !flag(lens)
@@ -133,6 +135,7 @@ test-suite sanity
     ghc-options: -Wall
 
 test-suite rewrite
+    default-language: Haskell2010
     type: exitcode-stdio-1.0
     hs-source-dirs: tests
     main-is: rewrite.hs
@@ -149,6 +152,7 @@ test-suite rewrite
     ghc-options: -Wall
 
 test-suite hlint
+    default-language: Haskell2010
     type: exitcode-stdio-1.0
     main-is: hlint.hs
     ghc-options: -threaded -rtsopts -with-rtsopts=-N
@@ -159,6 +163,7 @@ test-suite hlint
         buildable: False
 
 benchmark bench
+    default-language: Haskell2010
     type: exitcode-stdio-1.0
     hs-source-dirs: tests
     if !flag(lens)
