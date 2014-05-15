@@ -22,7 +22,7 @@ import Control.DeepSeq
 import Control.Lens
 import Control.Monad
 import Data.AffineSpace
-import Data.Bits ((.&.))
+import Data.Bits
 import Data.Data
 import Data.Int
 import Data.Ix
@@ -407,27 +407,27 @@ mondayWeekValid (MondayWeek y w d) = ModifiedJulianDay (firstDay + yd)
 derivingUnbox "Day" [t| Day -> Int |]
     [| toModifiedJulianDay |] [| ModifiedJulianDay |]
 
-derivingUnbox "YearMonthDay" [t| YearMonthDay -> (Year, Month, DayOfMonth) |]
-    [| \ YearMonthDay {..} -> (ymdYear, ymdMonth, ymdDay) |]
-    [| \ (ymdYear, ymdMonth, ymdDay) -> YearMonthDay {..} |]
+derivingUnbox "YearMonthDay" [t| YearMonthDay -> Int |]
+    [| \ YearMonthDay {..} -> shiftL ymdYear 9 .|. shiftL ymdMonth 5 .|. ymdDay |]
+    [| \ n -> YearMonthDay (shiftR n 9) (shiftR n 5 .&. 0xf) (n .&. 0x1f) |]
 
-derivingUnbox "OrdinalDate" [t| OrdinalDate -> (Year, DayOfYear) |]
-    [| \ OrdinalDate {..} -> (odYear, odDay) |]
-    [| \ (odYear, odDay) -> OrdinalDate {..} |]
+derivingUnbox "OrdinalDate" [t| OrdinalDate -> Int |]
+    [| \ OrdinalDate {..} -> shiftL odYear 9 .|. odDay |]
+    [| \ n -> OrdinalDate (shiftR n 9) (n .&. 0x1ff) |]
 
-derivingUnbox "MonthDay" [t| MonthDay -> (Month, DayOfMonth) |]
-    [| \ MonthDay {..} -> (mdMonth, mdDay) |]
-    [| \ (mdMonth, mdDay) -> MonthDay {..} |]
+derivingUnbox "MonthDay" [t| MonthDay -> Int |]
+    [| \ MonthDay {..} -> shiftL mdMonth 5 .|. mdDay |]
+    [| \ n -> MonthDay (shiftR n 5) (n .&. 0x1f) |]
 
-derivingUnbox "WeekDate" [t| WeekDate -> (Year, WeekOfYear, DayOfWeek) |]
-    [| \ WeekDate {..} -> (wdYear, wdWeek, wdDay) |]
-    [| \ (wdYear, wdWeek, wdDay) -> WeekDate {..} |]
+derivingUnbox "WeekDate" [t| WeekDate -> Int |]
+    [| \ WeekDate {..} -> shiftL wdYear 9 .|. shiftL wdWeek 3 .|. wdDay |]
+    [| \ n -> WeekDate (shiftR n 9) (shiftR n 3 .&. 0x3f) (n .&. 0x7) |]
 
-derivingUnbox "SundayWeek" [t| SundayWeek -> (Year, WeekOfYear, DayOfWeek) |]
-    [| \ SundayWeek {..} -> (swYear, swWeek, swDay) |]
-    [| \ (swYear, swWeek, swDay) -> SundayWeek {..} |]
+derivingUnbox "SundayWeek" [t| SundayWeek -> Int |]
+    [| \ SundayWeek {..} -> shiftL swYear 9 .|. shiftL swWeek 3 .|. swDay |]
+    [| \ n -> SundayWeek (shiftR n 9) (shiftR n 3 .&. 0x3f) (n .&. 0x7) |]
 
-derivingUnbox "MondayWeek" [t| MondayWeek -> (Year, WeekOfYear, DayOfWeek) |]
-    [| \ MondayWeek {..} -> (mwYear, mwWeek, mwDay) |]
-    [| \ (mwYear, mwWeek, mwDay) -> MondayWeek {..} |]
+derivingUnbox "MondayWeek" [t| MondayWeek -> Int |]
+    [| \ MondayWeek {..} -> shiftL mwYear 9 .|. shiftL mwWeek 3 .|. mwDay |]
+    [| \ n -> MondayWeek (shiftR n 9) (shiftR n 3 .&. 0x3f) (n .&. 0x7) |]
 

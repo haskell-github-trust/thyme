@@ -21,6 +21,7 @@ import Control.DeepSeq
 import Control.Lens
 import Control.Monad
 import Data.AffineSpace
+import Data.Bits
 import Data.Data
 import Data.Thyme.Calendar
 import Data.Thyme.Calendar.Internal
@@ -31,7 +32,7 @@ import qualified Data.Vector.Generic.Mutable
 import Data.Vector.Unboxed.Deriving
 import GHC.Generics (Generic)
 import System.Random
-import Test.QuickCheck
+import Test.QuickCheck hiding ((.&.))
 
 data WeekdayOfMonth = WeekdayOfMonth
     { womYear :: {-# UNPACK #-}!Year
@@ -41,9 +42,11 @@ data WeekdayOfMonth = WeekdayOfMonth
     } deriving (INSTANCES_USUAL, Show)
 
 derivingUnbox "WeekdayOfMonth"
-    [t| WeekdayOfMonth -> (Year, Month, Int, DayOfWeek) |]
-    [| \ WeekdayOfMonth {..} -> (womYear, womMonth, womNth, womDayOfWeek) |]
-    [| \ (womYear, womMonth, womNth, womDayOfWeek) -> WeekdayOfMonth {..} |]
+    [t| WeekdayOfMonth -> Int |]
+    [| \ WeekdayOfMonth {..} -> shiftL womYear 11 .|. shiftL womMonth 7
+        .|. shiftL (womNth + 5) 3 .|. womDayOfWeek |]
+    [| \ n -> WeekdayOfMonth (shiftR n 11) (shiftR n 7 .&. 0xf)
+        (shiftR n 3 - 5) (n .&. 0x7) |]
 
 instance NFData WeekdayOfMonth
 

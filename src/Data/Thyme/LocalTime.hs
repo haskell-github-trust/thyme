@@ -22,7 +22,9 @@ import Control.DeepSeq
 import Control.Lens
 import Control.Monad
 import Data.AffineSpace
+import Data.Bits
 import Data.Data
+import Data.Int
 import Data.Thyme.Internal.Micro
 import Data.Thyme.Calendar
 import Data.Thyme.Calendar.Internal
@@ -38,7 +40,7 @@ import Data.Vector.Unboxed.Deriving
 import Data.VectorSpace
 import GHC.Generics (Generic)
 import System.Random
-import Test.QuickCheck
+import Test.QuickCheck hiding ((.&.))
 
 type Minutes = Int
 type Hours = Int
@@ -129,9 +131,11 @@ data TimeOfDay = TimeOfDay
     , todSec :: {-# UNPACK #-}!DiffTime
     } deriving (INSTANCES_USUAL)
 
-derivingUnbox "TimeOfDay" [t| TimeOfDay -> (Hour, Minute, DiffTime) |]
-    [| \ TimeOfDay {..} -> (todHour, todMin, todSec) |]
-    [| \ (todHour, todMin, todSec) -> TimeOfDay {..} |]
+derivingUnbox "TimeOfDay" [t| TimeOfDay -> Int64 |]
+    [| \ TimeOfDay {..} -> fromIntegral (todHour .|. shiftL todMin 8)
+        .|. shiftL (todSec ^. microseconds) 16 |]
+    [| \ n -> TimeOfDay (fromIntegral $ n .&. 0xff)
+        (fromIntegral $ shiftR n 8 .&. 0xff) (microseconds # shiftR n 16) |]
 
 instance NFData TimeOfDay
 
