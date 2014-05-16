@@ -92,7 +92,7 @@ library
         text >= 0.11,
         time >= 1.4,
         vector >= 0.9,
-        vector-th-unbox >= 0.2,
+        vector-th-unbox >= 0.2.1.0,
         vector-space >= 0.8
     if os(windows)
         build-depends: Win32

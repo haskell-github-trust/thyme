@@ -32,7 +32,7 @@ import Data.Thyme.Clock
 import Data.Thyme.Clock.Internal
 import Data.Thyme.Format.Internal
 import qualified Data.Time as T
-#if __GLASGOW_HASKELL__ != 706
+#if __GLASGOW_HASKELL__ == 704
 import qualified Data.Vector.Generic
 import qualified Data.Vector.Generic.Mutable
 #endif

@@ -26,7 +26,7 @@ import Data.Int
 import Data.Ix
 import Data.Thyme.Internal.Micro
 import Data.Thyme.Calendar.Internal
-#if __GLASGOW_HASKELL__ != 706
+#if __GLASGOW_HASKELL__ == 704
 import qualified Data.Vector.Generic
 import qualified Data.Vector.Generic.Mutable
 #endif

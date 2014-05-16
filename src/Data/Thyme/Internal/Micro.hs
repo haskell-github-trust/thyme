@@ -21,7 +21,7 @@ import Data.Data
 import Data.Int
 import Data.Ix
 import Data.Ratio
-#if __GLASGOW_HASKELL__ != 706
+#if __GLASGOW_HASKELL__ == 704
 import qualified Data.Vector.Generic
 import qualified Data.Vector.Generic.Mutable
 #endif
