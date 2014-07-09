@@ -95,6 +95,9 @@ library
         vector-space >= 0.8
     if os(windows)
         build-depends: Win32
+    if os(darwin)
+        build-tools: cpphs
+        ghc-options: -pgmP cpphs -optP--cpp
     if flag(lens)
         build-depends: lens >= 3.9
     else
