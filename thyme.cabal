@@ -85,7 +85,6 @@ library
         bytestring >= 0.9,
         containers,
         deepseq >= 1.2,
-        ghc-prim,
         mtl >= 1.1,
         old-locale >= 1.0,
         random,
