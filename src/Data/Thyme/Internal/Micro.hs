@@ -6,7 +6,6 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# OPTIONS_HADDOCK hide #-}
 
 #include "thyme.h"
 
