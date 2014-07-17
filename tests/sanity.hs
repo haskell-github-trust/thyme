@@ -7,7 +7,6 @@
 
 import Prelude
 import Control.Lens
-import Control.Monad
 import qualified Data.Attoparsec.ByteString.Char8 as P
 import Data.ByteString (ByteString)
 import Data.Thyme
@@ -40,6 +39,9 @@ utf8String = Text.encodeUtf8 . Text.pack
 
 ------------------------------------------------------------------------
 
+prop_ShowRead :: (Eq a, Show a, Read a) => a -> Bool
+prop_ShowRead a = (a, "") `elem` reads (show a)
+
 prop_formatTime :: Spec -> RecentTime -> Property
 prop_formatTime (Spec spec) (RecentTime t@(review thyme -> t'))
 #if MIN_VERSION_QuickCheck(2,7,0)
@@ -65,21 +67,20 @@ prop_parseTime (Spec spec) (RecentTime orig)
     desc = "input: " ++ show s ++ "\nthyme: " ++ show t
         ++ "\ntime:  " ++ show t' ++ "\nstate: " ++ show (tp s)
 
-prop_ShowRead :: (Eq a, Show a, Read a) => a -> Bool
-prop_ShowRead a = (a, "") `elem` reads (show a)
-
 ------------------------------------------------------------------------
 
 {-# ANN main "HLint: ignore Use list literal" #-}
 main :: IO ()
-main = (exit . all isSuccess <=< sequence) $
-        quickCheckResult (prop_ShowRead :: Day -> Bool) :
-        quickCheckResult (prop_ShowRead :: DiffTime -> Bool) :
-        quickCheckResult (prop_ShowRead :: NominalDiffTime -> Bool) :
-        quickCheckResult (prop_ShowRead :: UTCTime -> Bool) :
-        quickCheckResult prop_formatTime :
-        quickCheckResult prop_parseTime :
-        []
-  where
+main = exit . all isSuccess =<< sequence
+    [ qc 10000 (prop_ShowRead :: Day -> Bool)
+    , qc 10000 (prop_ShowRead :: DiffTime -> Bool)
+    , qc 10000 (prop_ShowRead :: NominalDiffTime -> Bool)
+    , qc 10000 (prop_ShowRead :: UTCTime -> Bool)
+    , qc  1000 prop_formatTime
+    , qc  1000 prop_parseTime
+
+    ] where
     isSuccess r = case r of Success {} -> True; _ -> False
+    qc :: Testable prop => Int -> prop -> IO Result
+    qc n = quickCheckWithResult stdArgs {maxSuccess = n, maxSize = n}
 
