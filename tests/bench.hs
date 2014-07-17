@@ -61,6 +61,8 @@ main = do
     let years = view (gregorian . _ymdYear) <$> days
     let years' = (\ (y, _m, _d) -> y) . T.toGregorian <$> days'
     let mons = ((isLeapYear . ymdYear) &&& ymdMonth) . view gregorian <$> days
+    let yyds = (odYear &&& odDay) . view ordinalDate <$> days
+    let yyds' = ((fromIntegral . odYear) &&& odDay) . view ordinalDate <$> days
     let ords = ((isLeapYear . odYear) &&& odDay) . view ordinalDate <$> days
     let pxs = utcTimeToPOSIXSeconds <$> utcs
     let pxs' = T.utcTimeToPOSIXSeconds <$> utcs'
@@ -79,6 +81,10 @@ main = do
             ( "toOrdinalDate", 2.7
                 , nf (toOrdinalDate <$>) days
                 , nf (T.toOrdinalDate <$>) days' ) :
+
+            ( "fromOrdinalDate", 2.0
+                , nf (uncurry fromOrdinalDate <$>) yyds
+                , nf (uncurry T.fromOrdinalDate <$>) yyds' ) :
 
             ( "toGregorian", 4.3
                 , nf (toGregorian <$>) days
@@ -158,4 +164,3 @@ main = do
             ratio expected ((ratio / expected - 1) * 100)
             (if ratio >= expected then "OK." else "oh noes. D:")
         return (ratio >= expected)
-
