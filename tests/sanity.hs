@@ -6,12 +6,14 @@
 #endif
 
 import Prelude
+import Control.Arrow
 import Control.Lens
 import qualified Data.Attoparsec.ByteString.Char8 as P
 import Data.ByteString (ByteString)
 import Data.Thyme
 import Data.Thyme.Time
 import qualified Data.Time as T
+import qualified Data.Time.Calendar.OrdinalDate as T
 import System.Locale
 import Test.QuickCheck
 
@@ -41,6 +43,10 @@ utf8String = Text.encodeUtf8 . Text.pack
 
 prop_ShowRead :: (Eq a, Show a, Read a) => a -> Bool
 prop_ShowRead a = (a, "") `elem` reads (show a)
+
+prop_toOrdinalDate :: Day -> Bool
+prop_toOrdinalDate day =
+    fromIntegral `first` toOrdinalDate day == T.toOrdinalDate (thyme # day)
 
 prop_formatTime :: Spec -> RecentTime -> Property
 prop_formatTime (Spec spec) (RecentTime t@(review thyme -> t'))
@@ -76,6 +82,7 @@ main = exit . all isSuccess =<< sequence
     , qc 10000 (prop_ShowRead :: DiffTime -> Bool)
     , qc 10000 (prop_ShowRead :: NominalDiffTime -> Bool)
     , qc 10000 (prop_ShowRead :: UTCTime -> Bool)
+    , qc 10000 prop_toOrdinalDate
     , qc  1000 prop_formatTime
     , qc  1000 prop_parseTime
 
