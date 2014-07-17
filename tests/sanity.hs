@@ -13,6 +13,7 @@ import Data.ByteString (ByteString)
 import Data.Thyme
 import Data.Thyme.Time
 import qualified Data.Time as T
+import qualified Data.Time.Calendar.OrdinalDate as T
 import System.Locale
 import Test.QuickCheck
 
@@ -68,18 +69,31 @@ prop_parseTime (Spec spec) (RecentTime orig)
 prop_ShowRead :: (Eq a, Show a, Read a) => a -> Bool
 prop_ShowRead a = (a, "") `elem` reads (show a)
 
+prop_toOrdinalDate :: Int -> Bool
+prop_toOrdinalDate day =
+  toOrdinalDate (ModifiedJulianDay day) == toOrdinalDateT
+  where
+    toOrdinalDateT = case T.toOrdinalDate (T.ModifiedJulianDay $ fromIntegral day) of
+      (y, yd) -> (fromIntegral y, yd)
+
 ------------------------------------------------------------------------
 
 {-# ANN main "HLint: ignore Use list literal" #-}
 main :: IO ()
 main = (exit . all isSuccess <=< sequence) $
-        quickCheckResult (prop_ShowRead :: Day -> Bool) :
-        quickCheckResult (prop_ShowRead :: DiffTime -> Bool) :
-        quickCheckResult (prop_ShowRead :: NominalDiffTime -> Bool) :
-        quickCheckResult (prop_ShowRead :: UTCTime -> Bool) :
-        quickCheckResult prop_formatTime :
-        quickCheckResult prop_parseTime :
+        qc (prop_ShowRead :: Day -> Bool) :
+        qc (prop_ShowRead :: DiffTime -> Bool) :
+        qc (prop_ShowRead :: NominalDiffTime -> Bool) :
+        qc (prop_ShowRead :: UTCTime -> Bool) :
+        qcSlow prop_formatTime :
+        qcSlow prop_parseTime :
+        qc prop_toOrdinalDate :
         []
   where
     isSuccess r = case r of Success {} -> True; _ -> False
-
+    qcArgs = stdArgs { maxSuccess = 10000, maxSize = 100000 }
+    qc :: Testable prop => prop -> IO Result
+    qc = quickCheckWithResult qcArgs
+    qcArgsSlow = stdArgs { maxSuccess = 500, maxSize = 500 }
+    qcSlow :: Testable prop => prop -> IO Result
+    qcSlow = quickCheckWithResult qcArgsSlow
