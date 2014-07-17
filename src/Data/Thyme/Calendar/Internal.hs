@@ -2,7 +2,6 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE MagicHash #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -121,29 +120,80 @@ data OrdinalDate = OrdinalDate
 
 instance NFData OrdinalDate
 
+-- Brief description of the toOrdinal computation.
+--
+-- The length of the years in Gregorian calendar is periodic with
+-- period of 400 years. There are 100 - 4 + 1 = 97 leap years in a
+-- period, so the average length of a year is 365 + 97/400 =
+-- 146097/400 days.
+--
+-- Now, if you consider these -- let's call them nominal -- years,
+-- then for any point in time, for any linear day number we can
+-- determine which nominal year does it fall into by a single
+-- division. Moreover, if we align the start of the calendar year 1
+-- with the start of the nominal year 1, then the calendar years and
+-- nominal years never get too much out of sync. Specifically:
+--
+--  * start of the first day of a calendar year might fall into the
+--    preceding nominal year, but never more than by 1.5 days (591/400
+--    days, to be precise)
+--  * the start of the last day of a calendar year always falls into
+--    its nominal year (even for the leap years).
+--
+-- So, to find out the calendar year for a given day, we calculate
+-- which nominal year does its start fall. And, if we are not too
+-- close to the end of year, we have the right calendar
+-- year. Othewise, we just check whether it falls within the next
+-- calendar year.
+--
+-- Notes: to make the reasoning simpler and more efficient ('quot' is
+-- faster than 'div') we do the computation directly only for positive
+-- years (days after 1-1-1). For earlier dates we "transate" by an
+-- integral number of 400 year periods, do the computation and
+-- translate back.
+
 {-# INLINE ordinalDate #-}
 ordinalDate :: Iso' Day OrdinalDate
 ordinalDate = iso toOrd fromOrd where
 
     {-# INLINEABLE toOrd #-}
     toOrd :: Day -> OrdinalDate
-    toOrd (ModifiedJulianDay mjd) = OrdinalDate year yd where
-        -- pilfered
-        a = mjd + 678575
-        (quadcent, b) = divMod a 146097
-        cent = min (div b 36524) 3
-        c = b - cent * 36524
-        (quad, d) = divMod c 1461
-        y = min (div d 365) 3
-        yd = d - y * 365 + 1
-        year = quadcent * 400 + cent * 100 + quad * 4 + y + 1
+    toOrd (ModifiedJulianDay mjd)
+      | dayB0 <= 0 = case toOrdB0 dayInQC of
+        OrdinalDate y yd -> OrdinalDate (y + quadCent * 400) yd
+      | otherwise = toOrdB0 dayB0
+      where
+        dayB0 = mjd + 678575
+        (quadCent, dayInQC) = dayB0 `divMod` 146097
+
+    -- Input: days since 1-1-1. Precondition: has to be positive!
+    {-# INLINE toOrdB0 #-}
+    toOrdB0 :: Int -> OrdinalDate
+    toOrdB0 dayB0 = res
+      where
+        (y0, r) = (400 * dayB0) `quotRem` 146097
+        d0 = dayInYear y0 dayB0
+        d1 = dayInYear (y0 + 1) dayB0
+        res = if r > 146097 - 600 && d1 > 0
+              then OrdinalDate (y0 + 1 + 1) d1
+              else OrdinalDate (y0 + 1) d0
+
+    -- Input: (year - 1) (day as days since 1-1-1)
+    -- Precondition: year is positive!
+    {-# INLINE dayInYear #-}
+    dayInYear :: Int -> Int -> Int
+    dayInYear y0 dayB0 = dayB0 - 365 * y0 - leaps + 1
+      where
+        leaps = y0 `shiftR` 2 - centuries + centuries `shiftR` 2
+        centuries = y0 `quot` 100
 
     {-# INLINEABLE fromOrd #-}
     fromOrd :: OrdinalDate -> Day
     fromOrd (OrdinalDate year yd) = ModifiedJulianDay mjd where
-        -- pilfered
-        y = year - 1
-        mjd = 365 * y + div y 4 - div y 100 + div y 400 - 678576
+        years = year - 1
+        centuries = years `div` 100
+        leaps = years `shiftR` 2 - centuries + centuries `shiftR` 2
+        mjd = 365 * years + leaps - 678576
             + clip 1 (if isLeapYear year then 366 else 365) yd
         clip a b = max a . min b
 
@@ -430,4 +480,3 @@ derivingUnbox "SundayWeek" [t| SundayWeek -> Int |]
 derivingUnbox "MondayWeek" [t| MondayWeek -> Int |]
     [| \ MondayWeek {..} -> shiftL mwYear 9 .|. shiftL mwWeek 3 .|. mwDay |]
     [| \ n -> MondayWeek (shiftR n 9) (shiftR n 3 .&. 0x3f) (n .&. 0x7) |]
-
