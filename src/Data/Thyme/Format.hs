@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 #include "thyme.h"
@@ -18,6 +19,9 @@ module Data.Thyme.Format
 
 import Prelude
 import Control.Applicative
+#if SHOW_INTERNAL
+import Control.Arrow
+#endif
 import Control.Lens
 import Control.Monad.Trans
 import Control.Monad.State.Strict
@@ -483,6 +487,17 @@ readsTime l = parserToReadS . buildTimeParser l
 
 ------------------------------------------------------------------------
 
+deriving instance Read UTCView
+#if SHOW_INTERNAL
+deriving instance Read Day
+deriving instance Read TimeOfDay
+deriving instance Read LocalTime
+deriving instance Read ZonedTime
+deriving instance Read TimeZone
+instance Read UTCTime where
+    {-# INLINE readsPrec #-}
+    readsPrec n = fmap (first $ review utcTime) . readsPrec n
+#else
 instance Read Day where
     {-# INLINEABLE readsPrec #-}
     readsPrec _ = readParen False $
@@ -507,6 +522,7 @@ instance Read UTCTime where
     {-# INLINEABLE readsPrec #-}
     readsPrec _ = readParen False $
         readsTime defaultTimeLocale "%Y-%m-%d %H:%M:%S%Q %Z"
+#endif
 
 ------------------------------------------------------------------------
 
