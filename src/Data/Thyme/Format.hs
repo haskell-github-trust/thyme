@@ -1,6 +1,9 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
+#if SHOW_INTERNAL
+{-# LANGUAGE StandaloneDeriving #-}
+#endif
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 #include "thyme.h"
@@ -483,6 +486,14 @@ readsTime l = parserToReadS . buildTimeParser l
 
 ------------------------------------------------------------------------
 
+#if SHOW_INTERNAL
+deriving instance Read Day
+deriving instance Read TimeOfDay
+deriving instance Read LocalTime
+deriving instance Read ZonedTime
+deriving instance Read TimeZone
+deriving instance Read UTCTime
+#else
 instance Read Day where
     {-# INLINEABLE readsPrec #-}
     readsPrec _ = readParen False $
@@ -507,6 +518,7 @@ instance Read UTCTime where
     {-# INLINEABLE readsPrec #-}
     readsPrec _ = readParen False $
         readsTime defaultTimeLocale "%Y-%m-%d %H:%M:%S%Q %Z"
+#endif
 
 ------------------------------------------------------------------------
 
