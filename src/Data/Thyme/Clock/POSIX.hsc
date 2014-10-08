@@ -14,7 +14,6 @@ import Control.Lens
 import Data.AdditiveGroup
 import Data.Thyme.Internal.Micro
 import Data.Thyme.Clock.Internal
-import Data.VectorSpace
 
 #ifdef mingw32_HOST_OS
 import System.Win32.Time
@@ -32,7 +31,8 @@ type POSIXTime = NominalDiffTime
 posixTime :: Iso' UTCTime POSIXTime
 posixTime = iso (\ (UTCRep t) -> t ^-^ unixEpoch)
         (UTCRep . (^+^) unixEpoch) where
-    unixEpoch = {-ModifiedJulianDay-}40587 *^ posixDayLength
+    unixEpoch = review microseconds $
+        {-ModifiedJulianDay-}40587 * {-posixDayLength-}86400000000
 
 {-# INLINE getPOSIXTime #-}
 getPOSIXTime :: IO POSIXTime
