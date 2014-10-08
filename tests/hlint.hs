@@ -11,8 +11,6 @@ main = (`unless` exitFailure) . null =<< hlint
     , "--cpp-include=include"
     , "--cpp-include=dist/build/autogen"
     , "--cpp-define=SHOW_INTERNAL=1"
-    , "-XNoUnboxedTuples"
-    , "-i", "Unused LANGUAGE pragma"
     , "-i", "Reduce duplication"
     , "-i", "Redundant lambda"
     , "-i", "Use if"
