@@ -6,7 +6,9 @@
 
 module Data.Thyme.Clock.POSIX
     ( posixDayLength
-    , module Data.Thyme.Clock.POSIX
+    , POSIXTime
+    , posixTime
+    , getPOSIXTime
     ) where
 
 import Prelude
