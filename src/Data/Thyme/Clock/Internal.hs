@@ -74,6 +74,11 @@ toSeconds' = (`decompose'` ())
 fromSeconds' :: (TimeDiff t) => Rational -> t
 fromSeconds' = (*^ basisValue ())
 
+{-# INLINE picoseconds #-}
+picoseconds :: (TimeDiff t) => Iso' t Integer
+picoseconds = microseconds . iso ((*) 1000000 . toInteger)
+    (\ ps -> fromInteger $ quot (ps + signum ps * 500000) 1000000)
+
 ------------------------------------------------------------------------
 -- not for public consumption
 

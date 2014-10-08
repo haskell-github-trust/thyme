@@ -29,6 +29,7 @@ import qualified Data.Time.Calendar as T
 import qualified Data.Time.Clock as T
 import qualified Data.Time.Clock.TAI as T
 import qualified Data.Time.LocalTime as T
+import Unsafe.Coerce
 
 ------------------------------------------------------------------------
 -- * Type conversion
@@ -48,8 +49,11 @@ instance Thyme T.UniversalTime UniversalTime where
 
 instance Thyme T.DiffTime DiffTime where
     {-# INLINE thyme #-}
-    thyme = iso (round . (*) 1000000)
-        (T.picosecondsToDiffTime . (*) 1000000 . toInteger) . from microseconds
+    thyme = iso unsafeCoerce unsafeCoerce . from picoseconds
+
+instance Thyme T.NominalDiffTime NominalDiffTime where
+    {-# INLINE thyme #-}
+    thyme = iso unsafeCoerce unsafeCoerce . from picoseconds
 
 instance Thyme T.UTCTime UTCView where
     {-# INLINE thyme #-}
@@ -60,11 +64,6 @@ instance Thyme T.UTCTime UTCView where
 instance Thyme T.UTCTime UTCTime where
     {-# INLINE thyme #-}
     thyme = thyme . from utcTime
-
-instance Thyme T.NominalDiffTime NominalDiffTime where
-    {-# INLINE thyme #-}
-    thyme = iso (round . (*) 1000000) -- no picosecondsToNominalDiffTime D:
-        (fromRational . (% 1000000) . toInteger) . from microseconds
 
 instance Thyme T.AbsoluteTime AbsoluteTime where
     {-# INLINE thyme #-}
@@ -234,7 +233,8 @@ secondsToDiffTime a = DiffTime (Micro $ a * 1000000)
 
 {-# INLINE picosecondsToDiffTime #-}
 picosecondsToDiffTime :: Int64 -> DiffTime
-picosecondsToDiffTime a = DiffTime (Micro $ div (a + 500000) 1000000)
+picosecondsToDiffTime a = DiffTime . Micro $
+    quot (a + signum a * 500000) 1000000
 
 {-# INLINE mkUTCTime #-}
 mkUTCTime :: Day -> DiffTime -> UTCTime
