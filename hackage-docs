@@ -1,0 +1,29 @@
+#! /bin/bash
+set -e
+
+# http://fuuzetsu.co.uk/blog/posts/2014-01-06-Fix-your-Hackage-documentation.html
+# http://fuuzetsu.co.uk/blog/posts/2014-01-06-Hackage-documentation-v2.html
+# https://gist.github.com/Fuuzetsu/8276421
+
+PKG=thyme
+VER="$(sed -ne 's/^version: *//p' < $PKG.cabal)"
+TAR="$PKG-$VER-docs"
+USR="$(sed -ne 's/^username: *//p' < ~/.cabal/config)"
+PAS="$(sed -ne 's/^password: *//p' < ~/.cabal/config)"
+
+# link to real lens for documentation
+cabal configure -flens
+
+cabal haddock --hyperlink-source --hoogle \
+	--contents-location='/package/$pkg' \
+	--html-location='/package/$pkg-$version/docs'
+
+tar -C dist/doc/html --format=ustar --show-transformed-names \
+	--transform="s#^$PKG#$TAR#" -c -v -z -f "dist/$TAR.tar.gz" "$PKG"
+
+curl -X PUT -u "$USR:$PAS" \
+	-H 'Content-Type: application/x-tar' \
+	-H 'Content-Encoding: gzip' \
+	--data-binary "@dist/$TAR.tar.gz" \
+	"http://hackage.haskell.org/package/$PKG-$VER/docs"
+
