@@ -5,7 +5,7 @@ description:
     Thyme is a rewrite of the fine @time@ library, with a particular focus
     on performance for applications that make heavy use of timestamps.
     .
-    See "Data.Thyme" for a full description.
+    See <http://hackage.haskell.org/package/thyme/docs/Data-Thyme.html Data.Thyme> for a full description.
 homepage:       https://github.com/liyang/thyme
 license:        BSD3
 license-file:   LICENSE
