@@ -1,7 +1,13 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ViewPatterns #-}
+
+#if HLINT
+#include "cabal_macros.h"
+#endif
 
 -- | This module provides just the compatibility wrappers for the things
 -- that @thyme@ does differently from @time@. No 'RealFrac' instances for
@@ -15,6 +21,7 @@ module Data.Thyme.Time.Core
 import Prelude
 import Control.Lens
 import Data.AffineSpace
+import Data.Fixed
 import Data.Int
 import Data.Thyme.Internal.Micro
 import Data.Ratio
@@ -29,7 +36,7 @@ import qualified Data.Time.Calendar as T
 import qualified Data.Time.Clock as T
 import qualified Data.Time.Clock.TAI as T
 import qualified Data.Time.LocalTime as T
-import Unsafe.Coerce
+import Unsafe.TrueName
 
 ------------------------------------------------------------------------
 -- * Type conversion
@@ -49,11 +56,27 @@ instance Thyme T.UniversalTime UniversalTime where
 
 instance Thyme T.DiffTime DiffTime where
     {-# INLINE thyme #-}
-    thyme = iso unsafeCoerce unsafeCoerce . from picoseconds
+    thyme = dt . fixed . from picoseconds where
+        dt = iso (\ [truename| ''T.DiffTime MkDiffTime | ps |] -> ps )
+            [truename| ''T.DiffTime MkDiffTime |]
+#if MIN_VERSION_base(4,7,0)
+        fixed = iso (\ (MkFixed n) -> n ) MkFixed
+#else
+        fixed = iso (\ [truename| ''Fixed MkFixed | n |] -> n )
+            [truename| ''Fixed MkFixed |]
+#endif
 
 instance Thyme T.NominalDiffTime NominalDiffTime where
     {-# INLINE thyme #-}
-    thyme = iso unsafeCoerce unsafeCoerce . from picoseconds
+    thyme = ndt . fixed . from picoseconds where
+        ndt = iso (\ [truename| ''T.NominalDiffTime MkNominalDiffTime | ps |] -> ps )
+            [truename| ''T.NominalDiffTime MkNominalDiffTime |]
+#if MIN_VERSION_base(4,7,0)
+        fixed = iso (\ (MkFixed n) -> n ) MkFixed
+#else
+        fixed = iso (\ [truename| ''Fixed MkFixed | n |] -> n )
+            [truename| ''Fixed MkFixed |]
+#endif
 
 instance Thyme T.UTCTime UTCView where
     {-# INLINE thyme #-}
