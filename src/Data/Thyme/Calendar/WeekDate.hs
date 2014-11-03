@@ -1,6 +1,9 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+#if __GLASGOW_HASKELL__ == 706
+{-# OPTIONS_GHC -fsimpl-tick-factor=120 #-} -- 7.6.3 only, it seems; fixes #29
+#endif
 #include "thyme.h"
 
 -- | Various Week Date formats
