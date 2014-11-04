@@ -215,7 +215,7 @@ posixDayLength = microseconds # 86400000000
 -- <http://en.wikipedia.org/wiki/DUT1 DUT1>.
 newtype UniversalTime = UniversalRep NominalDiffTime deriving (INSTANCES_MICRO)
 
-derivingUnbox "UnversalTime" [t| UniversalTime -> NominalDiffTime |]
+derivingUnbox "UniversalTime" [t| UniversalTime -> NominalDiffTime |]
     [| \ (UniversalRep a) -> a |] [| UniversalRep |]
 
 -- | View 'UniversalTime' as a fractional number of days since the
