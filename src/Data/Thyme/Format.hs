@@ -466,24 +466,23 @@ timeParser TimeLocale {..} = flip execStateT unixEpoch . go where
         tpPOSIXTime = zeroV
         tpTimeZone = utc
 
-{-# INLINE buildTimeParser #-}
-buildTimeParser :: (ParseTime t) => TimeLocale -> String -> Parser t
-buildTimeParser l spec = buildTime
-    <$ P.skipSpace <*> timeParser l spec <* P.skipSpace <* P.endOfInput
-
 {-# INLINEABLE parseTime #-}
 parseTime :: (ParseTime t) => TimeLocale -> String -> String -> Maybe t
 parseTime l spec = either (const Nothing) Just
-    . P.parseOnly (buildTimeParser l spec) . utf8String
+        . P.parseOnly parser . utf8String where
+    parser = buildTime <$ P.skipSpace <*> timeParser l spec
+        <* P.skipSpace <* P.endOfInput
 
 {-# INLINEABLE readTime #-}
 readTime :: (ParseTime t) => TimeLocale -> String -> String -> t
-readTime l spec = either error id
-    . P.parseOnly (buildTimeParser l spec) . utf8String
+readTime l spec = either error id . P.parseOnly parser . utf8String where
+    parser = buildTime <$ P.skipSpace <*> timeParser l spec
+        <* P.skipSpace <* P.endOfInput
 
 {-# INLINEABLE readsTime #-}
 readsTime :: (ParseTime t) => TimeLocale -> String -> ReadS t
-readsTime l = parserToReadS . buildTimeParser l
+readsTime l spec = parserToReadS $
+    buildTime <$ P.skipSpace <*> timeParser l spec
 
 ------------------------------------------------------------------------
 
