@@ -118,7 +118,7 @@ utc = TimeZone 0 False "UTC"
 getTimeZone :: UTCTime -> IO TimeZone
 getTimeZone t = thyme `fmap` T.getTimeZone (T.UTCTime day $ toSeconds dt) where
     day = T.ModifiedJulianDay (toInteger mjd)
-    UTCTime (ModifiedJulianDay mjd) dt = t ^. utcTime
+    UTCView (ModifiedJulianDay mjd) dt = t ^. utcTime
     thyme T.TimeZone {..} = TimeZone {..}
 
 {-# INLINE getCurrentTimeZone #-}
@@ -275,12 +275,12 @@ utcLocalTime TimeZone {..} = utcTime . iso localise globalise where
 
     {-# INLINEABLE localise #-}
     localise :: UTCView -> LocalTime
-    localise (UTCTime day dt) = LocalTime (day .+^ dd) tod where
+    localise (UTCView day dt) = LocalTime (day .+^ dd) tod where
         (dd, tod) = addMinutes timeZoneMinutes (dt ^. timeOfDay)
 
     {-# INLINEABLE globalise #-}
     globalise :: LocalTime -> UTCView
-    globalise (LocalTime day tod) = UTCTime (day .+^ dd)
+    globalise (LocalTime day tod) = UTCView (day .+^ dd)
             (timeOfDay # utcToD) where
         (dd, utcToD) = addMinutes (negate timeZoneMinutes) tod
 

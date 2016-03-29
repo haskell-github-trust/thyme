@@ -28,7 +28,7 @@ exit b = exitWith $ if b then ExitSuccess else ExitFailure 1
 newtype RecentTime = RecentTime UTCTime deriving (Show)
 
 instance Arbitrary RecentTime where
-    arbitrary = fmap (RecentTime . review utcTime) $ UTCTime
+    arbitrary = fmap (RecentTime . review utcTime) $ UTCView
             <$> choose (minDay, maxDay)
             <*> choose (zeroV, pred dayLength) where
         minDay = gregorian # YearMonthDay 1000 1 1

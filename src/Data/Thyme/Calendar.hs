@@ -52,7 +52,7 @@ instance Random Day where
     randomR r = first (^. _utctDay) . randomR (range r) where
         -- upper bound is one Micro second before the next day
         range = toMidnight *** pred . toMidnight . succ
-        toMidnight = (utcTime #) . flip UTCTime zeroV
+        toMidnight day = utcTime # UTCView day zeroV
     random = randomR (minBound, maxBound)
 
 instance Random YearMonthDay where

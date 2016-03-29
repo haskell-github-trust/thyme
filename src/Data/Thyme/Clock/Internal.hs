@@ -4,6 +4,9 @@
 {-# LANGUAGE FlexibleContexts #-} -- workaround
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+#if __GLASGOW_HASKELL__ >= 708
+{-# LANGUAGE PatternSynonyms #-}
+#endif
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TemplateHaskell #-}
@@ -254,24 +257,37 @@ derivingUnbox "UTCTime" [t| UTCTime -> NominalDiffTime |]
     [| \ (UTCRep a) -> a |] [| UTCRep |]
 
 -- | Unpacked 'UTCTime', partly for compatibility with @time@.
-data UTCView = UTCTime
-    { utctDay :: {-# UNPACK #-}!Day
-    , utctDayTime :: {-# UNPACK #-}!DiffTime
+data UTCView = UTCView
+    { utcvDay :: {-# UNPACK #-}!Day
+    , utcvDayTime :: {-# UNPACK #-}!DiffTime
     } deriving (INSTANCES_USUAL, Show)
 
+LENS(UTCView,utcvDay,Day)
+LENS(UTCView,utcvDayTime,DiffTime)
+
 derivingUnbox "UTCView" [t| UTCView -> (Day, DiffTime) |]
-    [| \ UTCTime {..} -> (utctDay, utctDayTime) |]
-    [| \ (utctDay, utctDayTime) -> UTCTime {..} |]
+    [| \ UTCView {..} -> (utcvDay, utcvDayTime) |]
+    [| \ (utcvDay, utcvDayTime) -> UTCView {..} |]
 
 instance NFData UTCView
 
 -- | 'Lens'' for the 'Day' component of an 'UTCTime'.
 _utctDay :: Lens' UTCTime Day
-_utctDay = utcTime . lens utctDay (\ (UTCTime _ t) d -> UTCTime d t)
+_utctDay = utcTime . lens utcvDay
+    (\ UTCView {..} d -> UTCView d utcvDayTime)
 
 -- | 'Lens'' for the time-of-day component of an 'UTCTime'.
 _utctDayTime :: Lens' UTCTime DiffTime
-_utctDayTime = utcTime . lens utctDayTime (\ (UTCTime d _) t -> UTCTime d t)
+_utctDayTime = utcTime . lens utcvDayTime
+    (\ UTCView {..} t -> UTCView utcvDay t)
+
+-- | Accessor for the 'Day' component of an 'UTCTime'.
+utctDay :: UTCTime -> Day
+utctDay = view _utctDay
+
+-- | Accessor for the time-of-day component of an 'UTCTime'.
+utctDayTime :: UTCTime -> DiffTime
+utctDayTime = view _utctDayTime
 
 instance AffineSpace UTCTime where
     type Diff UTCTime = NominalDiffTime
@@ -283,7 +299,7 @@ instance AffineSpace UTCTime where
 -- | View 'UTCTime' as an 'UTCView', comprising a 'Day' along with
 -- a 'DiffTime' offset since midnight.
 --
--- This is an improper lens: 'utctDayTime' offsets outside the range of
+-- This is an improper lens: 'utcvDayTime' offsets outside the range of
 -- @['zeroV', 'posixDayLength')@ will carry over into the day part, with the
 -- expected behaviour.
 {-# INLINE utcTime #-}
@@ -293,12 +309,20 @@ utcTime = iso toView fromView where
 
     {-# INLINE toView #-}
     toView :: UTCTime -> UTCView
-    toView (UTCRep (NominalDiffTime a)) = UTCTime
+    toView (UTCRep (NominalDiffTime a)) = UTCView
             (ModifiedJulianDay mjd) (DiffTime dt) where
         (fromIntegral -> mjd, dt) = microDivMod a posixDay
 
     {-# INLINE fromView #-}
     fromView :: UTCView -> UTCTime
-    fromView (UTCTime (ModifiedJulianDay mjd) (DiffTime dt)) = UTCRep a where
+    fromView (UTCView (ModifiedJulianDay mjd) (DiffTime dt)) = UTCRep a where
         a = NominalDiffTime (Micro (fromIntegral mjd * uPosixDay) ^+^ dt)
+
+#if __GLASGOW_HASKELL__ >= 710
+pattern UTCTime :: Day -> DiffTime -> UTCTime
+pattern UTCTime d t <- (view utcTime -> UTCView d t) where
+    UTCTime d t = utcTime # UTCView d t
+#elif __GLASGOW_HASKELL__ >= 708
+pattern UTCTime d t <- (view utcTime -> UTCView d t)
+#endif
 

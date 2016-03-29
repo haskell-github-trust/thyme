@@ -86,7 +86,7 @@ type LeapSecondTable = Either UTCTime AbsoluteTime -> DiffTime
 utcDayLength :: LeapSecondTable -> Day -> DiffTime
 utcDayLength table day@((.+^ 1) -> next) =
         DiffTime posixDay ^+^ diff next ^-^ diff day where
-    diff d = table . Left $ utcTime # UTCTime d zeroV
+    diff d = table $ Left (utcTime # UTCView d zeroV)
     NominalDiffTime posixDay = posixDayLength
 
 {-# INLINE absoluteTime #-}

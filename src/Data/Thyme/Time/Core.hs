@@ -58,8 +58,8 @@ instance Thyme T.NominalDiffTime NominalDiffTime where
 instance Thyme T.UTCTime UTCView where
     {-# INLINE thyme #-}
     thyme = iso
-        (\ (T.UTCTime d t) -> UTCTime (d ^. thyme) (t ^. thyme))
-        (\ (UTCTime d t) -> T.UTCTime (thyme # d) (thyme # t))
+        (\ (T.UTCTime d t) -> UTCView (d ^. thyme) (t ^. thyme))
+        (\ (UTCView d t) -> T.UTCTime (thyme # d) (thyme # t))
 
 instance Thyme T.UTCTime UTCTime where
     {-# INLINE thyme #-}
@@ -238,7 +238,7 @@ picosecondsToDiffTime a = DiffTime . Micro $
 
 {-# INLINE mkUTCTime #-}
 mkUTCTime :: Day -> DiffTime -> UTCTime
-mkUTCTime d t = utcTime # UTCTime d t
+mkUTCTime d t = utcTime # UTCView d t
 
 {-# INLINE unUTCTime #-}
 unUTCTime :: UTCTime -> UTCView

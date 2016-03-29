@@ -1,3 +1,8 @@
+{-# LANGUAGE CPP #-}
+#if __GLASGOW_HASKELL__ >= 708
+{-# LANGUAGE PatternSynonyms #-}
+#endif
+
 -- | Types and functions for
 -- <http://en.wikipedia.org/wiki/Coordinated_Universal_Time UTC> and
 -- <http://en.wikipedia.org/wiki/Universal_Time#Versions UT1>.
@@ -31,7 +36,12 @@ module Data.Thyme.Clock (
     , DiffTime
 
     -- * UTC
-    , UTCTime, UTCView (..)
+    , UTCTime
+#if __GLASGOW_HASKELL__ >= 708
+    , pattern UTCTime
+#endif
+    , utctDay, utctDayTime
+    , UTCView (..)
     , utcTime
     , NominalDiffTime
     , module Data.Thyme.Clock
@@ -42,6 +52,7 @@ module Data.Thyme.Clock (
     , toSeconds', fromSeconds'
 
     -- * Lenses
+    , _utcvDay, _utcvDayTime
     , _utctDay, _utctDayTime
     ) where
 
