@@ -11,11 +11,16 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 #include "thyme.h"
+#if HLINT
+#include "cabal_macros.h"
+#endif
 
 module Data.Thyme.LocalTime where
 
 import Prelude hiding ((.))
+#if !MIN_VERSION_base(4,8,0)
 import Control.Applicative
+#endif
 import Control.Arrow
 import Control.Category hiding (id)
 import Control.DeepSeq

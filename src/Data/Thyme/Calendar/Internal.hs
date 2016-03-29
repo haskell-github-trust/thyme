@@ -14,11 +14,16 @@
 {-# OPTIONS_HADDOCK hide #-}
 
 #include "thyme.h"
+#if HLINT
+#include "cabal_macros.h"
+#endif
 
 module Data.Thyme.Calendar.Internal where
 
 import Prelude
+#if !MIN_VERSION_base(4,8,0)
 import Control.Applicative
+#endif
 import Control.Arrow
 import Control.DeepSeq
 import Control.Lens

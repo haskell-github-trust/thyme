@@ -2,7 +2,11 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+
 #include "thyme.h"
+#if HLINT
+#include "cabal_macros.h"
+#endif
 
 -- | 'UTCTime' is not Y294K-compliant, and 'Bounded' instances for the
 -- various calendar types reflect this fact. That said, the calendar
@@ -21,7 +25,9 @@ module Data.Thyme.Calendar
     ) where
 
 import Prelude hiding ((.))
+#if !MIN_VERSION_base(4,8,0)
 import Control.Applicative
+#endif
 import Control.Arrow
 import Control.Category
 import Control.Lens

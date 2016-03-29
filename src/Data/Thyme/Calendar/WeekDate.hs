@@ -4,7 +4,11 @@
 #if __GLASGOW_HASKELL__ == 706
 {-# OPTIONS_GHC -fsimpl-tick-factor=120 #-} -- 7.6.3 only, it seems; fixes #29
 #endif
+
 #include "thyme.h"
+#if HLINT
+#include "cabal_macros.h"
+#endif
 
 -- | Various Week Date formats
 module Data.Thyme.Calendar.WeekDate
@@ -19,7 +23,9 @@ module Data.Thyme.Calendar.WeekDate
     ) where
 
 import Prelude
+#if !MIN_VERSION_base(4,8,0)
 import Control.Applicative
+#endif
 import Control.Arrow
 import Control.Lens
 import Data.Thyme.Calendar.OrdinalDate

@@ -24,7 +24,9 @@ module Data.Thyme.Clock.TAI
     ) where
 
 import Prelude
+#if !MIN_VERSION_base(4,8,0)
 import Control.Applicative
+#endif
 import Control.DeepSeq
 import Control.Lens
 import Control.Monad

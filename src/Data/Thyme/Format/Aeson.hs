@@ -1,7 +1,12 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+
+#if HLINT
+#include "cabal_macros.h"
+#endif
 
 -- | Instances of 'FromJSON' and 'ToJSON' for 'UTCTime' and 'ZonedTime',
 -- along with a newtype wrapper 'DotNetTime'.
@@ -14,7 +19,9 @@ import Control.Applicative
 import Data.Aeson hiding (DotNetTime (..))
 import Data.Aeson.Types hiding (DotNetTime (..))
 import Data.Data
+#if !MIN_VERSION_base(4,8,0)
 import Data.Monoid
+#endif
 import Data.Text (pack, unpack)
 import qualified Data.Text as T
 import Data.Thyme

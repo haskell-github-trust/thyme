@@ -8,6 +8,9 @@
 {-# LANGUAGE ViewPatterns #-}
 
 #include "thyme.h"
+#if HLINT
+#include "cabal_macros.h"
+#endif
 
 module Data.Thyme.Calendar.WeekdayOfMonth
     ( Year, Month, DayOfWeek
@@ -15,7 +18,9 @@ module Data.Thyme.Calendar.WeekdayOfMonth
     ) where
 
 import Prelude
+#if !MIN_VERSION_base(4,8,0)
 import Control.Applicative
+#endif
 import Control.Arrow
 import Control.DeepSeq
 import Control.Lens

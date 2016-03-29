@@ -1,8 +1,15 @@
+{-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Common where
 
+#if HLINT
+#include "cabal_macros.h"
+#endif
+
 import Prelude
+#if !MIN_VERSION_base(4,8,0)
 import Control.Applicative
+#endif
 import Control.Lens
 import Data.AdditiveGroup
 import Data.Char

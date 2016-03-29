@@ -1,7 +1,11 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+
 #include "thyme.h"
+#if HLINT
+#include "cabal_macros.h"
+#endif
 
 -- | ISO 8601 Ordinal Date format
 module Data.Thyme.Calendar.OrdinalDate
@@ -11,7 +15,9 @@ module Data.Thyme.Calendar.OrdinalDate
     ) where
 
 import Prelude
+#if !MIN_VERSION_base(4,8,0)
 import Control.Applicative
+#endif
 import Control.Arrow
 import Control.Lens
 import Control.Monad
