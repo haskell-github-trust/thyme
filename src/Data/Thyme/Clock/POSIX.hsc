@@ -4,6 +4,10 @@
 #include <sys/time.h>
 #endif
 
+{-|
+Native <https://en.wikipedia.org/wiki/Unix_time POSIX time>
+from @sys/time.h@. 
+-}
 module Data.Thyme.Clock.POSIX
     ( posixDayLength
     , POSIXTime
@@ -27,8 +31,21 @@ import Foreign.Ptr (Ptr, nullPtr)
 import Foreign.Storable
 #endif
 
+-- | Equivalent to
+-- a @<http://www.gnu.org/software/libc/manual/html_node/Elapsed-Time.html struct timeval>@.
 type POSIXTime = NominalDiffTime
 
+-- | "Control.Lens.Iso" between 'UTCTime' and 'POSIXTime'.
+--
+-- ==== Examples
+--
+-- @
+-- > getPOSIXTime 
+--   1459515013.527711s
+--
+-- > 'review' 'posixTime' \<$\> 'getPOSIXTime'
+--   2016-01-01 12:50:45.588729 UTC
+-- @
 {-# INLINE posixTime #-}
 posixTime :: Iso' UTCTime POSIXTime
 posixTime = iso (\ (UTCRep t) -> t ^-^ unixEpoch)
@@ -36,6 +53,12 @@ posixTime = iso (\ (UTCRep t) -> t ^-^ unixEpoch)
     unixEpoch = review microseconds $
         {-ModifiedJulianDay-}40587 * {-posixDayLength-}86400000000
 
+-- | Return the current system POSIX time
+-- from @<http://www.gnu.org/software/libc/manual/html_node/High_002dResolution-Calendar.html gettimeofday>@,
+-- or @getSystemTimeAsFileTime@ on Windows,
+-- or a similar call.
+-- 
+-- See also 'Data.Thyme.Clock.getCurrentTime', 'Data.Thyme.LocalTime.getZonedTime'.
 {-# INLINE getPOSIXTime #-}
 getPOSIXTime :: IO POSIXTime
 #ifdef mingw32_HOST_OS

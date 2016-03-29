@@ -6,9 +6,15 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 #include "thyme.h"
 
+{-|
+Formatting and parsing for dates and times.
+-}
 module Data.Thyme.Format
-    ( FormatTime (..)
+    (
+    -- * Formatting Date/Time to String
+    FormatTime (..)
     , formatTime
+    -- * Parsing Date/Time from String
     , ParseTime (..)
     , parseTime
     , readTime
@@ -42,11 +48,204 @@ import Data.Thyme.LocalTime
 import Data.VectorSpace
 import System.Locale
 
+-- | All instances of this class may be formatted by 'formatTime'.
 class FormatTime t where
-    showsTime :: TimeLocale -> t -> (Char -> ShowS) -> Char -> ShowS
+    showsTime
+        :: TimeLocale
+        -> t
+        -> (Char -> ShowS)
+        -> Char
+        -> ShowS
 
+
+-- TODO Here are the formatting codes from the @time@ library which are not
+--      implemented.
+--
+-- [@%t@] tab
+--
+-- [@%n@] newline
+--
+-- === glibc-style modifiers can be used before the letter (here marked as @z@)
+--
+-- [@%-z@] no padding
+--
+-- [@%_z@] pad with spaces
+--
+-- [@%0z@] pad with zeros
+--
+-- [@%^z@] convert to upper case
+--
+-- [@%#z@] convert to lower case (consistently, unlike glibc)
+--
+-- === For 'UTCTime' and 'ZonedTime'
+-- [@%s@] doesn't work for 'ZonedTime'
+--
+-- [@%Y@] Note __@%0Y@__ and __@%_Y@__ pad to four chars
+--
+-- [@%G@] Note __@%0G@__ and __@%_G@__ pad to four chars
+--
+-- [@%f@] Note __@%0f@__ and __@%_f@__ pad to two chars
+--
+-- [@%C@] Note __@%0C@__ and __@%_C@__ pad to two chars
+--
+--
+-- TODO Format codes for week-of-month?
+--
+-- TODO It's impossible to print out an ordinal day of month or day of week
+--      without padding. Implement the @time@ padding modifiers? Of course
+--      the work-around, the 'Show' instance for 'Int', isn't too bad.
+--
+-- TODO drop the dependency on @old-locale@ for the TimeLocale type?
+
+
+
+-- | Format a 'FormatTime' instance value according to a template string.
+--
+-- These formatting template codes are intended to be compatible with
+-- __@glibc@__ @<http://www.gnu.org/software/libc/manual/html_node/Formatting-Calendar-Time.html#index-strftime strftime()>@
+-- function, following "Data.Time.Format", which
+-- follows 'System.Time.formatCalendarTime' from the @old-time@ package.
+-- Codes which differ from @strftime()@ are marked as
+-- /EXTENSION/.
+--
+-- == Show/Parse template string spec
+--
+-- === For all types
+--
+-- [@%%@] literal @\"%\"@
+--
+-- === For 'TimeZone' (and 'ZonedTime' and 'UTCTime'):
+--
+-- [@%z@] RFC 822/ISO 8601:1988 style numeric time zone (e.g., @\"-0600\"@ or @\"+0100\"@)
+--
+-- [@%N@] ISO 8601 style numeric time zone (e.g., @\"-06:00\"@ or @\"+01:00\"@) /EXTENSION/
+--
+-- [@%Z@] timezone name
+--
+-- === For 'LocalTime' (and 'ZonedTime' and 'UTCTime' and 'UniversalTime')
+--
+-- [@%c@] The preferred calendar time representation for the current locale. As 'dateTimeFmt' @locale@ (e.g. __@%a %b %e %H:%M:%S %Z %Y@__)
+--
+-- === For 'TimeOfDay' (and 'LocalTime' and 'ZonedTime' and 'UTCTime' and 'UniversalTime')
+--
+-- [@%R@] same as __@%H:%M@__
+--
+-- [@%T@] same as __@%H:%M:%S@__
+--
+-- [@%X@] The preferred time of day representation for the current locale. As 'timeFmt' @locale@ (e.g. __@%H:%M:%S@__)
+--
+-- [@%r@] The complete calendar time using the AM/PM format of the current locale. As 'time12Fmt' @locale@ (e.g. __@%I:%M:%S %p@__)
+--
+-- [@%P@] day-half of day from ('amPm' @locale@), converted to lowercase, @\"am\"@, @\"pm\"@
+--
+-- [@%p@] day-half of day from ('amPm' @locale@), @\"AM\"@, @\"PM\"@
+--
+-- [@%H@] hour of day (24-hour), 0-padded to two chars, @\"00\"@–@\"23\"@
+--
+-- [@%k@] hour of day (24-hour), space-padded to two chars, @\" 0\"@–@\"23\"@
+--
+-- [@%I@] hour of day-half (12-hour), 0-padded to two chars, @\"01\"@–@\"12\"@
+--
+-- [@%l@] hour of day-half (12-hour), space-padded to two chars, @\" 1\"@–@\"12\"@
+--
+-- [@%M@] minute of hour, 0-padded to two chars, @\"00\"@–@\"59\"@
+--
+-- [@%S@] second of minute (without decimal part), 0-padded to two chars, @\"00\"@–@\"60\"@
+--
+-- [@%q@] picosecond of second, 0-padded to twelve chars, @\"000000000000\"@–@\"999999999999\"@. /EXTENSION/
+--
+-- [@%v@] microsecond of second, 0-padded to six chars, @\"000000\"@–@\"999999\"@. /EXTENSION/
+--
+-- [@%Q@] decimal point and fraction of second, up to 6 second decimals, without trailing zeros.
+--        For a whole number of seconds, __@%Q@__ produces the empty string. /EXTENSION/
+--
+-- === For 'UTCTime'
+--
+-- [@%s@] number of whole seconds since the Unix epoch. For times before
+-- the Unix epoch, this is a negative number. Note that in __@%s.%q@__ and __@%s%Q@__
+-- the decimals are positive, not negative. For example, 0.9 seconds
+-- before the Unix epoch is formatted as @\"-1.1\"@ with __@%s%Q@__.
+--
+-- === For 'Day' (and 'LocalTime' and 'ZonedTime' and 'UTCTime' and 'UniversalTime')
+--
+-- [@%D@] same as __@%m\/%d\/%y@__
+--
+-- [@%F@] same as __@%Y-%m-%d@__
+--
+-- [@%x@] as 'dateFmt' @locale@ (e.g. __@%m\/%d\/%y@__)
+--
+-- [@%Y@] year, no padding.
+--
+-- [@%y@] year of century, 0-padded to two chars, @\"00\"@–@\"99\"@
+--
+-- [@%C@] century, no padding.
+--
+-- [@%B@] month name, long form ('fst' from 'months' @locale@), @\"January\"@–@\"December\"@
+--
+-- [@%b@, @%h@] month name, short form ('snd' from 'months' @locale@), @\"Jan\"@–@\"Dec\"@
+--
+-- [@%m@] month of year, 0-padded to two chars, @\"01\"@–@\"12\"@
+--
+-- [@%d@] day of month, 0-padded to two chars, @\"01\"@–@\"31\"@
+--
+-- [@%e@] day of month, space-padded to two chars, @\" 1\"@–@\"31\"@
+--
+-- [@%j@] day of year, 0-padded to three chars, @\"001\"@–@\"366\"@
+--
+-- [@%G@] year for Week Date format, no padding.
+--
+-- [@%g@] year of century for Week Date format, 0-padded to two chars, @\"00\"@–@\"99\"@
+--
+-- [@%f@] century for Week Date format, no padding. /EXTENSION/
+--
+-- [@%V@] week of year for Week Date format, 0-padded to two chars, @\"01\"@–@\"53\"@
+--
+-- [@%u@] day of week for Week Date format, @\"1\"@–@\"7\"@
+--
+-- [@%a@] day of week, short form ('snd' from 'wDays' @locale@), @\"Sun\"@–@\"Sat\"@
+--
+-- [@%A@] day of week, long form ('fst' from 'wDays' @locale@), @\"Sunday\"@–@\"Saturday\"@
+--
+-- [@%U@] week of year where weeks start on Sunday (as 'sundayStartWeek'), 0-padded to two chars, @\"00\"@–@\"53\"@
+--
+-- [@%w@] day of week number, @\"0\"@ (= Sunday) – @\"6\"@ (= Saturday)
+--
+-- [@%W@] week of year where weeks start on Monday (as 'Data.Thyme.Calendar.WeekDayOfMonth.mondayStartWeek'), 0-padded to two chars, @\"00\"@–@\"53\"@
+--
+-- == Examples
+--
+-- ==== <https://en.wikipedia.org/wiki/ISO_8601 ISO 8601>
+-- @
+-- > import System.Locale
+--
+-- > 'formatTime' 'defaultTimeLocale' "%Y-%m-%dT%H:%M:%S%N" $ 'Data.Thyme.Time.Core.mkUTCTime' ('Data.Thyme.Time.Core.fromGregorian' 2015 1 15) ('hhmmss' 12 34 56.78)
+--   "2015-01-15T12:34:56+00:00"
+-- @
+--
+-- ==== <http://tools.ietf.org/html/rfc822#section-5 RFC822>
+-- @
+-- > import System.Locale
+--
+-- > 'formatTime' 'defaultTimeLocale' "%a, %_d %b %Y %H:%M:%S %Z" $ 'Data.Thyme.Time.Core.mkUTCTime' ('Data.Thyme.Time.Core.fromGregorian' 2015 1 15) ('hhmmss' 12 34 56.78)
+--   "Thu, 15 Jan 2015 12:34:56 UTC"
+-- @
+--
+-- ==== YYYY-MM-DD hh:mm:ss.000000
+-- @
+-- > import System.Locale
+--
+-- > 'formatTime' 'defaultTimeLocale' "%Y-%m-%d %H:%M:%S.%v" $ 'Data.Thyme.Time.Core.mkUTCTime' ('Data.Thyme.Time.Core.fromGregorian' 2015 1 15) ('hhmmss' 12 34 56.78)
+--   "2015-01-15 12:34:56.780000"
+-- @
 {-# INLINEABLE formatTime #-}
-formatTime :: (FormatTime t) => TimeLocale -> String -> t -> String
+formatTime :: (FormatTime t)
+    => TimeLocale
+        -- ^ Locale for formatting.
+    -> String
+        -- ^ Template spec string.
+    -> t
+        -- ^ 'FormatTime' instance value to be formatted.
+    -> String
 formatTime l@TimeLocale {..} spec t = go spec "" where
     -- leave unrecognised codes as they are
     format = showsTime l t (\ c s -> '%' : c : s)
@@ -70,6 +269,9 @@ formatTime l@TimeLocale {..} spec t = go spec "" where
         c : rest -> (:) c . go rest
         [] -> id
 
+-- | 'ShowS' a year with a minimum of four digits (even in the first
+-- millennium), to comply with
+-- <https://en.wikipedia.org/wiki/ISO_8601#Years ISO 8601 Years>.
 {-# INLINE showsY #-}
 showsY :: Year -> ShowS
 #if BUG_FOR_BUG
@@ -98,6 +300,7 @@ instance FormatTime TimeOfDay where
         -- Second
         'S' -> shows02 si
         'q' -> fills06 su . shows su . (++) "000000"
+        'v' -> fills06 su . shows su
         'Q' -> if su == 0 then id else (:) '.' . fills06 su . drops0 su
         -- default
         _ -> def c
@@ -218,6 +421,7 @@ instance FormatTime TimeZone where
     {-# INLINEABLE showsTime #-}
     showsTime _ tz@(TimeZone _ _ name) = \ def c -> case c of
         'z' -> (++) (timeZoneOffsetString tz)
+        'N' -> (++) (timeZoneOffsetStringColon tz)
         'Z' -> (++) (if null name then timeZoneOffsetString tz else name)
         _ -> def c
 
@@ -262,6 +466,7 @@ data TimeFlag
     | IsMondayWeek
     deriving (Enum, Show)
 
+-- | Unconstituted date-time for parsing.
 data TimeParse = TimeParse
     { tpCentury :: {-# UNPACK #-}!Int
     , tpCenturyYear :: {-# UNPACK #-}!Int{-YearOfCentury-}
@@ -299,12 +504,20 @@ flag :: TimeFlag -> Lens' TimeParse Bool
 flag (fromEnum -> f) = _tpFlags . lens
     (`testBit` f) (\ n b -> (if b then setBit else clearBit) n f)
 
--- | Time 'Parser' for UTF-8 encoded 'ByteString's.
+-- | Produce a 'Parser' for UTF-8 encoded 'ByteString's.
+--
+-- This function is used internally by 'parseTime', 'readTime', and 'readsTime';
+-- consider using one of those functions instead.
 --
 -- Attoparsec easily beats any 'String' parser out there, but we do have to
 -- be careful to convert the input to UTF-8 'ByteString's.
 {-# INLINEABLE timeParser #-}
-timeParser :: TimeLocale -> String -> Parser TimeParse
+timeParser
+    :: TimeLocale
+        -- ^ Locale.
+    -> String
+        -- ^ Parser template spec string. See 'formatTime' for spec.
+    -> Parser TimeParse
 timeParser TimeLocale {..} = flip execStateT unixEpoch . go where
 
     go :: String -> StateT TimeParse Parser ()
@@ -334,6 +547,7 @@ timeParser TimeLocale {..} = flip execStateT unixEpoch . go where
             -- Second
             'S' -> lift (dec0 2) >>= assign _tpSecond >> go rspec
             'q' -> lift micro >>= assign _tpSecFrac . DiffTime >> go rspec
+            'v' -> lift micro >>= assign _tpSecFrac . DiffTime >> go rspec
             'Q' -> lift ((P.char '.' >> DiffTime <$> micro) <|> return zeroV)
                 >>= assign _tpSecFrac >> go rspec
 
@@ -372,6 +586,7 @@ timeParser TimeLocale {..} = flip execStateT unixEpoch . go where
 
             -- TimeZone
             'z' -> do tzOffset; go rspec
+            'N' -> do tzOffset; go rspec
             'Z' -> do tzOffset <|> tzName; go rspec
             -- UTCTime
             's' -> do
@@ -466,21 +681,68 @@ timeParser TimeLocale {..} = flip execStateT unixEpoch . go where
         tpPOSIXTime = zeroV
         tpTimeZone = utc
 
+-- | Parse a string as a 'ParseTime' instance value.
+--
+-- Return 'Nothing' if parsing fails.
+--
+-- === Examples
+--
+-- ==== <https://en.wikipedia.org/wiki/ISO_8601 ISO 8601>
+-- @
+-- > import System.Locale
+--
+-- > 'parseTime' 'defaultTimeLocale' "%Y-%m-%dT%H:%M:%S%N" "2015-01-15T12:34:56+00:00" :: 'Maybe' 'UTCTime'
+--   Just 2015-01-15 12:34:56 UTC
+--
+-- > 'parseTime' 'defaultTimeLocale' "%Y-%m-%dT%H:%M:%S%N" "2015-01-15T12:34:56-12:00" :: 'Maybe' 'UTCTime'
+--   Just 2015-01-16 00:34:56 UTC
+-- @
+--
+-- ==== YYYY-MM-DD hh:mm:ss.0
+-- @
+-- > import System.Locale
+--
+-- > 'parseTime' 'defaultTimeLocale' "%Y-%m-%d %H:%M:%S%Q" "2015-01-15 12:34:56.78" :: 'Maybe' 'UTCTime'
+--   Just 2015-01-15 12:34:56.78 UTC
+-- @
 {-# INLINEABLE parseTime #-}
-parseTime :: (ParseTime t) => TimeLocale -> String -> String -> Maybe t
+parseTime :: (ParseTime t)
+    => TimeLocale
+        -- ^ Locale.
+    -> String
+        -- ^ Parser template spec string. See 'formatTime' for spec.
+    -> String
+        -- ^ String value to be parsed as a 'ParseTime' instance value.
+    -> Maybe t
 parseTime l spec = either (const Nothing) Just
         . P.parseOnly parser . utf8String where
     parser = buildTime <$ P.skipSpace <*> timeParser l spec
         <* P.skipSpace <* P.endOfInput
 
+-- | Parse a string as a 'ParseTime' instance value.
+--
+-- Call 'error' if parsing fails.
 {-# INLINEABLE readTime #-}
-readTime :: (ParseTime t) => TimeLocale -> String -> String -> t
+readTime :: (ParseTime t)
+    => TimeLocale
+        -- ^ Locale.
+    -> String
+        -- ^ Parser template spec string. See 'formatTime' for spec.
+    -> String
+        -- ^ String value to be parsed as a 'ParseTime' instance value.
+    -> t
 readTime l spec = either error id . P.parseOnly parser . utf8String where
     parser = buildTime <$ P.skipSpace <*> timeParser l spec
         <* P.skipSpace <* P.endOfInput
 
+-- | Produce a 'ReadS' to parse a string as a 'ParseTime' instance value.
 {-# INLINEABLE readsTime #-}
-readsTime :: (ParseTime t) => TimeLocale -> String -> ReadS t
+readsTime :: (ParseTime t)
+    => TimeLocale
+        -- ^ Locale.
+    -> String
+        -- ^ Parser template spec string. See 'formatTime' for spec.
+    -> ReadS t
 readsTime l spec = parserToReadS $
     buildTime <$ P.skipSpace <*> timeParser l spec
 
@@ -525,6 +787,8 @@ instance Read UTCTime where
 
 ------------------------------------------------------------------------
 
+-- | All instances of this class may be parsed by 'parseTime', 'readTime', and
+-- 'readsTime'.
 class ParseTime t where
     buildTime :: TimeParse -> t
 

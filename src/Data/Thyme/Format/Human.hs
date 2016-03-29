@@ -8,6 +8,9 @@
 #include "cabal_macros.h"
 #endif
 
+{-|
+Vague textual descriptions of time durations.
+-}
 module Data.Thyme.Format.Human
     ( humanTimeDiff
     , humanTimeDiffs

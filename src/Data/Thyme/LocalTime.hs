@@ -15,6 +15,9 @@
 #include "cabal_macros.h"
 #endif
 
+{-|
+Time Zones.
+-}
 module Data.Thyme.LocalTime where
 
 import Prelude hiding ((.))
@@ -48,16 +51,30 @@ import GHC.Generics (Generic)
 import System.Random
 import Test.QuickCheck hiding ((.&.))
 
+-- | Minutes duration.
 type Minutes = Int
+-- | Hours duration.
 type Hours = Int
 
 ------------------------------------------------------------------------
 -- * Time zones
 
+-- | Description of one Time Zone.
+--
+-- A 'TimeZone' is a whole number of minutes offset from UTC, together with a
+-- name and a "just for summer" flag.
 data TimeZone = TimeZone
     { timeZoneMinutes :: {-# UNPACK #-}!Minutes
+        -- ^ The number of minutes offset from UTC. Positive means local time
+        -- will be later in the day than UTC.
+        --
+        -- 'Bounded' instance range /-12 × 60/ ≤ 'timeZoneMinutes' ≤ /13 × 60/
     , timeZoneSummerOnly :: !Bool
+        -- ^ Is this a summer-only (i.e. daylight savings) Time Zone?
     , timeZoneName :: String
+        -- ^ The name of the zone, typically a three- or four-letter acronym.
+        --
+        -- 'Bounded' instance range /AAAA/ ≤ 'timeZoneName' ≤ /ZZZZ/
     } deriving (INSTANCES_USUAL)
 
 instance Hashable TimeZone
@@ -97,10 +114,21 @@ instance CoArbitrary TimeZone where
         = coarbitrary m . coarbitrary s . coarbitrary n
 
 -- | Text representing the offset of this timezone, e.g. \"-0800\" or
--- \"+0400\" (like %z in 'formatTime')
+-- \"+0400\" (like %z in 'Data.Thyme.Format.formatTime')
 {-# INLINEABLE timeZoneOffsetString #-}
 timeZoneOffsetString :: TimeZone -> String
 timeZoneOffsetString TimeZone {..} = sign : (shows02 h . shows02 m) "" where
+    (h, m) = divMod offset 60
+    (sign, offset) = if timeZoneMinutes < 0
+        then ('-', negate timeZoneMinutes) else ('+', timeZoneMinutes)
+
+-- | Text representing the offset of this timezone in ISO 8601 style,
+-- e.g. \"-08:00\" or
+-- \"+04:00\" (like %N in 'Data.Thyme.Format.formatTime')
+{-# INLINEABLE timeZoneOffsetStringColon #-}
+timeZoneOffsetStringColon :: TimeZone -> String
+timeZoneOffsetStringColon TimeZone {..} =
+    sign : (shows02 h . (":"++) . shows02 m) "" where
     (h, m) = divMod offset 60
     (sign, offset) = if timeZoneMinutes < 0
         then ('-', negate timeZoneMinutes) else ('+', timeZoneMinutes)
@@ -113,9 +141,20 @@ minutesToTimeZone m = TimeZone m False ""
 hoursToTimeZone :: Hours -> TimeZone
 hoursToTimeZone i = minutesToTimeZone (60 * i)
 
+-- | The UTC (Zulu) Time Zone.
+--
+-- @
+-- utc = 'TimeZone' 0 'False' \"UTC\"
+-- @
 utc :: TimeZone
 utc = TimeZone 0 False "UTC"
 
+-- | Get the local system Time Zone for a given time (varying as per
+-- summertime adjustments).
+--
+-- Performed by
+-- <https://www.gnu.org/software/libc/manual/html_node/Broken_002ddown-Time.html localtime_r>
+-- or a similar call.
 {-# INLINEABLE getTimeZone #-}
 getTimeZone :: UTCTime -> IO TimeZone
 getTimeZone t = thyme `fmap` T.getTimeZone (T.UTCTime day $ toSeconds dt) where
@@ -123,6 +162,18 @@ getTimeZone t = thyme `fmap` T.getTimeZone (T.UTCTime day $ toSeconds dt) where
     UTCView (ModifiedJulianDay mjd) dt = t ^. utcTime
     thyme T.TimeZone {..} = TimeZone {..}
 
+-- | Get the current local system Time Zone.
+--
+-- @
+-- 'getCurrentTimeZone' ≡ 'getCurrentTime' >>= 'getTimeZone'
+-- @
+--
+-- ==== Examples
+--
+-- @
+-- > 'getCurrentTimeZone'
+--   JST
+-- @
 {-# INLINE getCurrentTimeZone #-}
 getCurrentTimeZone :: IO TimeZone
 getCurrentTimeZone = getCurrentTime >>= getTimeZone
@@ -130,12 +181,20 @@ getCurrentTimeZone = getCurrentTime >>= getTimeZone
 ------------------------------------------------------------------------
 -- * Time of day
 
+-- | Hour time-of-day.
 type Hour = Int
+
+-- | Minute time-of-day.
 type Minute = Int
+
+-- | Time of day in hour, minute, second.
 data TimeOfDay = TimeOfDay
     { todHour :: {-# UNPACK #-}!Hour
+        -- ^ Hour.
     , todMin :: {-# UNPACK #-}!Minute
+        -- ^ Minute.
     , todSec :: {-# UNPACK #-}!DiffTime
+        -- ^ Second.
     } deriving (INSTANCES_USUAL)
 
 derivingUnbox "TimeOfDay" [t| TimeOfDay -> Int64 |]
@@ -180,24 +239,55 @@ instance CoArbitrary TimeOfDay where
     coarbitrary (TimeOfDay h m s)
         = coarbitrary h . coarbitrary m . coarbitrary s
 
+-- | The maximum possible length of a minute. Always /60/, except at /23:59/,
+-- because of leap seconds.
+--
+-- @
+-- 'minuteLength' 23 59 = 61s
+-- 'minuteLength' _  _  = 60s
+-- @
 {-# INLINE minuteLength #-}
 minuteLength :: Hour -> Minute -> DiffTime
 minuteLength h m = fromSeconds' $ if h == 23 && m == 59 then 61 else 60
 
--- | Hour zero
+-- | Hour zero, midnight.
 midnight :: TimeOfDay
 midnight = TimeOfDay 0 0 zeroV
 
--- | Hour twelve
+-- | Hour twelve, noon.
 midday :: TimeOfDay
 midday = TimeOfDay 12 0 zeroV
 
+-- | Construct a 'TimeOfDay' from hour, minute, second.
+--
+-- Returns 'Nothing' if these constraints are not satisfied:
+--
+-- * /0 ≤ hour ≤ 23/
+-- * /0 ≤ minute ≤ 59/
+-- * /0 ≤ second < 'minuteLength' hour minute/
+--
+-- See also 'hhmmss'.
 {-# INLINE makeTimeOfDayValid #-}
 makeTimeOfDayValid :: Hour -> Minute -> DiffTime -> Maybe TimeOfDay
 makeTimeOfDayValid h m s = TimeOfDay h m s
     <$ guard (0 <= h && h <= 23 && 0 <= m && m <= 59)
     <* guard (zeroV <= s && s < minuteLength h m)
 
+-- | "Control.Lens.Iso" between 'DiffTime' and 'TimeOfDay'.
+--
+-- See also 'hhmmss'.
+--
+-- ==== Examples
+--
+-- @
+-- > 'fromSeconds'' 100 '^.' 'timeOfDay'
+--   00:01:40
+-- @
+--
+-- @
+-- > 'timeOfDay' 'Control.Lens.Review.#' 'TimeOfDay' 0 1 40
+--   100s
+-- @
 {-# INLINE timeOfDay #-}
 timeOfDay :: Iso' DiffTime TimeOfDay
 timeOfDay = iso fromDiff toDiff where
@@ -216,12 +306,36 @@ timeOfDay = iso fromDiff toDiff where
         ^+^ fromIntegral h *^ DiffTime (Micro 3600000000)
 
 -- | Add some minutes to a 'TimeOfDay'; result comes with a day adjustment.
+--
+-- ==== Examples
+--
+-- @
+-- > 'addMinutes' 10 ('TimeOfDay' 23 55 0)
+--   (1,00:05:00)
+-- @
 {-# INLINE addMinutes #-}
 addMinutes :: Minutes -> TimeOfDay -> (Days, TimeOfDay)
 addMinutes dm (TimeOfDay h m s) = (dd, TimeOfDay h' m' s) where
     (dd, h') = divMod (h + dh) 24
     (dh, m') = divMod (m + dm) 60
 
+-- | "Control.Lens.Iso" between 'TimeOfDay' and the fraction of a day.
+--
+-- ==== Examples
+--
+-- @
+-- > import Data.Ratio
+--
+-- > 'TimeOfDay' 6 0 0 '^.' 'dayFraction'
+--   1 % 4
+-- > 'TimeOfDay' 8 0 0 '^.' 'dayFraction'
+--   1 % 3
+--
+-- > 'dayFraction' 'Control.Lens.Review.#' (1 % 4)
+--   06:00:00
+-- > 'dayFraction' 'Control.Lens.Review.#' (1 % 3)
+--   08:00:00
+-- @
 {-# INLINE dayFraction #-}
 dayFraction :: Iso' TimeOfDay Rational
 dayFraction = from timeOfDay . iso toRatio fromRatio where
@@ -237,9 +351,14 @@ dayFraction = from timeOfDay . iso toRatio fromRatio where
 ------------------------------------------------------------------------
 -- * Local Time
 
+-- | Local calendar date and time-of-day.
+--
+-- To convert to UTC, see 'utcLocalTime'.
 data LocalTime = LocalTime
     { localDay :: {-# UNPACK #-}!Day
+        -- ^ Local calendar date.
     , localTimeOfDay :: {-only 3 words…-} {-# UNPACK #-}!TimeOfDay
+        -- ^ Local time-of-day.
     } deriving (INSTANCES_USUAL)
 
 derivingUnbox "LocalTime" [t| LocalTime -> (Day, TimeOfDay) |]
@@ -273,6 +392,32 @@ instance Arbitrary LocalTime where
 instance CoArbitrary LocalTime where
     coarbitrary (LocalTime d t) = coarbitrary d . coarbitrary t
 
+-- | "Control.Lens.Iso" between 'UTCTime' and 'LocalTime'.
+--
+-- See also 'zonedTime'.
+--
+-- ==== Examples
+--
+-- @
+-- > tzJST <- 'getCurrentTimeZone'
+--
+-- > 'timeZoneName' tzJST
+--   \"JST\"
+--
+-- > 'timeZoneOffsetString' tzJST
+--   \"+0900\"
+--
+-- > tUTC <- 'getCurrentTime'
+-- > tUTC
+--   2016-04-23 02:00:00.000000 UTC
+--
+-- > let tJST = tUTC '^.' 'utcLocalTime' tzJST
+-- > tJST
+--   2016-04-23 11:00:00.000000
+--
+-- > 'utcLocalTime' tz 'Control.Lens.Review.#' tJST
+--   2016-04-23 02:00:00.000000 UTC
+-- @
 {-# INLINE utcLocalTime #-}
 utcLocalTime :: TimeZone -> Iso' UTCTime LocalTime
 utcLocalTime TimeZone {..} = utcTime . iso localise globalise where
@@ -288,6 +433,7 @@ utcLocalTime TimeZone {..} = utcTime . iso localise globalise where
             (timeOfDay # utcToD) where
         (dd, utcToD) = addMinutes (negate timeZoneMinutes) tod
 
+-- | "Control.Lens.Iso" between 'UniversalTime' and 'LocalTime'.
 {-# INLINE ut1LocalTime #-}
 ut1LocalTime :: Rational -> Iso' UniversalTime LocalTime
 ut1LocalTime long = iso localise globalise where
@@ -310,9 +456,18 @@ ut1LocalTime long = iso localise globalise where
 ------------------------------------------------------------------------
 -- * Zoned Time
 
+-- | A 'LocalTime' and its 'TimeZone'.
+--
+-- This type is appropriate for inputting from and outputting to the
+-- outside world.
+--
+-- To actually perform logic and arithmetic on local date-times, a 'ZonedTime'
+-- should first be converted to a 'UTCTime' by the 'zonedTime' Iso.
 data ZonedTime = ZonedTime
     { zonedTimeToLocalTime :: {-only 4 words…-} {-# UNPACK #-}!LocalTime
+        -- ^ Local time.
     , zonedTimeZone :: !TimeZone
+        -- ^ Time Zone for the local time.
     } deriving (INSTANCES_USUAL)
 
 instance Hashable ZonedTime
@@ -340,6 +495,24 @@ instance Arbitrary ZonedTime where
 instance CoArbitrary ZonedTime where
     coarbitrary (ZonedTime lt tz) = coarbitrary lt . coarbitrary tz
 
+-- | "Control.Lens.Iso" between ('TimeZone', 'UTCTime') and 'ZonedTime'.
+--
+-- See also 'utcLocalTime'.
+--
+-- ==== Examples
+--
+-- @
+-- > tLocal <- 'getZonedTime'
+--
+-- > tLocal
+--   2016-04-04 16:00:00.000000 JST
+--
+-- > 'zonedTime' 'Control.Lens.Review.#' tLocal
+--   (JST,2016-04-04 07:00:00.000000 UTC)
+--
+-- > ('zonedTime' 'Control.Lens.Review.#' tLocal) '^.' 'zonedTime'
+--   2016-04-04 16:00:00.000000 JST
+-- @
 {-# INLINE zonedTime #-}
 zonedTime :: Iso' (TimeZone, UTCTime) ZonedTime
 zonedTime = iso toZoned fromZoned where
@@ -363,10 +536,25 @@ instance Show UTCTime where
     showsPrec p = showsPrec p . view zonedTime . (,) utc
 #endif
 
+-- | Get the current local system date and time, as well as the current local
+-- system Time Zone.
+--
+-- See also 'getCurrentTime', 'Data.Thyme.Clock.POSIX.getPOSIXTime'.
+--
+-- ==== Examples
+--
+-- @
+-- > getZonedTime
+--   2016-04-23 11:57:22.516064 JST
+-- @
 {-# INLINE getZonedTime #-}
 getZonedTime :: IO ZonedTime
 getZonedTime = utcToLocalZonedTime =<< getCurrentTime
 
+-- | Convert a 'UTCTime' to a 'ZonedTime' according to the local system
+-- Time Zone returned by 'getTimeZone'.
+--
+-- See also 'zonedTime'.
 {-# INLINEABLE utcToLocalZonedTime #-}
 utcToLocalZonedTime :: UTCTime -> IO ZonedTime
 utcToLocalZonedTime time = do

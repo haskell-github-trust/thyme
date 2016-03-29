@@ -41,6 +41,24 @@ instance Arbitrary OrdinalDate where
 instance CoArbitrary OrdinalDate where
     coarbitrary (OrdinalDate y d) = coarbitrary y . coarbitrary d
 
+-- | Is this a valid ordinal date?
+--
+-- ==== Examples
+--
+-- @
+-- > ordinalDateValid ('OrdinalDate' 2015 365)
+--   Just 2015-12-31
+-- @
+--
+-- @
+-- > ordinalDateValid ('OrdinalDate' 2015 366)
+--   Nothing
+-- @
+--
+-- @
+-- > ordinalDateValid ('OrdinalDate' 2016 366)
+--   Just 2016-12-31
+-- @
 {-# INLINE ordinalDateValid #-}
 ordinalDateValid :: OrdinalDate -> Maybe Day
 ordinalDateValid od@(OrdinalDate y d) = ordinalDate # od

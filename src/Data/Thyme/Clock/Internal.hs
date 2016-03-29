@@ -49,10 +49,29 @@ import Text.Read (readPrec)
 
 -- | Time intervals, encompassing both 'DiffTime' and 'NominalDiffTime'.
 --
--- [@Issues@] Still affected by
+-- ==== Issues
+--
+-- Still affected by
 -- <http://hackage.haskell.org/trac/ghc/ticket/7611>?
 class (HasBasis t, Basis t ~ (), Scalar t ~ Rational) => TimeDiff t where
-    -- | Escape hatch; avoid.
+    -- | "Control.Lens.Iso" between 'TimeDiff' and 'Int64' microseconds.
+    --
+    -- @
+    -- 'view'   'microseconds' ≡ 'Data.Thyme.Time.Core.toMicroseconds'
+    -- 'review' 'microseconds' ≡ 'Data.Thyme.Time.Core.fromMicroseconds'
+    -- @
+    --
+    -- ==== Examples
+    --
+    -- @
+    -- > ('fromSeconds'' 3 :: 'DiffTime') '^.' 'microseconds'
+    --   3000000
+    -- @
+    --
+    -- @
+    -- > 'microseconds' 'Control.Lens.Review.#' 4000000 :: 'DiffTime'
+    --   4s
+    -- @
     microseconds :: Iso' t Int64
 
 -- | Convert a time interval to some 'Fractional' type.
@@ -62,7 +81,9 @@ toSeconds = (* recip 1000000) . fromIntegral . view microseconds
 
 -- | Make a time interval from some 'Real' type.
 --
--- [@Performance@] Try to make sure @n@ is one of 'Float', 'Double', 'Int',
+-- ==== Performance
+--
+-- Try to make sure @n@ is one of 'Float', 'Double', 'Int',
 -- 'Int64' or 'Integer', for which rewrite @RULES@ have been provided.
 {-# INLINE[0] fromSeconds #-}
 fromSeconds :: (Real n, TimeDiff t) => n -> t
@@ -82,6 +103,50 @@ fromSeconds' = (*^ basisValue ())
 picoseconds :: (TimeDiff t) => Iso' t Integer
 picoseconds = microseconds . iso ((*) 1000000 . toInteger)
     (\ ps -> fromInteger $ quot (ps + signum ps * 500000) 1000000)
+
+-- | Construct a 'DiffTime' or 'NominalDiffTime' from hour, minute, second.
+--
+-- To get a 'Data.Thyme.LocalTime.TimeOfDay' back from a 'DiffTime',
+-- use @'view' 'Data.Thyme.LocalTime.timeOfDay'@.
+--
+-- See also 'Data.Thyme.LocalTime.makeTimeOfDayValid'.
+--
+-- ==== Examples
+--
+-- @
+-- > 'hhmmss' 12 34 56.78 :: 'DiffTime'
+--   45296.78s
+-- @
+--
+-- @
+-- > 'hhmmss' 12 34 56.78 '^.' 'Data.Thyme.LocalTime.timeOfDay'
+--   12:34:56.78
+-- @
+--
+-- @
+-- > 'hhmmss' 1 (-60) 0 :: 'DiffTime'
+--   0s
+-- @
+{-# INLINE hhmmss #-}
+hhmmss :: (TimeDiff t)
+-- TODO should this be hhmmss :: Iso' TimeDiff (Hour, Minute, Second) ?
+--      Maybe not because then there'd be too much syntactic noise
+--      like (hhmmss # (1, 2, 3))
+    => Int
+        -- ^ Hour.
+    -> Int
+        -- ^ Minute. Constraint /0 ≤ minute ≤ 59/ is not checked.
+    -> t
+        -- ^ Second. Constraint /0 ≤ second < 60/ is not checked.
+        --
+        -- See 'fromSeconds'.
+    -> t
+hhmmss hh mm ss =
+    -- We don't use the timeOfDay iso because we want this to work for
+    -- NominalDiffTime also.
+    review microseconds $ view microseconds ss
+                            + (fromIntegral mm * 60000000)
+                            + (fromIntegral hh * 3600000000)
 
 ------------------------------------------------------------------------
 -- not for public consumption
@@ -114,6 +179,23 @@ fromSecondsIntegral _ = review microseconds . (*) 1000000 . fromIntegral
 --
 -- @
 -- type 'Scalar' 'DiffTime' = 'Rational'
+-- @
+--
+-- ==== Examples
+--
+-- @
+-- > 'fromSeconds'' 100 :: DiffTime
+--   100s
+-- @
+--
+-- @
+-- > 'fromSeconds'' 100 '^.' 'Data.Thyme.LocalTime.timeOfDay'
+--   00:01:40
+-- @
+--
+-- @
+-- > 'Data.Thyme.LocalTime.timeOfDay' 'Control.Lens.Review.#' 'Data.Thyme.LocalTime.TimeOfDay' 0 1 40
+--   100s
 -- @
 newtype DiffTime = DiffTime Micro deriving (INSTANCES_MICRO, AdditiveGroup)
 
@@ -166,6 +248,33 @@ instance TimeDiff DiffTime where
 -- @
 -- type 'Scalar' 'NominalDiffTime' = 'Rational'
 -- @
+--
+-- ==== Examples
+--
+-- @
+-- > 'fromSeconds'' (1 % 3) :: NominalDiffTime
+--   0.333333s
+-- @
+--
+-- @
+-- > 'hhmmss' 12 34 56.78 :: NominalDiffTime
+--   45296.78s
+-- @
+--
+-- @
+-- > let t₀ = 'Data.Thyme.Time.Core.mkUTCTime' ('Data.Thyme.Time.Core.fromGregorian' 2016 1 15) ('hhmmss' 12 0 0)
+-- > let t₁ = 'Data.Thyme.Time.Core.mkUTCTime' ('Data.Thyme.Time.Core.fromGregorian' 2016 1 15) ('hhmmss' 12 0 1)
+-- > let δt = t₁ '.-.' t₀
+--
+-- > δt
+--   60s
+--
+-- > t₀ '.+^' δt
+--   2016-01-15 12:01:00 UTC
+--
+-- > t₀ '.+^' 3 '*^' δt
+--   2016-01-15 12:03:00 UTC
+-- @
 newtype NominalDiffTime = NominalDiffTime Micro deriving (INSTANCES_MICRO, AdditiveGroup)
 
 derivingUnbox "NominalDiffTime" [t| NominalDiffTime -> Micro |]
@@ -201,7 +310,7 @@ instance TimeDiff NominalDiffTime where
     {-# INLINE microseconds #-}
     microseconds = iso (\ (NominalDiffTime (Micro u)) -> u) (NominalDiffTime . Micro)
 
--- | The nominal length of a POSIX day: precisely 86400 SI seconds.
+-- | The nominal length of a POSIX day: /86400 SI seconds/.
 {-# INLINE posixDayLength #-}
 posixDayLength :: NominalDiffTime
 posixDayLength = microseconds # 86400000000
@@ -247,11 +356,32 @@ modJulianDate = iso
 -- Use '.+^' to add (or '.-^' to subtract) time intervals of type
 -- 'NominalDiffTime', and '.-.' to get the interval between 'UTCTime's.
 --
--- [@Performance@] Internally this is a 64-bit count of 'microseconds' since
--- the MJD epoch, so '.+^', '.-^' and '.-.' ought to be fairly fast.
+-- To decompose a 'UTCTime' into a separate date and time, use the 'utcTime'
+-- Iso.
 --
--- [@Issues@] 'UTCTime' currently
+-- To translate a 'UTCTime' into a local zoned time, use
+-- the 'Data.Thyme.LocalTime.zonedTime' Iso.
+--
+-- ==== Performance
+--
+-- Internally this is a 64-bit count of 'microseconds' since
+-- the Modified Julian Day epoch, so '.+^', '.-^' and '.-.' ought to be fairly
+-- fast.
+--
+-- ==== Issues
+--
+-- 'UTCTime' currently
 -- <https://github.com/liyang/thyme/issues/3 cannot represent leap seconds>.
+--
+-- ==== Examples
+--
+-- @
+-- > 'utcTime' 'Control.Lens.Review.#' 'UTCView' ('gregorian' 'Control.Lens.Review.#' 'YearMonthDay' 2016 1 15) ('Data.Thyme.LocalTime.timeOfDay' 'Control.Lens.Review.#' 'Data.Thyme.LocalTime.TimeOfDay' 12 34 56.78)
+--   2016-01-15 12:34:56.78 UTC
+--
+-- > 'Data.Thyme.Time.Core.mkUTCTime' ('Data.Thyme.Time.Core.fromGregorian' 2016 1 15) ('hhmmss' 12 34 56.78)
+--   2016-01-15 12:34:56.78 UTC
+-- @
 newtype UTCTime = UTCRep NominalDiffTime deriving (INSTANCES_MICRO)
 
 derivingUnbox "UTCTime" [t| UTCTime -> NominalDiffTime |]
@@ -260,10 +390,20 @@ derivingUnbox "UTCTime" [t| UTCTime -> NominalDiffTime |]
 -- | Unpacked 'UTCTime', partly for compatibility with @time@.
 data UTCView = UTCView
     { utcvDay :: {-# UNPACK #-}!Day
+        -- ^ Calendar date.
     , utcvDayTime :: {-# UNPACK #-}!DiffTime
+        -- ^ Time-of-day, time elapsed from midnight.
+        --
+        -- /0/ ≤ 'utctDayTime' < /86400s/
+        --
+        -- (If 'UTCTime' supported leap seconds, then range would be
+        -- /0/ ≤ 'utctDayTime' < /86401s/.)
     } deriving (INSTANCES_USUAL, Show)
 
+-- | 'Lens'' for the calendar 'Day' component of a 'UTCView'.
 LENS(UTCView,utcvDay,Day)
+
+-- | 'Lens'' for the time-of-day 'DiffTime' component of a 'UTCView'.
 LENS(UTCView,utcvDayTime,DiffTime)
 
 derivingUnbox "UTCView" [t| UTCView -> (Day, DiffTime) |]
@@ -273,21 +413,21 @@ derivingUnbox "UTCView" [t| UTCView -> (Day, DiffTime) |]
 instance Hashable UTCView
 instance NFData UTCView
 
--- | 'Lens'' for the 'Day' component of an 'UTCTime'.
+-- | 'Lens'' for the calendar 'Day' component of a 'UTCTime'.
 _utctDay :: Lens' UTCTime Day
 _utctDay = utcTime . lens utcvDay
     (\ UTCView {..} d -> UTCView d utcvDayTime)
 
--- | 'Lens'' for the time-of-day component of an 'UTCTime'.
+-- | 'Lens'' for the time-of-day 'DiffTime' component of a 'UTCTime'.
 _utctDayTime :: Lens' UTCTime DiffTime
 _utctDayTime = utcTime . lens utcvDayTime
     (\ UTCView {..} t -> UTCView utcvDay t)
 
--- | Accessor for the 'Day' component of an 'UTCTime'.
+-- | Accessor for the calendar 'Day' component of an 'UTCTime'.
 utctDay :: UTCTime -> Day
 utctDay = view _utctDay
 
--- | Accessor for the time-of-day component of an 'UTCTime'.
+-- | Accessor for the time-of-day 'DiffTime' component of an 'UTCTime'.
 utctDayTime :: UTCTime -> DiffTime
 utctDayTime = view _utctDayTime
 
@@ -301,9 +441,19 @@ instance AffineSpace UTCTime where
 -- | View 'UTCTime' as an 'UTCView', comprising a 'Day' along with
 -- a 'DiffTime' offset since midnight.
 --
--- This is an improper lens: 'utcvDayTime' offsets outside the range of
--- @['zeroV', 'posixDayLength')@ will carry over into the day part, with the
+-- This is an improper lens: 'utctDayTime' outside the range
+-- of @['zeroV', 'posixDayLength')@ will carry over into the day part, with the
 -- expected behaviour.
+--
+-- ==== Examples
+--
+-- @
+-- > 'view' 'utcTime' \<$\> 'Data.Thyme.Clock.getCurrentTime'
+--   'UTCView' {utcvDay = 2020-01-15, utcvDayTime = 49322.287688s}
+--
+-- > 'utcTime' 'Control.Lens.Review.#' 'UTCView' ('gregorian' 'Control.Lens.Review.#' 'YearMonthDay' 2016 1 15) ('Data.Thyme.LocalTime.timeOfDay' 'Control.Lens.Review.#' 'Data.Thyme.LocalTime.TimeOfDay' 12 34 56.78)
+--   2016-01-15 12:34:56.78 UTC
+-- @
 {-# INLINE utcTime #-}
 utcTime :: Iso' UTCTime UTCView
 utcTime = iso toView fromView where

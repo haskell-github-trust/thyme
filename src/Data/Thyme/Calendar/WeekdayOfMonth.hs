@@ -12,6 +12,9 @@
 #include "cabal_macros.h"
 #endif
 
+{-|
+Calendar date reckoned by year, month-of-year, week-of-month, day-of-week.
+-}
 module Data.Thyme.Calendar.WeekdayOfMonth
     ( Year, Month, DayOfWeek
     , module Data.Thyme.Calendar.WeekdayOfMonth
@@ -40,11 +43,17 @@ import GHC.Generics (Generic)
 import System.Random
 import Test.QuickCheck hiding ((.&.))
 
+-- | Calendar date with year, month-of-year, week-of-month, and day-of-week.
 data WeekdayOfMonth = WeekdayOfMonth
     { womYear :: {-# UNPACK #-}!Year
+        -- ^ Calendar year.
     , womMonth :: {-# UNPACK #-}!Month
-    , womNth :: {-# UNPACK #-}!Int -- ^ ±1–5, negative means n-th last
+        -- ^ Month of year.
+    , womNth :: {-# UNPACK #-}!Int
+        -- ^ Week of month. /±1–5/, negative means the /Nᵗʰ/ last week of
+        -- the month.
     , womDayOfWeek :: {-# UNPACK #-}!DayOfWeek
+        -- ^ Day of week. /1 = Monday, 7 = Sunday/, like ISO 8601 'WeekDate'.
     } deriving (INSTANCES_USUAL, Show)
 
 derivingUnbox "WeekdayOfMonth"
@@ -74,6 +83,21 @@ instance CoArbitrary WeekdayOfMonth where
         = coarbitrary y . coarbitrary m
         . coarbitrary n . coarbitrary d
 
+-- | "Control.Lens.Iso" between Modified Julian 'Day' and 'WeekdayOfMonth'.
+--
+-- A proper Iso iff all of the 'WeekdayOfMonth' fields are valid and positive.
+--
+-- ==== Examples
+--
+-- /Monday/ of the last week of /January 2016/ = /Monday/ of the fourth week of /January 2016/
+--
+-- @
+-- > 'weekdayOfMonth' 'Control.Lens.Review.#' 'WeekdayOfMonth' {womYear = 2016, womMonth = 1, womNth = -1, womDayOfWeek = 1}
+--   2016-01-25
+--
+-- > 'Data.Thyme.Time.Core.fromGregorian' 2016 01 25 '^.' 'weekdayOfMonth'
+--   'WeekdayOfMonth' {womYear = 2016, womMonth = 1, womNth = 4, womDayOfWeek = 1}
+-- @
 {-# INLINE weekdayOfMonth #-}
 weekdayOfMonth :: Iso' Day WeekdayOfMonth
 weekdayOfMonth = iso toWeekday fromWeekday where
@@ -96,6 +120,20 @@ weekdayOfMonth = iso toWeekday fromWeekday where
         wo = s * (wd - wd1)
         offset = (abs n - 1) * 7 + if wo < 0 then wo + 7 else wo
 
+-- | Convert a 'WeekdayOfMonth' to a Modified Julian 'Day'. Returns Nothing
+-- for invalid input.
+--
+-- ==== Examples
+--
+-- @
+-- > 'weekdayOfMonthValid' $ 'WeekdayOfMonth' {womYear = 2016, womMonth = 1, womNth = 3, womDayOfWeek = 7}
+--   'Just' 2016-01-17
+-- @
+--
+-- @
+-- > 'weekdayOfMonthValid' $ 'WeekdayOfMonth' {womYear = 2016, womMonth = 1, womNth = 3, womDayOfWeek = 8}
+--   'Nothing'
+-- @
 {-# INLINEABLE weekdayOfMonthValid #-}
 weekdayOfMonthValid :: WeekdayOfMonth -> Maybe Day
 weekdayOfMonthValid (WeekdayOfMonth y m n wd) = (refDay .+^ s * offset)
