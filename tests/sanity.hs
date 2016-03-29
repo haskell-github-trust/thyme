@@ -6,6 +6,7 @@
 #endif
 
 import Prelude
+
 import Control.Arrow
 import Control.Lens
 import qualified Data.Attoparsec.ByteString.Char8 as P
@@ -14,6 +15,9 @@ import Data.Thyme
 import Data.Thyme.Time
 import qualified Data.Time as T
 import qualified Data.Time.Calendar.OrdinalDate as T
+#if !MIN_VERSION_time(1,5,0)
+import qualified System.Locale as T
+#endif
 import System.Locale
 import Test.QuickCheck
 
@@ -56,7 +60,7 @@ prop_formatTime (Spec spec) (RecentTime t@(review thyme -> t'))
         = printTestCase desc (s == s') where
 #endif
     s = formatTime defaultTimeLocale spec t
-    s' = T.formatTime defaultTimeLocale spec t'
+    s' = T.formatTime T.defaultTimeLocale spec t'
     desc = "thyme: " ++ s ++ "\ntime:  " ++ s'
 
 prop_parseTime :: Spec -> RecentTime -> Property
@@ -66,9 +70,13 @@ prop_parseTime (Spec spec) (RecentTime orig)
 #else
         = printTestCase desc (fmap (review thyme) t == t') where
 #endif
-    s = T.formatTime defaultTimeLocale spec (thyme # orig)
+    s = T.formatTime T.defaultTimeLocale spec (thyme # orig)
     t = parseTime defaultTimeLocale spec s :: Maybe UTCTime
-    t' = T.parseTime defaultTimeLocale spec s
+#if MIN_VERSION_time(1,5,0)
+    t' = T.parseTimeM True T.defaultTimeLocale spec s
+#else
+    t' = T.parseTime T.defaultTimeLocale spec s
+#endif
     tp = P.parse (timeParser defaultTimeLocale spec) . utf8String
     desc = "input: " ++ show s ++ "\nthyme: " ++ show t
         ++ "\ntime:  " ++ show t' ++ "\nstate: " ++ show (tp s)
