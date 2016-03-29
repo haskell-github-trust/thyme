@@ -1,5 +1,11 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+
+#if HLINT
+#include "cabal_macros.h"
+#endif
 
 -- | Small replacement for <http://hackage.haskell.org/package/lens lens>.
 module Control.Lens
@@ -17,7 +23,11 @@ import Control.Monad.Identity
 import Control.Monad.State.Class as State
 import Data.Profunctor
 import Data.Profunctor.Unsafe
+#if __GLASGOW_HASKELL__ >= 708 && MIN_VERSION_profunctors(4,4,0)
+import Data.Coerce
+#else
 import Unsafe.Coerce
+#endif
 
 (&) :: a -> (a -> b) -> b
 a & f = f a
@@ -45,9 +55,14 @@ instance Profunctor (Exchange a b) where
   {-# INLINE lmap #-}
   rmap f (Exchange sa bt) = Exchange sa (f . bt)
   {-# INLINE rmap #-}
+#if __GLASGOW_HASKELL__ >= 708 && MIN_VERSION_profunctors(4,4,0)
+  ( #. ) _ = coerce (id :: t -> t) :: forall t u. Coercible t u => u -> t
+  ( .# ) p _ = coerce p
+#else
   ( #. ) _ = unsafeCoerce
-  {-# INLINE ( #. ) #-}
   ( .# ) p _ = unsafeCoerce p
+#endif
+  {-# INLINE ( #. ) #-}
   {-# INLINE ( .# ) #-}
 
 type AnIso s t a b = Overloaded (Exchange a b) Identity s t a b
@@ -72,7 +87,11 @@ instance Profunctor Reviewed where
   {-# INLINE rmap #-}
   Reviewed b .# _ = Reviewed b
   {-# INLINE ( .# ) #-}
+#if __GLASGOW_HASKELL__ >= 708 && MIN_VERSION_profunctors(4,4,0)
+  ( #. ) _ = coerce (id :: t -> t) :: forall t u. Coercible t u => u -> t
+#else
   ( #. ) _ = unsafeCoerce
+#endif
   {-# INLINE ( #. ) #-}
 
 type AReview s t a b = Overloaded Reviewed Identity s t a b
