@@ -18,6 +18,10 @@ cabal-version:  >= 1.10
 stability:      experimental
 extra-source-files:
     include/thyme.h
+tested-with:
+    GHC == 7.6.3, GHC == 7.8.4,
+    GHC == 7.10.2, GHC == 7.10.3,
+    GHC >= 8.0 && < 8.2
 
 source-repository head
     type:       git
