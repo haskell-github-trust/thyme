@@ -47,11 +47,6 @@ flag show-internal
     default: False
     manual: True
 
-flag Werror
-    description: -Werror
-    default: False
-    manual: True
-
 library
     default-language: Haskell2010
     include-dirs: include
@@ -112,8 +107,6 @@ library
         cpp-options: -DBUG_FOR_BUG=1
     if flag(show-internal)
         cpp-options: -DSHOW_INTERNAL=1
-    if flag(Werror)
-        ghc-options: -Werror
 
 test-suite sanity
     default-language: Haskell2010
