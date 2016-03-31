@@ -1,6 +1,8 @@
 #! /bin/bash
 set -e
 
+# Maintainer script to upload docs configured with -flens
+
 # http://fuuzetsu.co.uk/blog/posts/2014-01-06-Fix-your-Hackage-documentation.html
 # http://fuuzetsu.co.uk/blog/posts/2014-01-06-Hackage-documentation-v2.html
 # https://gist.github.com/Fuuzetsu/8276421
