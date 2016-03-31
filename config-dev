@@ -1,0 +1,12 @@
+#! /bin/bash
+set -x
+
+case "$1" in
+(--dump) shift && DUMP="-dumpdir dump -ddump-to-file -ddump-simpl \
+	-dsuppress-coercions -dsuppress-type-applications" ;;
+esac
+
+declare -a FLAGS=(-fWerror -fHLint --enable-tests --enable-benchmarks -O2)
+cabal configure "${FLAGS[@]}" ${DUMP:+"--ghc-options=$DUMP"} "$@" \
+	|| cabal install --only-dependencies ${FLAGS[@]} "$@"
+
