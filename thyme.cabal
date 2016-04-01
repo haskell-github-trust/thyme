@@ -140,14 +140,9 @@ test-suite rewrite
     hs-source-dirs: tests
     main-is: rewrite.hs
     build-depends:
-        Cabal,
         base,
         containers,
-        directory,
-        filepath,
         random,
-        system-posix-redirect >= 1.1,
-        text,
         thyme
     ghc-options: -Wall
 
