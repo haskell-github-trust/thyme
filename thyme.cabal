@@ -149,9 +149,9 @@ test-suite rewrite
 test-suite hlint
     default-language: Haskell2010
     type: exitcode-stdio-1.0
+    hs-source-dirs: tests
     main-is: hlint.hs
     ghc-options: -threaded -rtsopts -with-rtsopts=-N
-    hs-source-dirs: tests
     if flag(HLint)
         build-depends: base, hlint >= 1.9
     else

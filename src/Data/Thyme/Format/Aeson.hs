@@ -71,7 +71,7 @@ instance ToJSON ZonedTime where
           | otherwise = "%z"
 
 formatMillis :: (FormatTime t) => t -> String
-formatMillis t = take 3 . formatTime defaultTimeLocale "%q" $ t
+formatMillis t = take 3 $ formatTime defaultTimeLocale "%q" t
 
 instance FromJSON ZonedTime where
     parseJSON (String t) =
