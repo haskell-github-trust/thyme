@@ -25,6 +25,7 @@ import Data.AdditiveGroup
 import Data.AffineSpace
 import Data.Basis
 import Data.Data
+import Data.Hashable
 import Data.Int
 import Data.Ix
 import Data.Thyme.Internal.Micro
@@ -269,6 +270,7 @@ derivingUnbox "UTCView" [t| UTCView -> (Day, DiffTime) |]
     [| \ UTCView {..} -> (utcvDay, utcvDayTime) |]
     [| \ (utcvDay, utcvDayTime) -> UTCView {..} |]
 
+instance Hashable UTCView
 instance NFData UTCView
 
 -- | 'Lens'' for the 'Day' component of an 'UTCTime'.

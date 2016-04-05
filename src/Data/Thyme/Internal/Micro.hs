@@ -17,6 +17,7 @@ import Control.DeepSeq
 import Data.AdditiveGroup
 import Data.Basis
 import Data.Data
+import Data.Hashable
 import Data.Int
 import Data.Ix
 import Data.Ratio

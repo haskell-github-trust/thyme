@@ -28,6 +28,7 @@ import Control.Monad
 import Data.AffineSpace
 import Data.Bits
 import Data.Data
+import Data.Hashable
 import Data.Thyme.Calendar
 import Data.Thyme.Calendar.Internal
 #if __GLASGOW_HASKELL__ == 704
@@ -53,6 +54,7 @@ derivingUnbox "WeekdayOfMonth"
     [| \ n -> WeekdayOfMonth (shiftR n 11) (shiftR n 7 .&. 0xf)
         (shiftR n 3 - 5) (n .&. 0x7) |]
 
+instance Hashable WeekdayOfMonth
 instance NFData WeekdayOfMonth
 
 instance Bounded WeekdayOfMonth where

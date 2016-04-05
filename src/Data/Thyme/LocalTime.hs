@@ -29,6 +29,7 @@ import Control.Monad
 import Data.AffineSpace
 import Data.Bits
 import Data.Data
+import Data.Hashable
 import Data.Int
 import Data.Thyme.Internal.Micro
 import Data.Thyme.Calendar
@@ -59,6 +60,7 @@ data TimeZone = TimeZone
     , timeZoneName :: String
     } deriving (INSTANCES_USUAL)
 
+instance Hashable TimeZone
 instance NFData TimeZone
 
 #if SHOW_INTERNAL
@@ -142,6 +144,7 @@ derivingUnbox "TimeOfDay" [t| TimeOfDay -> Int64 |]
     [| \ n -> TimeOfDay (fromIntegral $ n .&. 0xff)
         (fromIntegral $ shiftR n 8 .&. 0xff) (microseconds # shiftR n 16) |]
 
+instance Hashable TimeOfDay
 instance NFData TimeOfDay
 
 #if SHOW_INTERNAL
@@ -243,6 +246,7 @@ derivingUnbox "LocalTime" [t| LocalTime -> (Day, TimeOfDay) |]
     [| \ LocalTime {..} -> (localDay, localTimeOfDay) |]
     [| \ (localDay, localTimeOfDay) -> LocalTime {..} |]
 
+instance Hashable LocalTime
 instance NFData LocalTime
 
 #if SHOW_INTERNAL
@@ -311,6 +315,7 @@ data ZonedTime = ZonedTime
     , zonedTimeZone :: !TimeZone
     } deriving (INSTANCES_USUAL)
 
+instance Hashable ZonedTime
 instance NFData ZonedTime where
     rnf ZonedTime {..} = rnf zonedTimeZone
 

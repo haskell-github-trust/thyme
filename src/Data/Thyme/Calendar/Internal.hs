@@ -31,6 +31,7 @@ import Control.Monad
 import Data.AffineSpace
 import Data.Bits
 import Data.Data
+import Data.Hashable
 import Data.Int
 import Data.Ix
 import Data.Thyme.Format.Internal
@@ -111,6 +112,7 @@ data YearMonthDay = YearMonthDay
     , ymdDay :: {-# UNPACK #-}!DayOfMonth
     } deriving (INSTANCES_USUAL, Show)
 
+instance Hashable YearMonthDay
 instance NFData YearMonthDay
 
 ------------------------------------------------------------------------
@@ -126,6 +128,7 @@ data OrdinalDate = OrdinalDate
     , odDay :: {-# UNPACK #-}!DayOfYear
     } deriving (INSTANCES_USUAL, Show)
 
+instance Hashable OrdinalDate
 instance NFData OrdinalDate
 
 -- Brief description of the toOrdinal computation.
@@ -245,6 +248,7 @@ data MonthDay = MonthDay
     , mdDay :: {-# UNPACK #-}!DayOfMonth
     } deriving (INSTANCES_USUAL, Show)
 
+instance Hashable MonthDay
 instance NFData MonthDay
 
 instance Bounded MonthDay where
@@ -309,6 +313,7 @@ data WeekDate = WeekDate
     , wdDay :: {-# UNPACK #-}!DayOfWeek
     } deriving (INSTANCES_USUAL, Show)
 
+instance Hashable WeekDate
 instance NFData WeekDate
 
 {-# INLINE weekDate #-}
@@ -375,6 +380,7 @@ data SundayWeek = SundayWeek
     , swDay :: {-# UNPACK #-}!DayOfWeek
     } deriving (INSTANCES_USUAL, Show)
 
+instance Hashable SundayWeek
 instance NFData SundayWeek
 
 {-# INLINE sundayWeek #-}
@@ -423,6 +429,7 @@ data MondayWeek = MondayWeek
     , mwDay :: {-# UNPACK #-}!DayOfWeek
     } deriving (INSTANCES_USUAL, Show)
 
+instance Hashable MondayWeek
 instance NFData MondayWeek
 
 {-# INLINE mondayWeek #-}

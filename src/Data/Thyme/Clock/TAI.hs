@@ -38,6 +38,7 @@ import qualified Data.ByteString.Char8 as S
 import Data.Char
 import Data.Data
 import Data.Either
+import Data.Hashable
 import Data.Ix
 #if MIN_VERSION_containers(0,5,0)
 import qualified Data.Map.Strict as Map
