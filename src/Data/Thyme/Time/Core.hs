@@ -599,22 +599,22 @@ addAbsoluteTime = flip (.+^)
 diffAbsoluteTime :: AbsoluteTime -> AbsoluteTime -> DiffTime
 diffAbsoluteTime = (.-.)
 
--- | Using a 'LeapSecondTable', convert a 'UTCTime' to 'AbsoluteTime'.
+-- | Using a 'TAIUTCMap', convert a 'UTCTime' to 'AbsoluteTime'.
 --
 -- @
 -- 'utcToTAITime' = 'view' '.' 'absoluteTime'
 -- @
 {-# INLINE utcToTAITime #-}
-utcToTAITime :: LeapSecondTable -> UTCTime -> AbsoluteTime
+utcToTAITime :: TAIUTCMap -> UTCTime -> AbsoluteTime
 utcToTAITime = view . absoluteTime
 
--- | Using a 'LeapSecondTable', convert a 'AbsoluteTime' to 'UTCTime'.
+-- | Using a 'TAIUTCMap', convert a 'AbsoluteTime' to 'UTCTime'.
 --
 -- @
 -- 'taiToUTCTime' = 'review' '.' 'absoluteTime'
 -- @
 {-# INLINE taiToUTCTime #-}
-taiToUTCTime :: LeapSecondTable -> AbsoluteTime -> UTCTime
+taiToUTCTime :: TAIUTCMap -> AbsoluteTime -> UTCTime
 taiToUTCTime = review . absoluteTime
 
 ------------------------------------------------------------------------

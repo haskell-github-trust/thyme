@@ -450,7 +450,8 @@ instance FormatTime UniversalTime where
 instance FormatTime AbsoluteTime where
     {-# INLINEABLE showsTime #-}
     showsTime l t = showsTime l $ ZonedTime lt utc {timeZoneName = "TAI"} where
-        lt = t ^. from (absoluteTime $ const zeroV) . utcLocalTime utc
+        lt = t ^. from (absoluteTime tum) . utcLocalTime utc
+        tum = TAIUTCMap mempty mempty
 
 ------------------------------------------------------------------------
 
@@ -869,7 +870,7 @@ instance ParseTime UniversalTime where
 
 instance ParseTime AbsoluteTime where
     {-# INLINE buildTime #-}
-    buildTime tp = buildTime tp ^. absoluteTime (const zeroV)
+    buildTime tp = buildTime tp ^. absoluteTime (TAIUTCMap mempty mempty)
 
 ------------------------------------------------------------------------
 
