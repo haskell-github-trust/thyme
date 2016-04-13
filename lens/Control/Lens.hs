@@ -15,7 +15,7 @@ module Control.Lens
     , review, ( # )
     , Lens, Lens', lens
     , view, (^.)
-    , set, assign, (.=)
+    , set, over, (%~), assign, (.=)
     ) where
 
 import Control.Applicative
@@ -29,6 +29,7 @@ import Data.Coerce
 import Unsafe.Coerce
 #endif
 
+infixl 1 &
 (&) :: a -> (a -> b) -> b
 a & f = f a
 {-# INLINE (&) #-}
@@ -134,6 +135,15 @@ type Setter s t a b = Overloaded (->) Identity s t a b
 set :: Setter s t a b -> b -> s -> t
 set l b = runIdentity #. l (\ _ -> Identity b)
 {-# INLINE set #-}
+
+over :: Setter s t a b -> (a -> b) -> s -> t
+over l f = runIdentity #. l (Identity #. f)
+{-# INLINE over #-}
+
+infixr 4 %~
+(%~) :: Setter s t a b -> (a -> b) -> s -> t
+(%~) = over
+{-# INLINE (%~) #-}
 
 assign :: (MonadState s m) => Setter s s a b -> b -> m ()
 assign l b = State.modify (set l b)
