@@ -16,7 +16,7 @@
 #endif
 
 {-|
-<https://en.wikipedia.org/wiki/International_Atomic_Time Temps Atomique International>
+<https://en.wikipedia.org/wiki/International_Atomic_Time International Atomic Time>
 and leap-second support.
 -}
 module Data.Thyme.Clock.TAI
@@ -63,7 +63,14 @@ import System.Locale
 import System.Random (Random)
 import Test.QuickCheck
 
--- | TAI time as measured by a clock.
+-- | <https://en.wikipedia.org/wiki/International_Atomic_Time Temps Atomique International>,
+-- defined as the number of elapsed SI seconds since the
+-- <http://en.wikipedia.org/wiki/Julian_day#Variants Modified Julian Date epoch>,
+--
+-- TAI was synchronized with 'UTCTime' at the beginning of 1958, and in the
+-- intervening time have diverged due to leap second adjustments.
+--
+-- Note that for most applications 'UTCTime' is preferred.
 newtype AbsoluteTime = AbsoluteTime DiffTime deriving (INSTANCES_MICRO)
 
 derivingUnbox "AbsoluteTime" [t| AbsoluteTime -> DiffTime |]

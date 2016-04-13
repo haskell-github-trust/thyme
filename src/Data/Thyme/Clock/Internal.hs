@@ -171,10 +171,12 @@ fromSecondsIntegral _ = review microseconds . (*) 1000000 . fromIntegral
 
 ------------------------------------------------------------------------
 
--- | An absolute time interval as measured by a clock.
+-- | An interval or duration of time, as would be measured by a stopwatch.
 --
--- 'DiffTime' forms an 'AdditiveGroup'―so can be added using '^+^' (or '^-^'
--- for subtraction), and also an instance of 'VectorSpace'―so can be scaled
+-- 'DiffTime' is an instance of 'AdditiveGroup', so it can be added with '^+^'
+-- or subtracted with '^-^'.
+--
+-- 'DiffTime' is an instance of 'VectorSpace', so it can be scaled
 -- using '*^', where
 --
 -- @
@@ -234,16 +236,18 @@ instance TimeDiff DiffTime where
 
 ------------------------------------------------------------------------
 
--- | A time interval as measured by UTC, that does not take leap-seconds
--- into account.
+-- | The nominal interval between two points of 'UTCTime' which does not
+-- take leap seconds into account.
 --
--- For instance, the difference between @23:59:59@ and @00:00:01@ on the
+-- For example, the difference between /23:59:59/ and /00:00:01/ on the
 -- following day is always 2 seconds of 'NominalDiffTime', regardless of
 -- whether a leap-second took place.
 --
--- 'NominalDiffTime' forms an 'AdditiveGroup'―so can be added using '^+^'
--- (or '^-^' for subtraction), and also an instance of 'VectorSpace'―so can
--- be scaled using '*^', where
+-- 'NominalDiffTime' is an instance of 'AdditiveGroup', so it can be added
+-- with '^+^' or subtracted with '^-^'.
+--
+-- 'NominalDiffTime' is an instance 'VectorSpace', so it can be scaled
+-- using '*^', where
 --
 -- @
 -- type 'Scalar' 'NominalDiffTime' = 'Rational'
@@ -321,17 +325,18 @@ posixDayLength = microseconds # 86400000000
 -- <http://en.wikipedia.org/wiki/Universal_Time#Versions UT1>.
 --
 -- 'UniversalTime' is defined by the rotation of the Earth around its axis
--- relative to the Sun. Thus the length of a day by this definition varies
--- from one to the next, and is never exactly 86400 SI seconds unlike
--- <http://en.wikipedia.org/wiki/International_Atomic_Time TAI> or
--- 'AbsoluteTime'. The difference between UT1 and UTC is
+-- relative to the Sun. The length of each UT1 day varies and is never
+-- exactly 86400 SI seconds, unlike
+-- 'UTCTime' or 'AbsoluteTime'.
+--
+-- The difference between UT1 and UTC is
 -- <http://en.wikipedia.org/wiki/DUT1 DUT1>.
 newtype UniversalTime = UniversalRep NominalDiffTime deriving (INSTANCES_MICRO)
 
 derivingUnbox "UniversalTime" [t| UniversalTime -> NominalDiffTime |]
     [| \ (UniversalRep a) -> a |] [| UniversalRep |]
 
--- | View 'UniversalTime' as a fractional number of days since the
+-- | Convert between 'UniversalTime' and the fractional number of days since the
 -- <http://en.wikipedia.org/wiki/Julian_day#Variants Modified Julian Date epoch>.
 {-# INLINE modJulianDate #-}
 modJulianDate :: Iso' UniversalTime Rational
@@ -362,6 +367,12 @@ modJulianDate = iso
 -- To translate a 'UTCTime' into a local zoned time, use
 -- the 'Data.Thyme.LocalTime.zonedTime' Iso.
 --
+-- To calculate the true absolute 'DiffTime' between two 'UTCTime's while
+-- accounting for leap seconds, first convert them to
+-- 'Data.Thyme.Clock.TAI.AbsoluteTime' by using
+-- the 'Data.Thyme.Clock.TAI.absoluteTime' Iso and
+-- then subtract with '.-.'.
+--
 -- ==== Performance
 --
 -- Internally this is a 64-bit count of 'microseconds' since
@@ -372,6 +383,8 @@ modJulianDate = iso
 --
 -- 'UTCTime' currently
 -- <https://github.com/liyang/thyme/issues/3 cannot represent leap seconds>.
+-- If leap seconds were supported, then the length of a day in 'UTCTime' could
+-- be /86399/, /86400/, or /86401/ seconds.
 --
 -- ==== Examples
 --

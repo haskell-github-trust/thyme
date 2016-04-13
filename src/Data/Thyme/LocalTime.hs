@@ -353,7 +353,13 @@ dayFraction = from timeOfDay . iso toRatio fromRatio where
 
 -- | Local calendar date and time-of-day.
 --
--- To convert to UTC, see 'utcLocalTime'.
+-- This type is appropriate for inputting from and outputting to the
+-- outside world.
+--
+-- To actually perform logic and arithmetic on local date-times, a 'LocalTime'
+-- should first be converted to a 'UTCTime' by the 'utcLocalTime' Iso.
+--
+-- See also 'ZonedTime'.
 data LocalTime = LocalTime
     { localDay :: {-# UNPACK #-}!Day
         -- ^ Local calendar date.

@@ -11,13 +11,20 @@ lifted 'Integer', as is done in "Data.Time".
 
 The tradeoffs for this design can be generalized as:
 
-    * Data.Thyme.Clock.'Data.Thyme.Clock.DiffTime' has a precision of /1 microsecond/,
-      and Data.Time.Clock.'Data.Time.Clock.DiffTime' has a precision of /1 picosecond/.
+    * Data.Time.Clock.'Data.Time.Clock.DiffTime' has a precision
+      of /1 picosecond/.
 
-    * Data.Thyme.Clock.'Data.Thyme.Clock.UTCTime' has a range of about a half million years
-      (from /-290419-11-07 19:59:05.224192 UTC/
-      to /294135-11-26 04:00:54.775807 UTC/), and Data.Time.Clock.'Data.Time.Clock.UTCTime' has
-      unbounded range.
+        - Data.Thyme.Clock.'Data.Thyme.Clock.DiffTime' has a precision
+          of /1 microsecond/.
+
+    * Data.Time.Clock.'Data.Time.Clock.UTCTime' has unbounded range.
+
+        - Data.Thyme.Clock.'Data.Thyme.Clock.UTCTime' has a range of about a
+          half million years, from /-290419-11-07 19:59:05.224192 UTC/
+          to /294135-11-26 04:00:54.775807 UTC/. It is therefore not
+          Y294K-compliant.
+
+
 
 "Data.Thyme" uses strict and unpacked tuples throughout, e.g. 'YearMonthDay' or
 'Data.Thyme.Calendar.WeekDate.WeekDate'. Descriptive 'Int' synonyms such

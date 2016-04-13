@@ -17,27 +17,14 @@ their stead are instances of 'Data.AdditiveGroup.AdditiveGroup',
 @'Data.VectorSpace.Scalar' 'DiffTime' ≡ 'Data.VectorSpace.Scalar'
 'NominalDiffTime' ≡ 'Rational'@.
 
- Using 'fromSeconds' and 'toSeconds' to convert between 'TimeDiff's and
- other numeric types. If you really must coerce between 'DiffTime' and
- 'NominalDiffTime', @'view' ('microseconds' . 'from' 'microseconds')@.
-
-'UTCTime' is an instance of 'Data.AffineSpace.AffineSpace', with
-@'Data.AffineSpace.Diff' 'UTCTime' ≡ 'NominalDiffTime'@.
-
-'UTCTime' is not Y294K-compliant. Please file a bug report on GitHub when
-this becomes a problem.
+Using 'fromSeconds' and 'toSeconds' to convert between 'TimeDiff's and
+other numeric types. If you really must coerce between 'DiffTime' and
+'NominalDiffTime', @'view' ('microseconds' . 'from' 'microseconds')@.
 -}
 
 module Data.Thyme.Clock (
-    -- * Universal Time
-      UniversalTime
-    , modJulianDate
-
-    -- * Absolute intervals
-    , DiffTime
-
     -- * UTC
-    , UTCTime
+      UTCTime
 #if __GLASGOW_HASKELL__ >= 708
     , pattern UTCTime
 #endif
@@ -47,11 +34,18 @@ module Data.Thyme.Clock (
     , NominalDiffTime
     , module Data.Thyme.Clock
 
+    -- * Absolute intervals
+    , DiffTime
+
     -- * Time interval conversion
     , TimeDiff (..)
     , toSeconds, fromSeconds
     , toSeconds', fromSeconds'
     , hhmmss
+
+    -- * Universal Time
+    , UniversalTime
+    , modJulianDate
 
     -- * Lenses
     , _utcvDay, _utcvDayTime
