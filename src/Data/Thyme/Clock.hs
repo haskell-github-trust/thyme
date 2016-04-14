@@ -10,16 +10,14 @@
 If you don't care about leap seconds, keep to 'UTCTime' and
 'NominalDiffTime' for your clock calculations, and you'll be fine.
 
-'Num', 'Real', 'Fractional' and 'RealFrac' instances for 'DiffTime' and
-'NominalDiffTime' are only available by importing "Data.Thyme.Time". In
-their stead are instances of 'Data.AdditiveGroup.AdditiveGroup',
-'Data.Basis.HasBasis' and 'Data.VectorSpace.VectorSpace', with
-@'Data.VectorSpace.Scalar' 'DiffTime' ≡ 'Data.VectorSpace.Scalar'
-'NominalDiffTime' ≡ 'Rational'@.
+"Data.Thyme.Time" provides 'Num', 'Real', 'Fractional' and 'RealFrac'
+instances for 'DiffTime' and 'NominalDiffTime', but their use is
+discouraged. See "Data.Thyme.Docs#spaces" for details.
 
-Using 'fromSeconds' and 'toSeconds' to convert between 'TimeDiff's and
-other numeric types. If you really must coerce between 'DiffTime' and
-'NominalDiffTime', @'view' ('microseconds' . 'from' 'microseconds')@.
+Use 'fromSeconds' and 'toSeconds' to convert between 'DiffTime'
+/ 'NominalDiffTime' and other numeric types; use 'fromSeconds'' for
+literals to avoid type defaulting warnings.
+
 -}
 
 module Data.Thyme.Clock (
@@ -59,7 +57,12 @@ import Data.Thyme.Clock.POSIX
 
 -- | Get the current UTC date and time from the local system clock.
 --
--- See also 'Data.Thyme.LocalTime.getZonedTime', 'Data.Thyme.Clock.POSIX.getPOSIXTime'.
+-- @
+-- > 'Data.Thyme.Clock.getCurrentTime'
+-- 2016-01-15 13:42:02.287688 UTC
+-- @
+--
+-- See also: 'Data.Thyme.LocalTime.getZonedTime', 'getPOSIXTime'.
 getCurrentTime :: IO UTCTime
 getCurrentTime = fmap (review posixTime) getPOSIXTime
 

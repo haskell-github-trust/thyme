@@ -54,28 +54,18 @@ type Minute = Int
 
 -- | Time intervals, encompassing both 'DiffTime' and 'NominalDiffTime'.
 --
--- ==== Issues
+-- ==== Notes
 --
--- Still affected by
--- <http://hackage.haskell.org/trac/ghc/ticket/7611>?
+-- Still affected by <http://hackage.haskell.org/trac/ghc/ticket/7611>?
 class (HasBasis t, Basis t ~ (), Scalar t ~ Rational) => TimeDiff t where
-    -- | "Control.Lens.Iso" between 'TimeDiff' and 'Int64' microseconds.
-    --
-    -- @
-    -- 'view'   'microseconds' ≡ 'Data.Thyme.Time.Core.toMicroseconds'
-    -- 'review' 'microseconds' ≡ 'Data.Thyme.Time.Core.fromMicroseconds'
-    -- @
-    --
-    -- ==== Examples
+    -- | Conversion between 'TimeDiff' and 'Int64' microseconds.
     --
     -- @
     -- > ('fromSeconds'' 3 :: 'DiffTime') '^.' 'microseconds'
-    --   3000000
-    -- @
+    -- 3000000
     --
-    -- @
-    -- > 'microseconds' 'Control.Lens.Review.#' 4000000 :: 'DiffTime'
-    --   4s
+    -- > 'microseconds' 'Control.Lens.#' 4000000 :: 'DiffTime'
+    -- 4s
     -- @
     microseconds :: Iso' t Int64
 
@@ -86,10 +76,8 @@ toSeconds = (* recip 1000000) . fromIntegral . view microseconds
 
 -- | Make a time interval from some 'Real' type.
 --
--- ==== Performance
---
--- Try to make sure @n@ is one of 'Float', 'Double', 'Int',
--- 'Int64' or 'Integer', for which rewrite @RULES@ have been provided.
+-- Try to make sure @n@ is one of 'Float', 'Double', 'Int', 'Int64' or
+-- 'Integer', for which rewrite @RULES@ have been provided.
 {-# INLINE[0] fromSeconds #-}
 fromSeconds :: (Real n, TimeDiff t) => n -> t
 fromSeconds = fromSeconds' . toRational
@@ -134,31 +122,18 @@ fromSecondsIntegral _ = review microseconds . (*) 1000000 . fromIntegral
 
 -- | An interval or duration of time, as would be measured by a stopwatch.
 --
--- 'DiffTime' is an instance of 'AdditiveGroup', so it can be added with '^+^'
--- or subtracted with '^-^'.
---
--- 'DiffTime' is an instance of 'VectorSpace', so it can be scaled
--- using '*^', where
---
--- @
--- type 'Scalar' 'DiffTime' = 'Rational'
--- @
---
--- ==== Examples
+-- 'DiffTime' is an instance of 'AdditiveGroup' as well as 'VectorSpace',
+-- with 'Rational' as its 'Scalar'.
+-- We do not provide 'Num', 'Real', 'Fractional' nor 'RealFrac' instances
+-- here. See "Data.Thyme.Docs#spaces" for details.
 --
 -- @
--- > 'fromSeconds'' 100 :: DiffTime
---   100s
--- @
---
--- @
--- > 'fromSeconds'' 100 '^.' 'Data.Thyme.LocalTime.timeOfDay'
---   00:01:40
--- @
---
--- @
--- > 'Data.Thyme.LocalTime.timeOfDay' 'Control.Lens.Review.#' 'Data.Thyme.LocalTime.TimeOfDay' 0 1 40
---   100s
+-- > 'fromSeconds'' 100 :: 'DiffTime'
+-- 100s
+-- > 'fromSeconds'' 100 '^+^' 'fromSeconds'' 100 '^*' 4
+-- 500s
+-- > 'fromSeconds'' 100 '^-^' 'fromSeconds'' 100 '^/' 4
+-- 75s
 -- @
 newtype DiffTime = DiffTime Micro deriving (INSTANCES_MICRO, AdditiveGroup)
 
@@ -197,49 +172,27 @@ instance TimeDiff DiffTime where
 
 ------------------------------------------------------------------------
 
--- | The nominal interval between two points of 'UTCTime' which does not
--- take leap seconds into account.
+-- | The nominal interval between two 'UTCTime's, which does not take leap
+-- seconds into account.
 --
 -- For example, the difference between /23:59:59/ and /00:00:01/ on the
 -- following day is always 2 seconds of 'NominalDiffTime', regardless of
 -- whether a leap-second took place.
 --
--- 'NominalDiffTime' is an instance of 'AdditiveGroup', so it can be added
--- with '^+^' or subtracted with '^-^'.
---
--- 'NominalDiffTime' is an instance 'VectorSpace', so it can be scaled
--- using '*^', where
---
--- @
--- type 'Scalar' 'NominalDiffTime' = 'Rational'
--- @
---
--- ==== Examples
+-- 'NominalDiffTime' is an instance of 'AdditiveGroup' as well as
+-- 'VectorSpace', with 'Rational' as its 'Scalar'.
+-- We do not provide 'Num', 'Real', 'Fractional' nor 'RealFrac' instances
+-- here. See "Data.Thyme.Docs#spaces" for details.
 --
 -- @
--- > 'fromSeconds'' (1 % 3) :: NominalDiffTime
---   0.333333s
+-- > let d = 'fromSeconds'' 2 :: 'NominalDiffTime'
+-- > d
+-- 2s
+-- > d '^/' 3
+-- 0.666667s
 -- @
 --
--- @
--- > 'hhmmss' 12 34 56.78 :: NominalDiffTime
---   45296.78s
--- @
---
--- @
--- > let t₀ = 'Data.Thyme.Time.Core.mkUTCTime' ('Data.Thyme.Time.Core.fromGregorian' 2016 1 15) ('hhmmss' 12 0 0)
--- > let t₁ = 'Data.Thyme.Time.Core.mkUTCTime' ('Data.Thyme.Time.Core.fromGregorian' 2016 1 15) ('hhmmss' 12 0 1)
--- > let δt = t₁ '.-.' t₀
---
--- > δt
---   60s
---
--- > t₀ '.+^' δt
---   2016-01-15 12:01:00 UTC
---
--- > t₀ '.+^' 3 '*^' δt
---   2016-01-15 12:03:00 UTC
--- @
+-- See also: 'UTCTime'.
 newtype NominalDiffTime = NominalDiffTime Micro deriving (INSTANCES_MICRO, AdditiveGroup)
 
 derivingUnbox "NominalDiffTime" [t| NominalDiffTime -> Micro |]
@@ -285,10 +238,9 @@ posixDayLength = microseconds # 86400000000
 -- | The principal form of universal time, namely
 -- <http://en.wikipedia.org/wiki/Universal_Time#Versions UT1>.
 --
--- 'UniversalTime' is defined by the rotation of the Earth around its axis
--- relative to the Sun. The length of each UT1 day varies and is never
--- exactly 86400 SI seconds, unlike
--- 'UTCTime' or 'AbsoluteTime'.
+-- UT1 is defined by the rotation of the Earth around its axis relative to
+-- the Sun. The length of each UT1 day varies and is never exactly 86400 SI
+-- seconds, unlike UTC or TAI.
 --
 -- The difference between UT1 and UTC is
 -- <http://en.wikipedia.org/wiki/DUT1 DUT1>.
@@ -307,71 +259,70 @@ modJulianDate = iso
 
 ------------------------------------------------------------------------
 
--- | <http://en.wikipedia.org/wiki/Coordinated_Universal_Time Coördinated universal time>:
--- the most common form of universal time for civil timekeeping. It is
--- synchronised with 'AbsoluteTime' and both tick in increments of SI
--- seconds, but UTC includes occasional leap-seconds so that it does not
--- drift too far from 'UniversalTime'.
---
--- 'UTCTime' is an instance of 'AffineSpace', with
+-- | <https://en.wikipedia.org/wiki/Coordinated_Universal_Time Coördinated universal time>
+-- ('UTCTime') is the most commonly used standard for civil timekeeping. It
+-- is synchronised with
+-- <https://en.wikipedia.org/wiki/International_Atomic_Time TAI>
+-- ('Data.Thyme.Clock.AbsoluteTime') and both tick in increments of SI
+-- seconds, but UTC includes occasional leap-seconds to keep it close to
+-- <https://en.wikipedia.org/wiki/Universal_Time#Versions UT1>
+-- ('UniversalTime').
 --
 -- @
--- type 'Diff' 'UTCTime' = 'NominalDiffTime'
+-- > 'utcTime' 'Control.Lens.#' 'UTCView' ('gregorian' 'Control.Lens.#' 'YearMonthDay' 2016 1 15) ('Data.Thyme.LocalTime.timeOfDay' 'Control.Lens.#' 'Data.Thyme.LocalTime.TimeOfDay' 12 34 56.78)
+-- 2016-01-15 12:34:56.78 UTC
+--
+-- > 'UTCTime' ('gregorian' 'Control.Lens.#' 'YearMonthDay' 2016 1 15) ('Data.Thyme.LocalTime.timeOfDay' 'Control.Lens.#' 'Data.Thyme.LocalTime.TimeOfDay' 12 34 56.78)
+-- 2016-01-15 12:34:56.78 UTC
+--
+-- > 'mkUTCTime' 2016 1 15  12 34 56.78
+-- 2016-01-15 12:34:56.78 UTC
 -- @
 --
--- Use '.+^' to add (or '.-^' to subtract) time intervals of type
--- 'NominalDiffTime', and '.-.' to get the interval between 'UTCTime's.
+-- 'UTCTime' is an 'AffineSpace' with 'NominalDiffTime' as its 'Diff'. See
+-- "Data.Thyme.Docs#spaces" for details.
 --
--- To decompose a 'UTCTime' into a separate date and time, use the 'utcTime'
--- Iso.
+-- @
+-- > let t0 = 'mkUTCTime' 2016 1 15  23 59 0
+-- > let t1 = 'mkUTCTime' 2016 1 16  00  1 1
+-- > let dt = t1 '.-.' t0
+-- > dt
+-- 121s :: 'NominalDiffTime'
 --
--- To translate a 'UTCTime' into a local zoned time, use
--- the 'Data.Thyme.LocalTime.zonedTime' Iso.
+-- > t1 '.+^' dt
+-- 2016-01-16 00:03:02 UTC
 --
--- To calculate the true absolute 'DiffTime' between two 'UTCTime's while
--- accounting for leap seconds, first convert them to
--- 'Data.Thyme.Clock.TAI.AbsoluteTime' by using
--- the 'Data.Thyme.Clock.TAI.absoluteTime' Iso and
--- then subtract with '.-.'.
+-- > t1 '.+^' 3 '*^' dt
+-- 2016-01-16 00:07:04 UTC
+-- @
 --
--- ==== Performance
+-- To decompose a 'UTCTime' into a separate 'Day' and time-of-day, use
+-- 'utcTime'. To convert to a local time zone, see
+-- 'Data.Thyme.LocalTime.zonedTime' or 'Data.Thyme.LocalTime.utcLocalTime'.
 --
--- Internally this is a 64-bit count of 'microseconds' since
--- the Modified Julian Day epoch, so '.+^', '.-^' and '.-.' ought to be fairly
+-- ==== Notes
+--
+-- Internally 'UTCTime' is just a 64-bit count of 'microseconds' since the
+-- Modified Julian Day epoch, so @('.+^')@, @('.-.')@ et cetera ought to be
 -- fast.
 --
--- ==== Issues
---
--- 'UTCTime' currently
--- <https://github.com/liyang/thyme/issues/3 cannot represent leap seconds>.
--- If leap seconds were supported, then the length of a day in 'UTCTime' could
--- be /86399/, /86400/, or /86401/ seconds.
---
--- ==== Examples
---
--- @
--- > 'utcTime' 'Control.Lens.Review.#' 'UTCView' ('gregorian' 'Control.Lens.Review.#' 'YearMonthDay' 2016 1 15) ('Data.Thyme.LocalTime.timeOfDay' 'Control.Lens.Review.#' 'Data.Thyme.LocalTime.TimeOfDay' 12 34 56.78)
---   2016-01-15 12:34:56.78 UTC
---
--- > 'Data.Thyme.Time.Core.mkUTCTime' ('Data.Thyme.Time.Core.fromGregorian' 2016 1 15) ('hhmmss' 12 34 56.78)
---   2016-01-15 12:34:56.78 UTC
--- @
+-- 'UTCTime' <https://github.com/liyang/thyme/issues/3 cannot represent leap seconds>.
+-- If leap seconds matter, use 'Data.Thyme.Clock.TAI.AbsoluteTime' from
+-- "Data.Thyme.Clock.TAI" instead, along with
+-- 'Data.Thyme.Clock.TAI.absoluteTime'' and 'UTCView' for presentation.
 newtype UTCTime = UTCRep NominalDiffTime deriving (INSTANCES_MICRO)
 
 derivingUnbox "UTCTime" [t| UTCTime -> NominalDiffTime |]
     [| \ (UTCRep a) -> a |] [| UTCRep |]
 
 -- | Unpacked 'UTCTime', partly for compatibility with @time@.
+--
+-- As of GHC 7.10, you can also use the 'UTCTime' pattern synonym.
 data UTCView = UTCView
     { utcvDay :: {-# UNPACK #-}!Day
-        -- ^ Calendar date.
+    -- ^ Calendar date.
     , utcvDayTime :: {-# UNPACK #-}!DiffTime
-        -- ^ Time-of-day, time elapsed from midnight.
-        --
-        -- /0/ ≤ 'utctDayTime' < /86400s/
-        --
-        -- (If 'UTCTime' supported leap seconds, then range would be
-        -- /0/ ≤ 'utctDayTime' < /86401s/.)
+    -- ^ Time elapsed since midnight; /0/ ≤ 'utcvDayTime' < /86401s/.
     } deriving (INSTANCES_USUAL, Show)
 
 -- | 'Lens'' for the calendar 'Day' component of a 'UTCView'.
@@ -398,10 +349,18 @@ _utctDayTime = utcTime . lens utcvDayTime
     (\ UTCView {..} t -> UTCView utcvDay t)
 
 -- | Accessor for the calendar 'Day' component of an 'UTCTime'.
+--
+-- @
+-- 'utctDay' = 'view' '_utctDay'
+-- @
 utctDay :: UTCTime -> Day
 utctDay = view _utctDay
 
 -- | Accessor for the time-of-day 'DiffTime' component of an 'UTCTime'.
+--
+-- @
+-- 'utctDayTime' = 'view' '_utctDayTime'
+-- @
 utctDayTime :: UTCTime -> DiffTime
 utctDayTime = view _utctDayTime
 
@@ -415,18 +374,23 @@ instance AffineSpace UTCTime where
 -- | View 'UTCTime' as an 'UTCView', comprising a 'Day' along with
 -- a 'DiffTime' offset since midnight.
 --
--- This is an improper lens: 'utctDayTime' outside the range
--- of @['zeroV', 'posixDayLength')@ will carry over into the day part, with the
+-- This is an improper lens: 'utcvDayTime' outside the range of
+-- @['zeroV', 'posixDayLength')@ will carry over into 'utcvDay', with the
 -- expected behaviour.
 --
--- ==== Examples
+-- @
+-- > 'view' 'utcTime' '<$>' 'Data.Thyme.Clock.getCurrentTime'
+-- 'UTCView' {'utcvDay' = 2016-01-15, 'utcvDayTime' = 49322.287688s}
+--
+-- > 'utcTime' 'Control.Lens.#' 'UTCView' ('gregorian' 'Control.Lens.#' 'YearMonthDay' 2016 1 15) ('Data.Thyme.LocalTime.timeOfDay' 'Control.Lens.#' 'Data.Thyme.LocalTime.TimeOfDay' 12 34 56.78)
+-- 2016-01-15 12:34:56.78 UTC
+-- @
+--
+-- With @{-# LANGUAGE ViewPatterns #-}@, you can write: e.g.
 --
 -- @
--- > 'view' 'utcTime' \<$\> 'Data.Thyme.Clock.getCurrentTime'
---   'UTCView' {utcvDay = 2020-01-15, utcvDayTime = 49322.287688s}
---
--- > 'utcTime' 'Control.Lens.Review.#' 'UTCView' ('gregorian' 'Control.Lens.Review.#' 'YearMonthDay' 2016 1 15) ('Data.Thyme.LocalTime.timeOfDay' 'Control.Lens.Review.#' 'Data.Thyme.LocalTime.TimeOfDay' 12 34 56.78)
---   2016-01-15 12:34:56.78 UTC
+-- f :: 'UTCTime' -> ('Day', 'DiffTime')
+-- f ('view' 'utcTime' -> 'UTCView' day dt) = (day, dt)
 -- @
 {-# INLINE utcTime #-}
 utcTime :: Iso' UTCTime UTCView
@@ -457,7 +421,7 @@ pattern UTCTime d t <- (view utcTime -> UTCView d t)
 -- @
 -- 'mkUTCTime' yy mm dd h m s ≡ 'utcTime' 'Control.Lens.#' 'UTCView'
 --     ('gregorian' 'Control.Lens.#' 'YearMonthDay' yy mm dd)
---     ('timeOfDay' 'Control.Lens.#' 'TimeOfDay' h m ('fromSeconds' s))
+--     ('Data.Thyme.LocalTime.timeOfDay' 'Control.Lens.#' 'Data.Thyme.LocalTime.TimeOfDay' h m ('fromSeconds' s))
 -- @
 {-# INLINE mkUTCTime #-}
 mkUTCTime :: Year -> Month -> DayOfMonth -> Hour -> Minute -> Double -> UTCTime
