@@ -2,10 +2,11 @@ name:           thyme
 version:        0.3.5.5
 synopsis:       A faster time library
 description:
-    Thyme is a rewrite of the fine @time@ library, with a particular focus
-    on performance for applications that make heavy use of timestamps.
+    @thyme@ is a performance-optimized rewrite of the excellent
+    @<http://hackage.haskell.org/package/time time>@ library.
     .
-    See <http://hackage.haskell.org/package/thyme/docs/Data-Thyme.html Data.Thyme> for a full description.
+    See @<http://hackage.haskell.org/package/thyme/docs/Data-Thyme-Docs.html Data.Thyme.Docs>@
+    for a full description.
 homepage:       https://github.com/liyang/thyme
 license:        BSD3
 license-file:   LICENSE
@@ -32,6 +33,11 @@ flag bug-for-bug
     default: True
     manual: True
 
+flag docs
+    description: include extra packages for Data.Thyme.Docs; implies -flens
+    default: False
+    manual: True
+
 flag HLint
     description: include HLint as a Cabal test-suite
     default: False
@@ -51,10 +57,11 @@ library
     default-language: Haskell2010
     include-dirs: include
     hs-source-dirs: src
-    if !flag(lens)
+    if !(flag(lens) || flag(docs))
         hs-source-dirs: lens
     exposed-modules:
         Data.Thyme
+        Data.Thyme.Docs
         Data.Thyme.Calendar
         Data.Thyme.Calendar.MonthDay
         Data.Thyme.Calendar.OrdinalDate
@@ -74,7 +81,7 @@ library
         Data.Thyme.Calendar.Internal
         Data.Thyme.Clock.Internal
         Data.Thyme.Format.Internal
-    if !flag(lens)
+    if !(flag(lens) || flag(docs))
         other-modules: Control.Lens
     build-depends:
         QuickCheck >= 2.4,
@@ -99,10 +106,12 @@ library
     if os(darwin)
         build-tools: cpphs
         ghc-options: -pgmP cpphs -optP--cpp
-    if flag(lens)
+    if flag(lens) || flag(docs)
         build-depends: lens >= 3.9
     else
         build-depends: profunctors >= 3.1.2
+    if flag(docs)
+        build-depends: integer-gmp, ghc-prim
     ghc-options: -Wall
     if flag(bug-for-bug)
         cpp-options: -DBUG_FOR_BUG=1

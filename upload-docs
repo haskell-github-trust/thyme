@@ -14,7 +14,7 @@ USR="$(sed -ne 's/^username: *//p' < ~/.cabal/config)"
 PAS="$(sed -ne 's/^password: *//p' < ~/.cabal/config)"
 
 # link to real lens for documentation
-cabal configure -flens
+cabal configure -fdocs -flens
 
 cabal haddock --hyperlink-source --hoogle \
 	--contents-location='/package/$pkg' \
