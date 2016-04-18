@@ -9,20 +9,14 @@
 #include "cabal_macros.h"
 #endif
 
--- | This module provides just the compatibility wrappers for the things
--- that @thyme@ does differently from @time@. No 'RealFrac' instances for
--- 'DiffTime' nor 'NominalDiffTime', nor other riffraff.
+-- | This module provides the 'Thyme' typeclass, and instances for
+-- converting between "Data.Time" and "Data.Thyme" types. It also provides
+-- compatibility wrappers for existing code using "Data.Time".
 --
--- === References to @time@
---
--- * "Data.Time.Calendar"
--- * "Data.Time.Calendar.MonthDay"
--- * "Data.Time.Calendar.OrdinalDate"
--- * "Data.Time.Calendar.WeekDate"
--- * "Data.Time.Clock"
--- * "Data.Time.Clock.POSIX"
--- * "Data.Time.Clock.TAI"
--- * "Data.Time.LocalTime"
+-- Note that we do not provide 'Num' hierarchy instances for 'DiffTime' nor
+-- 'NominalDiffTime' here. If you want to use them anyway despite parts of
+-- them being ill-defined (e.g. @('*')@ on 'DiffTime'), import
+-- "Data.Thyme.Time" instead.
 
 module Data.Thyme.Time.Core
     ( module Data.Thyme
@@ -34,7 +28,6 @@ import Control.Lens
 import Data.AffineSpace
 import Data.Fixed
 import Data.Int
-import Data.Thyme.Internal.Micro
 import Data.Ratio
 import Data.Thyme
 import Data.Thyme.Calendar.OrdinalDate
@@ -52,25 +45,23 @@ import Unsafe.TrueName
 ------------------------------------------------------------------------
 -- * Type conversion
 
--- | Typeclass for "Data.Thyme" types for which an "Control.Lens.Iso" exists
--- to an equivalent type in the "Data.Time" library.
-class Thyme a b | b -> a where
-    -- | "Control.Lens.Iso" between "Data.Thyme" types and "Data.Time" types.
-    --
-    -- ==== Examples
+-- | Typeclass for converting between "Data.Time" and "Data.Thyme" types.
+class Thyme time thyme | thyme -> time where
+    -- | Convert between "Data.Time" and "Data.Thyme" types.
     --
     -- @
-    -- > import qualified Data.Time
+    -- > :set -t
+    -- > import qualified "Data.Time"
     --
-    -- > :t 'thyme' 'Control.Lens.Review.#' ('fromSeconds'' 10 :: 'DiffTime')
-    --   'thyme' 'Control.Lens.Review.#' ('fromSeconds'' 10 :: 'DiffTime')
-    --     :: Data.Time.DiffTime
+    -- > 'thyme' 'Control.Lens.#' ('fromSeconds'' 10 :: 'DiffTime')
+    -- 10s
+    -- it :: 'Data.Time.DiffTime'
     --
-    -- > :t Data.Time.Clock.secondsToDiffTime 10 '^.' 'thyme' :: 'DiffTime'
-    --   Data.Time.Clock.secondsToDiffTime 10 '^.' 'thyme' :: 'DiffTime'
-    --     :: 'DiffTime'
+    -- > 'Data.Time.secondsToDiffTime' 10 '^.' 'thyme' :: 'DiffTime'
+    -- 10s
+    -- it :: 'DiffTime'
     -- @
-    thyme :: Iso' a b
+    thyme :: Iso' time thyme
 
 instance Thyme T.Day Day where
     {-# INLINE thyme #-}
@@ -146,18 +137,26 @@ instance Thyme T.ZonedTime ZonedTime where
         (\ (T.ZonedTime t z) -> ZonedTime (t ^. thyme) (z ^. thyme))
         (\ (ZonedTime t z) -> T.ZonedTime (thyme # t) (thyme # z))
 
--- | Convert from "Data.Time" type to "Data.Thyme" type.
+-- | Convert a "Data.Time" type to a "Data.Thyme" type, if you would rather
+-- not use "Control.Lens" directly.
 --
--- See also 'thyme'.
+-- @
+-- 'toThyme' = 'view' 'thyme'
+-- 'toThyme' t ≡ t '^.' 'thyme'
+-- @
 {-# INLINE toThyme #-}
-toThyme :: (Thyme a b) => a -> b
+toThyme :: (Thyme time thyme) => time -> thyme
 toThyme = view thyme
 
--- | Convert from "Data.Thyme" type to "Data.Time" type.
+-- | Convert a "Data.Thyme" type to a "Data.Time" type, if you would rather
+-- not use "Control.Lens" directly.
 --
--- See also 'thyme'.
+-- @
+-- 'fromThyme' = 'review' 'thyme'
+-- 'fromThyme' t ≡ 'thyme' 'Control.Lens.#' t
+-- @
 {-# INLINE fromThyme #-}
-fromThyme :: (Thyme a b) => b -> a
+fromThyme :: (Thyme time thyme) => thyme -> time
 fromThyme = review thyme
 
 ------------------------------------------------------------------------
@@ -165,121 +164,140 @@ fromThyme = review thyme
 
 -- | Add some 'Days' to a calendar 'Day' to get a new 'Day'.
 --
--- See also 'Day' 'Data.AffineSpace.AffineSpace' instance.
+-- @
+-- 'addDays' = 'flip' ('.+^')
+-- 'addDays' n d ≡ d '.+^' n
+-- @
+--
+-- See also the 'AffineSpace' instance for 'Day'.
 {-# INLINE addDays #-}
 addDays :: Days -> Day -> Day
 addDays = flip (.+^)
 
 -- | Subtract two calendar 'Day's for the difference in 'Days'.
 --
--- See also 'Day' 'Data.AffineSpace.AffineSpace' instance.
+-- @
+-- 'diffDays' = ('.-.')
+-- 'diffDays' a b = a '.-.' b
+-- @
+--
+-- See also the 'AffineSpace' instance for 'Day'.
 {-# INLINE diffDays #-}
 diffDays :: Day -> Day -> Days
 diffDays = (.-.)
 
--- | Get the Gregorian calendar date from a 'Day'.
+-- | Convert a 'Day' to its Gregorian 'Year', 'Month', and 'DayOfMonth'.
 --
--- See also 'gregorian'.
+-- @
+-- 'toGregorian' ('view' 'gregorian' -> 'YearMonthDay' y m d) = (y, m, d)
+-- @
 {-# INLINE toGregorian #-}
 toGregorian :: Day -> (Year, Month, DayOfMonth)
 toGregorian (view gregorian -> YearMonthDay y m d) = (y, m, d)
 
--- | Construct a 'Day' from a Gregorian calendar date. Does not validate the
--- date.
+-- | Construct a 'Day' from a Gregorian calendar date.
+-- Does not validate the input.
 --
--- See also 'gregorian'.
+-- @
+-- 'fromGregorian' y m d = 'gregorian' 'Control.Lens.#' 'YearMonthDay' y m d
+-- @
 {-# INLINE fromGregorian #-}
 fromGregorian :: Year -> Month -> DayOfMonth -> Day
 fromGregorian y m d = gregorian # YearMonthDay y m d
 
--- | Construct a 'Day' from a Gregorian calendar date. Returns Nothing if the
--- date is invalid.
+-- | Construct a 'Day' from a Gregorian calendar date.
+-- Returns 'Nothing' for invalid input.
 --
--- See also 'gregorian'.
+-- @
+-- 'fromGregorianValid' y m d = 'gregorianValid' ('YearMonthDay' y m d)
+-- @
 {-# INLINE fromGregorianValid #-}
 fromGregorianValid :: Year -> Month -> DayOfMonth -> Maybe Day
 fromGregorianValid y m d = gregorianValid (YearMonthDay y m d)
 
--- | Add months, with days past the last day of the month clipped to the last
--- day, according to the
--- <https://en.wikipedia.org/wiki/Proleptic_Gregorian_calendar proleptic Gregorian calendar>.
+-- | Add some number of 'Months' to the given 'Day'; if the original
+-- 'DayOfMonth' exceeds that of the new 'Month', it will be clipped to the
+-- last day of the new 'Month'.
 --
--- See also 'gregorianMonthsClip'.
+-- @
+-- 'addGregorianMonthsClip' n = 'gregorian' '%~' 'gregorianMonthsClip' n
+-- @
 {-# INLINE addGregorianMonthsClip #-}
 addGregorianMonthsClip :: Months -> Day -> Day
-addGregorianMonthsClip n = review gregorian
-    . gregorianMonthsClip n . view gregorian
+addGregorianMonthsClip n = gregorian %~ gregorianMonthsClip n
 
--- | Add months, with days past the last day of the month rolling over to the
--- next month, according to the
--- <https://en.wikipedia.org/wiki/Proleptic_Gregorian_calendar proleptic Gregorian calendar>.
+-- | Add some number of 'Months' to the given 'Day'; if the original
+-- 'DayOfMonth' exceeds that of the new 'Month', it will be rolled over into
+-- the following 'Month'.
 --
--- See also 'gregorianMonthsRollover'.
+-- @
+-- 'addGregorianMonthsRollover' n = 'gregorian' '%~' 'gregorianMonthsRollover' n
+-- @
 {-# INLINE addGregorianMonthsRollover #-}
 addGregorianMonthsRollover :: Months -> Day -> Day
-addGregorianMonthsRollover n = review gregorian
-    . gregorianMonthsRollover n . view gregorian
+addGregorianMonthsRollover n = gregorian %~ gregorianMonthsRollover n
 
--- | Add years, matching month and day, with /Feb 29th/ clipped to /Feb 28th/ if
--- necessary.
+-- | Add some number of 'Years' to the given 'Day', with /February 29th/
+-- clipped to /February 28th/ if necessary.
 --
--- See also 'gregorianYearsClip'.
+-- @
+-- 'addGregorianYearsClip' n = 'gregorian' '%~' 'gregorianYearsClip' n
+-- @
 {-# INLINE addGregorianYearsClip #-}
 addGregorianYearsClip :: Years -> Day -> Day
-addGregorianYearsClip n = review gregorian
-    . gregorianYearsClip n . view gregorian
+addGregorianYearsClip n = gregorian %~ gregorianYearsClip n
 
--- | Add years, matching month and day, with /Feb 29th/ rolled over to /Mar 1st/ if
--- necessary, according to the
--- <https://en.wikipedia.org/wiki/Proleptic_Gregorian_calendar proleptic Gregorian calendar>.
+-- | Add some number of 'Years' to the given 'Day', with /February 29th/
+-- rolled over to /March 1st/ if necessary.
 --
--- See also 'gregorianYearsRollover'.
+-- @
+-- 'addGregorianYearsRollover' n = 'gregorian' '%~' 'gregorianYearsRollover' n
+-- @
 {-# INLINE addGregorianYearsRollover #-}
 addGregorianYearsRollover :: Years -> Day -> Day
-addGregorianYearsRollover n = review gregorian
-    . gregorianYearsRollover n . view gregorian
+addGregorianYearsRollover n = gregorian %~ gregorianYearsRollover n
 
 ------------------------------------------------------------------------
 -- * @Data.Time.Calendar.MonthDay@
 
--- | Predicated on whether or not the year is a leap year, convert an ordinal
--- 'DayOfYear' to a ('Month','DayOfMonth')
+-- | Predicated on whether or not it is a leap year, convert an ordinal
+-- 'DayOfYear' to its corresponding 'Month' and 'DayOfMonth'.
 --
--- See also 'Data.Thyme.Calendar.MonthDay.monthDay'.
+-- @
+-- 'dayOfYearToMonthAndDay' leap ('view' ('monthDay' leap) -> 'MonthDay' m d) = (m, d)
+-- @
 {-# INLINE dayOfYearToMonthAndDay #-}
 dayOfYearToMonthAndDay
-    :: Bool
-        -- ^ 'Data.Thyme.Calendar.isLeapYear'?
+    :: Bool -- ^ 'isLeapYear'?
     -> DayOfYear
     -> (Month, DayOfMonth)
 dayOfYearToMonthAndDay leap (view (monthDay leap) -> MonthDay m d) = (m, d)
 
--- | Predicated on whether or not the year is a leap year, convert
--- a 'Month' and 'DayOfMonth' to an ordinal 'DayOfYear'.
+-- | Predicated on whether or not it is a leap year, convert a 'Month' and
+-- 'DayOfMonth' to its corresponding ordinal 'DayOfYear'.
+-- Does not validate the input.
 --
--- See also 'Data.Thyme.Calendar.MonthDay.monthDay',
--- 'Data.Thyme.Calendar.MonthDay.monthDayValid',
--- 'monthAndDayToDayOfYearValid'.
+-- @
+-- 'monthAndDayToDayOfYear' leap m d = 'monthDay' leap 'Control.Lens.#' 'MonthDay' m d
+-- @
 {-# INLINE monthAndDayToDayOfYear #-}
 monthAndDayToDayOfYear
-    :: Bool
-        -- ^ 'Data.Thyme.Calendar.isLeapYear'?
+    :: Bool -- ^ 'isLeapYear'?
     -> Month
     -> DayOfMonth
     -> DayOfYear
 monthAndDayToDayOfYear leap m d = monthDay leap # MonthDay m d
 
--- | Predicated on whether or not the year is a leap year, convert
--- a 'Month' and 'DayOfMonth' to an ordinal 'DayOfYear', or 'Nothing' on
--- invalid input.
+-- | Predicated on whether or not it is a leap year, convert a 'Month' and
+-- 'DayOfMonth' to its corresponding ordinal 'DayOfYear'.
+-- Returns 'Nothing' for invalid input.
 --
--- See also 'Data.Thyme.Calendar.MonthDay.monthDay',
--- 'Data.Thyme.Calendar.MonthDay.monthDayValid',
--- 'monthAndDayToDayOfYear'.
+-- @
+-- 'monthAndDayToDayOfYearValid' leap m d = 'monthDayValid' leap ('MonthDay' m d)
+-- @
 {-# INLINE monthAndDayToDayOfYearValid #-}
 monthAndDayToDayOfYearValid
-    :: Bool
-        -- ^ 'Data.Thyme.Calendar.isLeapYear'?
+    :: Bool -- ^ 'isLeapYear'?
     -> Month
     -> DayOfMonth
     -> Maybe DayOfYear
@@ -289,73 +307,106 @@ monthAndDayToDayOfYearValid leap m d = monthDayValid leap (MonthDay m d)
 -- * @Data.Time.Calendar.OrdinalDate@
 
 {-# INLINE toOrdinalDate #-}
--- | Convert a calendar 'Day' to ('Year', 'DayOfYear')
+-- | Convert a 'Day' to its Gregorian 'Year' and 'DayOfYear'.
 --
--- See also 'ordinalDate'.
+-- @
+-- 'toOrdinalDate' ('view' 'ordinalDate' -> 'OrdinalDate' y d) = (y, d)
+-- @
 toOrdinalDate :: Day -> (Year, DayOfYear)
 toOrdinalDate (view ordinalDate -> OrdinalDate y d) = (y, d)
 
--- | Convert a 'Year' and 'DayOfYear' to a calendar 'Day'.
+-- | Convert a Gregorian 'Year' and 'DayOfYear' to a 'Day'.
+-- Does not validate the input.
 --
--- See also 'ordinalDate', 'ordinalDateValid', 'fromOrdinalDateValid'.
+-- @
+-- 'fromOrdinalDate' y d = 'ordinalDate' 'Control.Lens.#' 'OrdinalDate' y d
+-- @
 {-# INLINE fromOrdinalDate #-}
 fromOrdinalDate :: Year -> DayOfYear -> Day
 fromOrdinalDate y d = ordinalDate # OrdinalDate y d
 
--- | Convert a 'Year' and 'DayOfYear' to a calendar 'Day', or 'Nothing'
--- on invalid input.
+-- | Converts a Gregorian 'Year' and 'DayOfYear' to a 'Day'.
+-- Returns 'Nothing' on invalid input.
 --
--- See also 'ordinalDate', 'ordinalDateValid', 'fromOrdinalDate'.
+-- @
+-- 'fromOrdinalDateValid' y d = 'ordinalDateValid' ('OrdinalDate' y d)
+-- @
 {-# INLINE fromOrdinalDateValid #-}
 fromOrdinalDateValid :: Year -> DayOfYear -> Maybe Day
 fromOrdinalDateValid y d = ordinalDateValid (OrdinalDate y d)
 
--- | Get the number of the /Sunday/-starting week in the year and the day of
--- the week. The first /Sunday/ is the first day of week /1/, any earlier days
--- in the year are week /0/ (as @\"%U\"@ in 'Data.Thyme.Format.formatTime').
--- /Sunday/ is /0/, /Saturday/ is /6/
--- (as @\"%w\"@ in 'Data.Thyme.Format.formatTime').
+-- | Converts a 'Day' to its /Sunday/-starting week date.
 --
--- See also 'sundayWeek', 'sundayWeekValid'.
+-- The first /Sunday/ of the year belongs to @1 ∷ 'WeekOfYear'@; earlier
+-- days in the same year are week @0@. This corresponds to @\"%U\"@ for
+-- 'formatTime'.
+--
+-- /Sunday/ is @0 ∷ 'DayOfWeek'@, /Saturday/ is @6@. This corresponds to
+-- @\"%w\"@ for 'formatTime'.
+--
+-- @
+-- 'sundayStartWeek' ('view' 'sundayWeek' -> 'SundayWeek' y w d) = (y, w, d)
+-- @
 {-# INLINE sundayStartWeek #-}
 sundayStartWeek :: Day -> (Year, WeekOfYear, DayOfWeek)
 sundayStartWeek (view sundayWeek -> SundayWeek y w d) = (y, w, d)
 
--- | The inverse of 'sundayStartWeek'.
+-- | Converts a /Sunday/-starting week date to the corresponding 'Day'; the
+-- inverse of 'sundayStartWeek'.
+-- Does not validate the input.
 --
--- See also 'sundayWeek', 'sundayWeekValid'.
+-- @
+-- 'fromSundayStartWeek' y w d = 'sundayWeek' 'Control.Lens.#' 'SundayWeek' y w d
+-- @
 {-# INLINE fromSundayStartWeek #-}
 fromSundayStartWeek :: Year -> WeekOfYear -> DayOfWeek -> Day
 fromSundayStartWeek y w d = sundayWeek # SundayWeek y w d
 
--- | The inverse of 'sundayStartWeek', returns 'Nothing' for invalid input.
+-- | Converts a /Sunday/-starting week date to the corresponding 'Day'; the
+-- inverse of 'sundayStartWeek'.
+-- Returns 'Nothing' for invalid input.
 --
--- See also 'sundayWeek', 'sundayWeekValid'.
+-- @
+-- 'fromSundayStartWeekValid' y w d = 'sundayWeekValid' ('SundayWeek' y w d)
+-- @
 {-# INLINE fromSundayStartWeekValid #-}
 fromSundayStartWeekValid :: Year -> WeekOfYear -> DayOfWeek -> Maybe Day
 fromSundayStartWeekValid y w d = sundayWeekValid (SundayWeek y w d)
 
--- | Get the number of the Monday-starting week in the year and the day of
--- the week. The first /Monday/ is the first day of week /1/, any earlier days
--- in the year are week /0/ (as @\"%W\"@ in 'Data.Thyme.Format.formatTime').
--- /Monday/ is /1/, /Sunday/ is /7/
--- (as @\"%u\"@ in 'Data.Thyme.Format.formatTime').
+-- | Converts a 'Day' to its /Monday/-starting week date.
 --
--- See also 'mondayWeek', 'mondayWeekValid'.
+-- The first /Monday/ of the year belongs to @1 ∷ 'WeekOfYear'@; earlier
+-- days in the same year are week @0@. This corresponds to @\"%W\"@ for
+-- 'formatTime'.
+--
+-- /Monday/ is @1 ∷ 'DayOfWeek'@, /Sunday/ is @7@. This corresponds to
+-- @\"%u\"@ for 'formatTime'.
+--
+-- @
+-- 'mondayStartWeek' ('view' 'mondayWeek' -> 'MondayWeek' y w d) = (y, w, d)
+-- @
 {-# INLINE mondayStartWeek #-}
 mondayStartWeek :: Day -> (Year, WeekOfYear, DayOfWeek)
 mondayStartWeek (view mondayWeek -> MondayWeek y w d) = (y, w, d)
 
--- | The inverse of 'mondayStartWeek'.
+-- | Converts a /Monday/-starting week date to the corresponding 'Day'; the
+-- inverse of 'mondayStartWeek'.
+-- Does not validate the input.
 --
--- See also 'mondayWeek', 'mondayWeekValid'.
+-- @
+-- 'fromMondayStartWeek' y w d = 'mondayWeek' 'Control.Lens.#' 'MondayWeek' y w d
+-- @
 {-# INLINE fromMondayStartWeek #-}
 fromMondayStartWeek :: Year -> WeekOfYear -> DayOfWeek -> Day
 fromMondayStartWeek y w d = mondayWeek # MondayWeek y w d
 
--- | The inverse of 'mondayStartWeek', returns 'Nothing' for invalid input.
+-- | Converts a /Monday/-starting week date to the corresponding 'Day'; the
+-- inverse of 'mondayStartWeek'.
+-- Returns 'Nothing' for invalid input.
 --
--- See also 'mondayWeek', 'mondayWeekValid'.
+-- @
+-- 'fromMondayStartWeekValid' y w d = 'mondayWeekValid' ('MondayWeek' y w d)
+-- @
 {-# INLINE fromMondayStartWeekValid #-}
 fromMondayStartWeekValid :: Year -> WeekOfYear -> DayOfWeek -> Maybe Day
 fromMondayStartWeekValid y w d = mondayWeekValid (MondayWeek y w d)
@@ -363,24 +414,33 @@ fromMondayStartWeekValid y w d = mondayWeekValid (MondayWeek y w d)
 ------------------------------------------------------------------------
 -- * @Data.Time.Calendar.WeekDate@
 
--- | Convert a 'Day' to ('Year', 'WeekOfYear', 'DayOfWeek') according to the
--- Iso 'weekDate'.
+-- | Converts a 'Day' to an <https://en.wikipedia.org/wiki/ISO_week_date ISO week date>.
+--
+-- @
+-- 'toWeekDate' ('view' 'weekDate' -> 'WeekDate' y w d) = (y, w, d)
+-- @
 {-# INLINE toWeekDate #-}
 toWeekDate :: Day -> (Year, WeekOfYear, DayOfWeek)
 toWeekDate (view weekDate -> WeekDate y w d) = (y, w, d)
 
--- | Convert a 'Year' 'WeekOfYear' 'DayOfWeek' to a 'Day' according to the
--- Iso 'weekDate'.
+-- | Converts an <https://en.wikipedia.org/wiki/ISO_week_date ISO week date>
+-- to a 'Day'.
+-- Does not validate the input.
 --
--- See also 'fromWeekDateValid'.
+-- @
+-- 'fromWeekDate' y w d = 'weekDate' 'Control.Lens.#' 'WeekDate' y w d
+-- @
 {-# INLINE fromWeekDate #-}
 fromWeekDate :: Year -> WeekOfYear -> DayOfWeek -> Day
 fromWeekDate y w d = weekDate # WeekDate y w d
 
--- | Convert a 'Year' 'WeekOfYear' 'DayOfWeek' to a 'Day' according to the
--- Iso 'weekDateValid'.
+-- | Converts an <https://en.wikipedia.org/wiki/ISO_week_date ISO week date>
+-- to a 'Day'.
+-- Returns 'Nothing' for invalid input.
 --
--- See also 'fromWeekDate'.
+-- @
+-- 'fromWeekDateValid' y w d = 'weekDateValid' ('WeekDate' y w d)
+-- @
 {-# INLINE fromWeekDateValid #-}
 fromWeekDateValid :: Year -> WeekOfYear -> DayOfWeek -> Maybe Day
 fromWeekDateValid y w d = weekDateValid (WeekDate y w d)
@@ -388,76 +448,116 @@ fromWeekDateValid y w d = weekDateValid (WeekDate y w d)
 ------------------------------------------------------------------------
 -- * @Data.Time.Clock@
 
--- |
+-- | Convert a 'UniversalTime' to the fractional number of days since the
+-- <http://en.wikipedia.org/wiki/Julian_day#Variants Modified Julian Date epoch>.
+--
 -- @
--- 'getModJulianDate' ≡ 'view' 'modJulianDate'
+-- 'getModJulianDate' = 'view' 'modJulianDate'
 -- @
 {-# INLINE getModJulianDate #-}
 getModJulianDate :: UniversalTime -> Rational
 getModJulianDate = view modJulianDate
 
--- | Replacement for 'T.ModJulianDate'.
+-- | Construct a 'UniversalTime' from the fractional number of days since the
+-- <http://en.wikipedia.org/wiki/Julian_day#Variants Modified Julian Date epoch>.
+--
 -- @
--- 'mkModJulianDate' ≡ 'review' 'modJulianDate'
+-- 'mkModJulianDate' = 'review' 'modJulianDate'
 -- @
 {-# INLINE mkModJulianDate #-}
 mkModJulianDate :: Rational -> UniversalTime
 mkModJulianDate = review modJulianDate
 
--- | Construct a 'DiffTime' from seconds.
+-- | Construct a 'DiffTime' from some number of seconds.
 --
--- See also 'fromSeconds'.
+-- This is just 'fromSeconds' with a more constrained type.
+--
+-- @
+-- 'secondsToDiffTime' = 'fromSeconds'
+-- @
 {-# INLINE secondsToDiffTime #-}
 secondsToDiffTime :: Int64 -> DiffTime
-secondsToDiffTime a = DiffTime (Micro $ a * 1000000)
+secondsToDiffTime = fromSeconds
 
--- | Construct a 'DiffTime' from picoseconds, but only to microsecond precision.
--- (The bottom six orders of magnitude are discarded.)
+-- | Construct a 'DiffTime' from some number of picoseconds.
+-- The input will be rounded to the nearest microsecond.
 --
--- See also 'microseconds'.
+-- @
+-- 'picosecondsToDiffTime' a = 'microseconds' 'Control.Lens.#' 'quot' (a '+' 'signum' a '*' 500000) 1000000
+-- @
 {-# INLINE picosecondsToDiffTime #-}
 picosecondsToDiffTime :: Int64 -> DiffTime
-picosecondsToDiffTime a = DiffTime . Micro $
-    quot (a + signum a * 500000) 1000000
+picosecondsToDiffTime a = microseconds # quot (a + signum a * 500000) 1000000
 
 -- | Constructor for 'UTCTime'.
 --
--- See also 'utcTime'.
+-- @
+-- 'mkUTCTime' d t = 'utcTime' 'Control.Lens.#' 'UTCView' d t
+-- @
+--
+-- For GHC 7.8 or later, there is also the pattern synonym
+-- @<Data-Thyme-Clock.html#v:UTCTime UTCTime>@.
 {-# INLINE mkUTCTime #-}
 mkUTCTime :: Day -> DiffTime -> UTCTime
 mkUTCTime d t = utcTime # UTCView d t
 
 -- | Decompose a 'UTCTime' into a 'UTCView'.
 --
--- See also 'utcTime'.
+-- @
+-- 'unUTCTime' = 'view' 'utcTime'
+-- @
+--
+-- For GHC 7.8 or later, there is also the pattern synonym
+-- @<Data-Thyme-Clock.html#v:UTCTime UTCTime>@.
 {-# INLINE unUTCTime #-}
 unUTCTime :: UTCTime -> UTCView
 unUTCTime = view utcTime
 
--- | Add a duration to a time point.
+-- | Add a duration to a point in time.
 --
--- See also "Data.AffineSpace" instance of 'UTCTime'.
+-- @
+-- 'addUTCTime' = 'flip' ('.+^')
+-- 'addUTCTime' d t ≡ t '.+^' d
+-- @
+--
+-- See also the 'AffineSpace' instance for 'UTCTime'.
 {-# INLINE addUTCTime #-}
 addUTCTime :: NominalDiffTime -> UTCTime -> UTCTime
 addUTCTime = flip (.+^)
 
 -- | The duration difference between two time points.
 --
--- See also "Data.AffineSpace" instance of 'UTCTime'.
+-- @
+-- 'diffUTCTime' = ('.-.')
+-- 'diffUTCTime' a b = a '.-.' b
+-- @
+--
+-- See also the 'AffineSpace' instance for 'UTCTime'.
 {-# INLINE diffUTCTime #-}
 diffUTCTime :: UTCTime -> UTCTime -> NominalDiffTime
 diffUTCTime = (.-.)
 
--- | Convert a 'DiffTime' or 'NominalDiffTime' to microseconds.
+-- | The number of microseconds in a 'DiffTime' or 'NominalDiffTime'.
 --
--- See also 'microseconds'.
+-- @
+-- 'toMicroseconds' :: 'DiffTime' -> 'Int64'
+-- 'toMicroseconds' :: 'NominalDiffTime' -> 'Int64'
+-- 'toMicroseconds' = 'view' 'microseconds'
+-- 'toMicroseconds' d ≡ d '^.' 'microseconds'
+-- @
 {-# INLINE toMicroseconds #-}
 toMicroseconds :: (TimeDiff t) => t -> Int64
 toMicroseconds = view microseconds
 
--- | Convert microseconds to a 'DiffTime' or 'NominalDiffTime'.
+-- | Construct a 'DiffTime' or 'NominalDiffTime' from a number of
+-- microseconds.
 --
--- See also 'microseconds'.
+-- @
+-- 'fromMicroseconds' :: 'Int64' -> 'DiffTime'
+-- 'fromMicroseconds' :: 'Int64' -> 'NominalDiffTime'
+-- 'fromMicroseconds' = 'review' 'microseconds'
+-- 'fromMicroseconds' n ≡ 'microseconds' 'Control.Lens.#' n
+-- @
 {-# INLINE fromMicroseconds #-}
 fromMicroseconds :: (TimeDiff t) => Int64 -> t
 fromMicroseconds = review microseconds
@@ -465,17 +565,20 @@ fromMicroseconds = review microseconds
 ------------------------------------------------------------------------
 -- * @Data.Time.Clock.POSIX@
 
--- |
+-- | Construct a 'UTCTime' from a 'POSIXTime'.
+--
 -- @
--- 'posixSecondsToUTCTime' ≡ 'review' 'posixTime'
+-- 'posixSecondsToUTCTime' = 'review' 'posixTime'
+-- 'posixSecondsToUTCTime' t ≡ 'posixTime' 'Control.Lens.#' t
 -- @
 {-# INLINE posixSecondsToUTCTime #-}
 posixSecondsToUTCTime :: POSIXTime -> UTCTime
 posixSecondsToUTCTime = review posixTime
 
--- |
+-- | Convert a 'UTCTime' to a 'POSIXTime'.
+--
 -- @
--- 'utcTimeToPOSIXSeconds' ≡ 'view' 'posixTime'
+-- 'utcTimeToPOSIXSeconds' = 'view' 'posixTime'
 -- @
 {-# INLINE utcTimeToPOSIXSeconds #-}
 utcTimeToPOSIXSeconds :: UTCTime -> POSIXTime
@@ -486,30 +589,42 @@ utcTimeToPOSIXSeconds = view posixTime
 
 -- | Add a duration to an 'AbsoluteTime'.
 --
--- See also the 'Data.AffineSpace.+^' operator for
--- the 'Data.AffineSpace.AffineSpace' instance of 'AbsoluteTime'.
+-- @
+-- 'addAbsoluteTime' = 'flip' ('.+^')
+-- 'addAbsoluteTime' d t ≡ t '.+^' d
+-- @
+--
+-- See also the 'AffineSpace' instance for 'AbsoluteTime'.
 {-# INLINE addAbsoluteTime #-}
 addAbsoluteTime :: DiffTime -> AbsoluteTime -> AbsoluteTime
 addAbsoluteTime = flip (.+^)
 
 -- | The duration difference between two 'AbsoluteTime's.
 --
--- See also the 'Data.AffineSpace..-.' operator for
--- the 'Data.AffineSpace.AffineSpace' instance of 'AbsoluteTime'.
+-- @
+-- 'diffAbsoluteTime' = ('.-.')
+-- 'diffAbsoluteTime' a b ≡ a '.-.' b
+-- @
+--
+-- See also the 'AffineSpace' instance for 'AbsoluteTime'.
 {-# INLINE diffAbsoluteTime #-}
 diffAbsoluteTime :: AbsoluteTime -> AbsoluteTime -> DiffTime
 diffAbsoluteTime = (.-.)
 
 -- | Using a 'LeapSecondTable', convert a 'UTCTime' to 'AbsoluteTime'.
 --
--- See also the Iso 'absoluteTime'.
+-- @
+-- 'utcToTAITime' = 'view' '.' 'absoluteTime'
+-- @
 {-# INLINE utcToTAITime #-}
 utcToTAITime :: LeapSecondTable -> UTCTime -> AbsoluteTime
 utcToTAITime = view . absoluteTime
 
 -- | Using a 'LeapSecondTable', convert a 'AbsoluteTime' to 'UTCTime'.
 --
--- See also the Iso 'absoluteTime'.
+-- @
+-- 'taiToUTCTime' = 'review' '.' 'absoluteTime'
+-- @
 {-# INLINE taiToUTCTime #-}
 taiToUTCTime :: LeapSecondTable -> AbsoluteTime -> UTCTime
 taiToUTCTime = review . absoluteTime
@@ -517,101 +632,118 @@ taiToUTCTime = review . absoluteTime
 ------------------------------------------------------------------------
 -- * @Data.Time.LocalTime@
 
--- | Convert a UTC time-of-day to a local time-of-day.
+-- | Convert a UTC 'TimeOfDay' to a 'TimeOfDay' in some timezone, together
+-- with a day adjustment.
 --
 -- @
--- 'utcToLocalTimeOfDay' ≡ 'Data.Thyme.LocalTime.addMinutes' . 'Data.Thyme.LocalTime.timeZoneMinutes'
+-- 'utcToLocalTimeOfDay' = 'addMinutes' '.' 'timeZoneMinutes'
 -- @
---
--- See also Iso 'Data.Thyme.LocalTime.utcLocalTime'
 {-# INLINE utcToLocalTimeOfDay #-}
 utcToLocalTimeOfDay :: TimeZone -> TimeOfDay -> (Days, TimeOfDay)
 utcToLocalTimeOfDay = addMinutes . timeZoneMinutes
 
--- | Convert a local time to a UTC time.
+-- | Convert a 'TimeOfDay' in some timezone to a UTC 'TimeOfDay', together
+-- with a day adjustment.
 --
 -- @
--- 'localToUTCTimeOfDay' ≡ 'Data.Thyme.LocalTime.addMinutes' . 'negate' . 'Data.Thyme.LocalTime.timeZoneMinutes'
+-- 'localToUTCTimeOfDay' = 'addMinutes' '.' 'negate' '.' 'timeZoneMinutes'
 -- @
---
--- See also Iso 'Data.Thyme.LocalTime.utcLocalTime'
 {-# INLINE localToUTCTimeOfDay #-}
 localToUTCTimeOfDay :: TimeZone -> TimeOfDay -> (Days, TimeOfDay)
 localToUTCTimeOfDay = addMinutes . negate . timeZoneMinutes
 
--- |
+-- | Convert a 'DiffTime' of the duration since midnight to a 'TimeOfDay'.
+-- Durations exceeding 24 hours will be treated as leap-seconds.
+--
 -- @
--- 'timeToTimeOfDay' ≡ 'view' 'Data.Thyme.LocalTime.timeOfDay'
+-- 'timeToTimeOfDay' = 'view' 'timeOfDay'
+-- 'timeToTimeOfDay' d ≡ d '^.' 'timeOfDay'
 -- @
 {-# INLINE timeToTimeOfDay #-}
 timeToTimeOfDay :: DiffTime -> TimeOfDay
 timeToTimeOfDay = view timeOfDay
 
--- | Convert 'TimeOfDay' to 'DiffTime'.
+-- | Convert a 'TimeOfDay' to a 'DiffTime' of the duration since midnight.
+-- 'TimeOfDay' greater than 24 hours will be treated as leap-seconds.
 --
--- See also 'Data.Thyme.LocalTime.timeOfDay'.
+-- @
+-- 'timeOfDayToTime' = 'review' 'timeOfDay'
+-- 'timeOfDayToTime' tod ≡ 'timeOfDay' 'Control.Lens.#' tod
+-- @
 {-# INLINE timeOfDayToTime #-}
 timeOfDayToTime :: TimeOfDay -> DiffTime
 timeOfDayToTime = review timeOfDay
 
--- |
+-- | Convert a fraction of a day since midnight to a 'TimeOfDay'.
+--
 -- @
--- 'dayFractionToTimeOfDay' ≡ 'review' 'Data.Thyme.LocalTime.dayFraction'
+-- 'dayFractionToTimeOfDay' = 'review' 'dayFraction'
 -- @
 {-# INLINE dayFractionToTimeOfDay #-}
 dayFractionToTimeOfDay :: Rational -> TimeOfDay
 dayFractionToTimeOfDay = review dayFraction
 
--- |
+-- | Convert a 'TimeOfDay' to a fraction of a day since midnight.
+--
 -- @
--- 'timeOfDayToDayFraction' ≡ 'view' 'Data.Thyme.LocalTime.dayFraction'
+-- 'timeOfDayToDayFraction' = 'view' 'dayFraction'
 -- @
 {-# INLINE timeOfDayToDayFraction #-}
 timeOfDayToDayFraction :: TimeOfDay -> Rational
 timeOfDayToDayFraction = view dayFraction
 
--- |
+-- | Convert a 'UTCTime' to a 'LocalTime' in the given 'TimeZone'.
+--
 -- @
--- 'utcToLocalTime' ≡ 'view' . 'Data.Thyme.LocalTime.utcLocalTime'
+-- 'utcToLocalTime' = 'view' '.' 'utcLocalTime'
 -- @
 {-# INLINE utcToLocalTime #-}
 utcToLocalTime :: TimeZone -> UTCTime -> LocalTime
 utcToLocalTime = view . utcLocalTime
 
--- |
+-- | Convert a 'LocalTime' in the given 'TimeZone' to a 'UTCTime'.
+--
 -- @
--- 'localTimeToUTC' ≡ 'review' . 'Data.Thyme.LocalTime.utcLocalTime'
+-- 'localTimeToUTC' = 'review' '.' 'utcLocalTime'
 -- @
 {-# INLINE localTimeToUTC #-}
 localTimeToUTC :: TimeZone -> LocalTime -> UTCTime
 localTimeToUTC = review . utcLocalTime
 
--- |
+-- | Convert a 'UniversalTime' to a 'LocalTime' at the given medidian in
+-- degrees East.
+--
 -- @
--- 'ut1ToLocalTime' ≡ 'view' . 'Data.Thyme.LocalTime.ut1LocalTime'
+-- 'ut1ToLocalTime' = 'view' '.' 'ut1LocalTime'
 -- @
 {-# INLINE ut1ToLocalTime #-}
 ut1ToLocalTime :: Rational -> UniversalTime -> LocalTime
 ut1ToLocalTime = view . ut1LocalTime
 
--- |
+-- | Convert a 'LocalTime' at the given meridian in degrees East to
+-- a 'UniversalTime'.
+--
 -- @
--- 'localTimeToUT1' ≡ 'review' . 'Data.Thyme.LocalTime.ut1LocalTime'
+-- 'localTimeToUT1' = 'review' '.' 'ut1LocalTime'
 -- @
 {-# INLINE localTimeToUT1 #-}
 localTimeToUT1 :: Rational -> LocalTime -> UniversalTime
 localTimeToUT1 = review . ut1LocalTime
 
--- | Combine a 'TimeZone' and a 'UTCTime' into a 'ZonedTime'.
+-- | Convert a 'UTCTime' and the given 'TimeZone' into a 'ZonedTime'.
 --
--- See also Iso 'Data.Thyme.LocalTime.zonedTime'
+-- @
+-- 'utcToZonedTime' z t = 'view' 'zonedTime' (z, t)
+-- @
 {-# INLINE utcToZonedTime #-}
 utcToZonedTime :: TimeZone -> UTCTime -> ZonedTime
 utcToZonedTime z t = view zonedTime (z, t)
 
--- | Convert a 'ZonedTime' to a 'UTCTime'.
+-- | Converts a 'ZonedTime' to a 'UTCTime'.
 --
--- See also Iso 'Data.Thyme.LocalTime.zonedTime'
+-- @
+-- 'zonedTimeToUTC' = 'snd' '.' 'review' 'zonedTime'
+-- @
 {-# INLINE zonedTimeToUTC #-}
 zonedTimeToUTC :: ZonedTime -> UTCTime
 zonedTimeToUTC = snd . review zonedTime
