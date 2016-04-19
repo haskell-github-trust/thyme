@@ -45,47 +45,43 @@ import GHC.Generics (Generic)
 import System.Random
 import Test.QuickCheck hiding ((.&.))
 
--- | Duration of years.
+-- | A duration/count of years.
 type Years = Int
 
--- | Duration of months.
+-- | A duration/count of months.
 type Months = Int
 
--- | Duration of days.
+-- | A duration/count of days.
 type Days = Int
 
--- | A date, represented as a count of days since the
+-- | A calendar-agnostic day, internally represented as a count of days
+-- since /1858-11-17/, the
 -- <https://en.wikipedia.org/wiki/Julian_day#Variants Modified Julian Day>
--- epoch, /1858-11-17/.
+-- (MJD) epoch.
 --
--- 'Day' is an instance of 'Data.AffineSpace.AffineSpace'
--- where @'Diff' 'Day' = 'Days'@, so arithmetic on 'Day' and 'Days' can be
--- performed with the '.-.', '.+^', and '.-^' operators.
---
--- To decompose a 'Day' calendar date into years, months, and days, use
--- the Iso 'gregorian'.
---
--- ==== Examples
+-- To convert a 'Day' to the corresponding 'YearMonthDay' in the W_GREGORIAN
+-- calendar, see 'gregorian'.
 --
 -- @
--- > 'Data.Thyme.Time.Core.fromGregorian' 2016 3 1
---   2016-03-01
+-- > 'gregorian' 'Control.Lens.#' 'YearMonthDay' 2016 3 1
+-- 2016-03-01
 -- @
 --
+-- 'Day' is an instance of 'AffineSpace' where @'Diff' 'Day' = 'Days'@, so
+-- arithmetic on 'Day' and 'Days' can be performed with the '.-.', '.+^',
+-- and '.-^' operators.
+--
 -- @
--- > 'gregorian' 'Control.Lens.Review.#' 'YearMonthDay' 2016 3 1
---   2016-03-01
+-- > 'gregorian' 'Control.Lens.#' 'YearMonthDay' 2016 3 1  '.-.'  'gregorian' 'Control.Lens.#' 'YearMonthDay' 2016 2 1
+-- 29
 -- @
 --
 -- @
--- > import "Data.AffineSpace"
---
--- > 'Data.Thyme.Time.Core.fromGregorian' 2016 3 1 'Data.AffineSpace..-.' 'Data.Thyme.Time.Core.fromGregorian' 2016 2 1
---   29
---
--- > 'Data.Thyme.Time.Core.fromGregorian' 2016 3 1 'Data.AffineSpace..-^' 1
---   2016-02-29
+-- > 'gregorian' 'Control.Lens.#' 'YearMonthDay' 2016 3 1 '.-^' 1
+-- 2016-02-29
 -- @
+--
+-- Other ways of viewing a 'Day' include 'ordinalDate', and 'weekDate'.
 newtype Day = ModifiedJulianDay
     { toModifiedJulianDay :: Int
     } deriving (INSTANCES_NEWTYPE, CoArbitrary)
@@ -97,38 +93,34 @@ instance AffineSpace Day where
     {-# INLINE (.+^) #-}
     (.+^) = \ (ModifiedJulianDay a) d -> ModifiedJulianDay (a + d)
 
--- | "Control.Lens.Iso" between Modified Julian 'Day' and 'Int'
---
--- ==== Examples
+-- | Convert between a 'Day' and the corresponding count of days from
+-- 1858-11-17, the MJD epoch.
 --
 -- @
--- > 'Data.Thyme.Time.Core.fromGregorian' 1858 11 17 '^.' 'modifiedJulianDay'
---   0
+-- 'modifiedJulianDay' = 'iso' 'toModifiedJulianDay' 'ModifiedJulianDay'
 -- @
 --
 -- @
--- > 'modifiedJulianDay' 'Control.Lens.Review.#' 0
---   1858-11-17
+-- > 'modifiedJulianDay' 'Control.Lens.#' 0
+-- 1858-11-17
+-- > 'gregorian' 'Control.Lens.#' 'YearMonthDay' 2016 3 1 '&' 'modifiedJulianDay' '%~' 'subtract' 1
+-- 2016-02-29
 -- @
-
 {-# INLINE modifiedJulianDay #-}
 modifiedJulianDay :: Iso' Day Int
 modifiedJulianDay = iso toModifiedJulianDay ModifiedJulianDay
 
--- | "Control.Lens.Iso" between ordinal date and
--- <https://en.wikipedia.org/wiki/Proleptic_Gregorian_calendar proleptic Gregorian calendar>
--- date.
---
--- ==== Examples
+-- | Conversion between a W_GREGORIAN 'OrdinalDate' and the corresponding
+-- 'YearMonthDay'.
 --
 -- @
 -- > 'OrdinalDate' 2016 32 '^.' 'yearMonthDay'
---   'YearMonthDay' {ymdYear = 2016, ymdMonth = 2, ymdDay = 1}
+-- 'YearMonthDay' {ymdYear = 2016, ymdMonth = 2, ymdDay = 1}
 -- @
 --
 -- @
--- > 'yearMonthDay' 'Control.Lens.Review.#' 'YearMonthDay' 2016 2 1
---   'OrdinalDate' {odYear = 2016, odDay = 32}
+-- > 'yearMonthDay' 'Control.Lens.#' 'YearMonthDay' 2016 2 1
+-- 'OrdinalDate' {odYear = 2016, odDay = 32}
 -- @
 {-# INLINE yearMonthDay #-}
 yearMonthDay :: Iso' OrdinalDate YearMonthDay
@@ -144,59 +136,47 @@ yearMonthDay = iso fromOrdinal toOrdinal where
     toOrdinal (YearMonthDay y m d) = OrdinalDate y $
         monthDay (isLeapYear y) # MonthDay m d
 
--- | "Control.Lens.Iso" between Modified Julian 'Day' and
--- <https://en.wikipedia.org/wiki/Proleptic_Gregorian_calendar proleptic Gregorian calendar>
--- date.
+-- | Conversion between a 'Day' and its 'YearMonthDay'.
 --
 -- @
--- gregorian ≡ 'ordinalDate' . 'yearMonthDay'
+-- 'gregorian' = 'ordinalDate' . 'yearMonthDay'
 -- @
---
--- See also 'Data.Thyme.Time.Core.fromGregorian',
--- 'Data.Thyme.Time.Core.fromGregorianValid',
--- 'Data.Thyme.Time.Core.toGregorian'.
---
--- ==== Examples
 --
 -- @
 -- > 'ModifiedJulianDay' 0 '^.' 'gregorian'
---   'YearMonthDay' {ymdYear = 1858, ymdMonth = 11, ymdDay = 17}
+-- 'YearMonthDay' {ymdYear = 1858, ymdMonth = 11, ymdDay = 17}
 -- @
 --
 -- @
--- > 'gregorian' 'Control.Lens.Review.#' 'YearMonthDay' 1858 11 17
---   1858-11-17
+-- > 'gregorian' 'Control.Lens.#' 'YearMonthDay' 1858 11 17
+-- 1858-11-17
 -- @
 {-# INLINE gregorian #-}
 gregorian :: Iso' Day YearMonthDay
 gregorian = ordinalDate . yearMonthDay
 
--- | Convert from
--- <https://en.wikipedia.org/wiki/Proleptic_Gregorian_calendar proleptic Gregorian calendar>
--- date to Modified Julian 'Day'.
--- Invalid Gregorian dates will return 'Nothing'.
---
--- ==== Examples
+-- | Conversion between a 'YearMonthDay' and the corresponding 'Day'.
+-- Returns 'Nothing' for invalid input.
 --
 -- @
 -- > 'gregorianValid' ('YearMonthDay' 2015 2 28)
---   Just 2015-02-28
+-- 'Just' 2015-02-28
 -- @
 --
 -- @
 -- > 'gregorianValid' ('YearMonthDay' 2015 2 29)
---   Nothing
+-- 'Nothing'
 -- @
 {-# INLINEABLE gregorianValid #-}
 gregorianValid :: YearMonthDay -> Maybe Day
 gregorianValid (YearMonthDay y m d) = review ordinalDate . OrdinalDate y
     <$> monthDayValid (isLeapYear y) (MonthDay m d)
 
--- | 'Show' a Modified Julian 'Day' as a
--- <https://en.wikipedia.org/wiki/Proleptic_Gregorian_calendar proleptic Gregorian calendar>
--- date. /YYYY-MM-DD/
+-- | Shows a 'Day' in
+-- <https://en.wikipedia.org/wiki/ISO_8601#Calendar_dates ISO 8601>
+-- /YYYY-MM-DD/ format.
 --
--- See also 'Data.Thyme.Format.formatTime'.
+-- See "Data.Thyme.Format" for other possibilities.
 {-# INLINEABLE showGregorian #-}
 showGregorian :: Day -> String
 showGregorian (view gregorian -> YearMonthDay y m d) =
@@ -216,24 +196,26 @@ type Year = Int
 -- | Calendar month. /January = 1/
 type Month = Int
 
--- | Calendar day-of-month. Starting from /1/.
+-- | Calendar day-of-month, starting from /1/.
 type DayOfMonth = Int
 
--- | A date on the calendar.
+-- | A strict triple of a 'Year', a 'Day', and a 'Month'.
 data YearMonthDay = YearMonthDay
     { ymdYear :: {-# UNPACK #-}!Year
     , ymdMonth :: {-# UNPACK #-}!Month
     , ymdDay :: {-# UNPACK #-}!DayOfMonth
     } deriving (INSTANCES_USUAL, Show)
 
+LENS(YearMonthDay,ymdYear,Year)
+LENS(YearMonthDay,ymdMonth,Month)
+LENS(YearMonthDay,ymdDay,DayOfMonth)
+
 instance Hashable YearMonthDay
 instance NFData YearMonthDay
 
 ------------------------------------------------------------------------
 
--- | Is this year a
--- <https://en.wikipedia.org/wiki/Proleptic_Gregorian_calendar proleptic Gregorian calendar>
--- leap year?
+-- | Is it a leap year according to the W_GREGORIAN calendar?
 isLeapYear :: Year -> Bool
 isLeapYear y = y .&. 3 == 0 && (r100 /= 0 || q100 .&. 3 == 0) where
     (q100, r100) = y `quotRem` 100
@@ -242,7 +224,7 @@ isLeapYear y = y .&. 3 == 0 && (r100 /= 0 || q100 .&. 3 == 0) where
 type DayOfYear = Int
 
 -- | An
--- <https://en.wikipedia.org/wiki/ISO_8601#Ordinal_dates ISO 8601 Ordinal Date>.
+-- <https://en.wikipedia.org/wiki/ISO_8601#Ordinal_dates ISO 8601 ordinal date>.
 data OrdinalDate = OrdinalDate
     { odYear :: {-# UNPACK #-}!Year
     , odDay :: {-# UNPACK #-}!DayOfYear
@@ -251,36 +233,31 @@ data OrdinalDate = OrdinalDate
 instance Hashable OrdinalDate
 instance NFData OrdinalDate
 
--- | "Control.Lens.Iso" to convert between the Modified Julian 'Day' and
--- 'OrdinalDate'.
---
--- See also 'Data.Thyme.Calendar.ordinalDateValid'.
---
--- ==== Examples
+-- | Conversion between the MJD 'Day' and 'OrdinalDate'.
 --
 -- @
--- > 'ordinalDate' 'Control.Lens.Review.#' 'OrdinalDate' 2016 32
---   2016-02-01
+-- > 'ordinalDate' 'Control.Lens.#' 'OrdinalDate' 2016 32
+-- 2016-02-01
 -- @
 --
 -- @
--- > 'toModifiedJulianDay' $ 'ordinalDate' 'Control.Lens.Review.#' 'OrdinalDate' 2016 32
---   57419
+-- > 'toModifiedJulianDay' $ 'ordinalDate' 'Control.Lens.#' 'OrdinalDate' 2016 32
+-- 57419
 -- @
 --
 -- @
 -- > 'ModifiedJulianDay' 57419 '^.' 'ordinalDate'
---   'OrdinalDate' {odYear = 2016, odDay = 32}
+-- 'OrdinalDate' {odYear = 2016, odDay = 32}
 -- @
+{-# INLINE ordinalDate #-}
+ordinalDate :: Iso' Day OrdinalDate
+ordinalDate = iso toOrd fromOrd where
+
+-- Brief description of the toOrd computation
 --
--- === Brief description of the 'ordinalDate' computation
---
--- The length of the years in the
--- <https://en.wikipedia.org/wiki/Proleptic_Gregorian_calendar proleptic Gregorian calendar>
--- is periodic with
--- period of /400/ years. There are /100 - 4 + 1 = 97/ leap years in a
--- period, so the average length of a year is
--- /365 + 97\/400 = 146097\/400/ days.
+-- The length of the years in the Gregorian calendar is periodic with period
+-- of /400/ years. There are /100 - 4 + 1 = 97/ leap years in a period, so
+-- the average length of a year is /365 + 97\/400 = 146097\/400/ days.
 --
 -- Now, if you consider these — let's call them nominal — years,
 -- then for any point in time, for any linear day number we can
@@ -304,12 +281,9 @@ instance NFData OrdinalDate
 --
 -- Notes: to make the reasoning simpler and more efficient ('quot' is
 -- faster than 'div') we do the computation directly only for positive
--- years (days after /1-1-1/). For earlier dates we translate by an
+-- years (days after /0001-01-01/). For earlier dates we translate by an
 -- integral number of /400/ year periods, do the computation and
 -- translate back.
-{-# INLINE ordinalDate #-}
-ordinalDate :: Iso' Day OrdinalDate
-ordinalDate = iso toOrd fromOrd where
 
     {-# INLINEABLE toOrd #-}
     toOrd :: Day -> OrdinalDate
@@ -321,7 +295,7 @@ ordinalDate = iso toOrd fromOrd where
         dayB0 = mjd + 678575
         (quadCent, dayInQC) = dayB0 `divMod` 146097
 
-    -- Input: days since 1-1-1. Precondition: has to be positive!
+    -- Input: days since 0001-01-01. Precondition: has to be positive!
     {-# INLINE toOrdB0 #-}
     toOrdB0 :: Int -> OrdinalDate
     toOrdB0 dayB0 = res
@@ -333,7 +307,7 @@ ordinalDate = iso toOrd fromOrd where
               then OrdinalDate (y0 + 1 + 1) d1
               else OrdinalDate (y0 + 1) d0
 
-    -- Input: (year - 1) (day as days since 1-1-1)
+    -- Input: (year - 1) (day as days since 0001-01-01)
     -- Precondition: year is positive!
     {-# INLINE dayInYear #-}
     dayInYear :: Int -> Int -> Int
@@ -360,7 +334,7 @@ ordinalDate = iso toOrd fromOrd where
 monthLengths, monthLengthsLeap :: VU.Vector Days
 monthLengths     = VU.fromList [31,28,31,30,31,30,31,31,30,31,30,31]
 monthLengthsLeap = VU.fromList [31,29,31,30,31,30,31,31,30,31,30,31]
-                            -- J  F  M  A  M  J  J  A  S  O  N  D
+                             -- J  F  M  A  M  J  J  A  S  O  N  D
 
 {-# ANN monthDays "HLint: ignore Use fromMaybe" #-}
 {-# NOINLINE monthDays #-}
@@ -387,7 +361,7 @@ randomIsoR l (x, y) = first (^. l) . randomR (l # x, l # y)
 
 ------------------------------------------------------------------------
 
--- | A month and day-of-month.
+-- | A strict pair of a 'Month' and a 'DayOfMonth'.
 data MonthDay = MonthDay
     { mdMonth :: {-# UNPACK #-}!Month
     , mdDay :: {-# UNPACK #-}!DayOfMonth
@@ -412,43 +386,39 @@ instance Arbitrary MonthDay where
 instance CoArbitrary MonthDay where
     coarbitrary (MonthDay m d) = coarbitrary m . coarbitrary d
 
--- | Predicated on whether or not the year is a leap year, produces a
--- "Control.Lens.Iso" to convert between ordinal day of year in the Gregorian or
--- Julian calendars, and month and day of month.
---
--- ==== Examples
+-- | Predicated on whether or not it's a leap year, convert between an
+-- ordinal 'DayOfYear' and the corresponding 'Month' and 'DayOfMonth'.
 --
 -- @
 -- > 60 '^.' 'monthDay' ('isLeapYear' 2015)
---   'MonthDay' {mdMonth = 3, mdDay = 1}
+-- 'MonthDay' {'mdMonth' = 3, 'mdDay' = 1}
 -- @
 --
 -- @
 -- > 60 '^.' 'monthDay' ('isLeapYear' 2016)
---   'MonthDay' {mdMonth = 2, mdDay = 29}
+-- 'MonthDay' {'mdMonth' = 2, 'mdDay' = 29}
 -- @
 --
 -- @
--- > monthDay ('isLeapYear' 2016) 'Control.Lens.Review.#' 'MonthDay' 2 29
---   60
+-- > 'monthDay' ('isLeapYear' 2016) 'Control.Lens.#' 'MonthDay' 2 29
+-- 60
 -- @
 --
 -- @
--- > monthDay ('isLeapYear' 2015) 'Contrl.Lens.Review.#' 'MonthDay' 2 28
---   59
+-- > 'monthDay' ('isLeapYear' 2015) 'Control.Lens.#' 'MonthDay' 2 28
+-- 59
 -- @
 --
--- Note that 'monthDay' is an improper 'Iso'', as the following example shows.
--- To handle this case correctly, use 'monthDayValid'.
+-- Note that 'monthDay' is an improper 'Iso', as the following example
+-- shows. To handle this case correctly, use 'monthDayValid'.
 --
 -- @
--- > monthDay ('isLeapYear' 2015) 'Control.Lens.Review.#' 'MonthDay' 2 29
---   59
+-- > 'monthDay' ('isLeapYear' 2015) 'Control.Lens.#' 'MonthDay' 2 29
+-- 59
 -- @
 {-# INLINE monthDay #-}
 monthDay
-    :: Bool
-        -- ^ 'isLeapYear'?
+    :: Bool -- ^ 'isLeapYear'?
     -> Iso' DayOfYear MonthDay
 monthDay leap = iso fromOrdinal toOrdinal where
     (lastDay, lengths, table, ok) = if leap
@@ -468,24 +438,21 @@ monthDay leap = iso fromOrdinal toOrdinal where
         d = max 1 . min l $ day
         k = if m <= 2 then 0 else ok
 
--- | Predicated on whether or not the year is a leap year, convert a
--- 'MonthDay' to a 'DayOfYear'.
---
--- ==== Examples
+-- | Predicated on whether or not it's a leap year, convert a 'MonthDay' to
+-- an ordinal 'DayOfYear'.
 --
 -- @
--- > monthDayValid ('isLeapYear' 2016) ('MonthDay' 2 29)
---   Just 60
+-- > 'monthDayValid' ('isLeapYear' 2016) ('MonthDay' 2 29)
+-- 'Just' 60
 -- @
 --
 -- @
--- > monthDayValid ('isLeapYear' 2015) ('MonthDay' 2 29)
---   Nothing
+-- > 'monthDayValid' ('isLeapYear' 2015) ('MonthDay' 2 29)
+-- 'Nothing'
 -- @
 {-# INLINEABLE monthDayValid #-}
 monthDayValid
-    :: Bool
-        -- ^ 'isLeapYear'?
+    :: Bool -- ^ 'isLeapYear'?
     -> MonthDay
     -> Maybe DayOfYear
 monthDayValid leap md@(MonthDay m d) = monthDay leap # md
@@ -493,8 +460,6 @@ monthDayValid leap md@(MonthDay m d) = monthDay leap # md
 
 -- | Predicated on whether or not the year is a leap year, return the number
 -- of 'Days' in the given 'Month'.
---
--- ==== Examples
 --
 -- @
 -- > monthLength ('isLeapYear' 2015) 2
@@ -507,8 +472,7 @@ monthDayValid leap md@(MonthDay m d) = monthDay leap # md
 -- @
 {-# INLINEABLE monthLength #-}
 monthLength
-    :: Bool
-        -- ^ 'isLeapYear'?
+    :: Bool -- ^ 'isLeapYear'?
     -> Month
     -> Days
 monthLength leap = VU.unsafeIndex ls . max 0 . min 11 . pred where
@@ -516,58 +480,42 @@ monthLength leap = VU.unsafeIndex ls . max 0 . min 11 . pred where
 
 ------------------------------------------------------------------------
 
--- | Week of the year. Meaning of values depends on context. For meaning
--- see 'wdWeek', 'swWeek', 'mwWeek'.
+-- | Week of the year.
+--
+-- Meaning of values depends on context; see 'wdWeek', 'swWeek', 'mwWeek'.
 type WeekOfYear = Int
 
 -- | Day of the week.
 --
--- Possible values:
+-- [/0/] /Sunday/ for 'SundayWeek'
 --
--- [/0/] /Sunday/ (for 'SundayWeek')
+-- [/1/…/6/] /Monday/…/Saturday/
 --
--- [/1/] /Monday/
---
--- [/2/] /Tuesday/
---
--- [/3/] /Wednesday/
---
--- [/4/] /Thursday/
---
--- [/5/] /Friday/
---
--- [/6/] /Saturday/
---
--- [/7/] /Sunday/ (for 'WeekDate' and 'MondayWeek' and 'Data.Thyme.Calendar.WeekdayOfMonth')
+-- [/7/] /Sunday/ for 'WeekDate', 'MondayWeek', and 'Data.Thyme.Calendar.WeekdayOfMonth.WeekdayOfMonth'
 type DayOfWeek = Int
 
--- | <https://en.wikipedia.org/wiki/ISO_8601#Week_dates ISO 8601 Week Date>.
+-- | <https://en.wikipedia.org/wiki/ISO_week_date ISO 8601 Week Date>.
 --
--- Note that 'WeekDate' years are
--- not quite the same as Gregorian years, as the first day of the year is always
--- a /Monday/. The first week of a year is the first week to contain at least
--- four days in the corresponding Gregorian year.
+-- Note that week /01/ is defined as the week with the first Thursday, thus
+-- 'wdYear' may differ from the Gregorian year between /December 29th/ and
+-- /January 3rd/.
 data WeekDate = WeekDate
     { wdYear :: {-# UNPACK #-}!Year
     , wdWeek :: {-# UNPACK #-}!WeekOfYear
-        -- ^ Weeks numbered /1/ to /53/, where week /1/ is the first week that
-        -- has at least /4/ days in the new year. Days before week /1/ are
-        -- considered to belong to the previous year.
+        -- ^ Numbered /01/ to /53/. Days before week /01/ are considered to
+        -- belong to the previous year.
     , wdDay :: {-# UNPACK #-}!DayOfWeek
-        -- ^ /1 = Monday, 7 = Sunday/.
+        -- ^ /1 = Monday/ … /7 = Sunday/.
     } deriving (INSTANCES_USUAL, Show)
 
 instance Hashable WeekDate
 instance NFData WeekDate
 
--- | "Control.Lens.Iso" for converting between Modified Julian 'Day' and ISO 8601
--- Week Date format.
---
--- ==== Examples
+-- | Convert between a 'Day' and an ISO 8601 'WeekDate'.
 --
 -- @
--- > 'Data.Thyme.Time.Core.fromGregorian' 2016 1 1 '^.' 'weekDate'
---   'WeekDate' {wdYear = 2015, wdWeek = 53, wdDay = 5}
+-- > 'YearMonthDay' 2016 1 1 '^.' 'from' 'gregorian' '.' 'weekDate'
+-- 'WeekDate' {'wdYear' = 2015, 'wdWeek' = 53, 'wdDay' = 5}
 -- @
 {-# INLINE weekDate #-}
 weekDate :: Iso' Day WeekDate
@@ -617,39 +565,43 @@ weekDateValid :: WeekDate -> Maybe Day
 weekDateValid wd@(WeekDate (lastWeekOfYear -> wMax) w d) =
     fromWeekLast wMax wd <$ guard (1 <= d && d <= 7 && 1 <= w && w <= wMax)
 
--- | 'Show' in ISO 8601 Week Date format as yyyy-Www-d (e.g. "2006-W46-3").
+-- | Shows a 'Day' using the @yyyy-Www-d@ ISO 8601 Week Date format.
+--
+-- @
+-- > 'showWeekDate' ('gregorian' 'Control.Lens.#' 'YearMonthDay' 2006 11 15)
+-- "2006-W46-3"
+-- @
 {-# INLINEABLE showWeekDate #-}
 showWeekDate :: Day -> String
 showWeekDate (view weekDate -> WeekDate y w d) =
-    showsYear y . (++) "-W" . shows02 w . (:) '-' . shows d $ ""
+    showsYear y . (++) "-W" . shows02 w . (:) '-' $ show d
 
 ------------------------------------------------------------------------
 
 -- | Week-based calendar date with the first /Sunday/ of the year as the first
--- day of week /1/.
+-- day of week /01/. This corresponds to @%U@ and @%w@ of
+-- @<http://www.gnu.org/software/libc/manual/html_node/Formatting-Calendar-Time.html#index-strftime strftime(3)>@.
 --
--- The last week of a given year and week /0/ of the next both refer to the
--- same week, but not all 'DayOfWeek' are valid.
+-- The final week of a given year and week /00/ of the next both refer to
+-- the same week.
 data SundayWeek = SundayWeek
     { swYear :: {-# UNPACK #-}!Year
         -- ^ Coincides with that of 'gregorian'.
     , swWeek :: {-# UNPACK #-}!WeekOfYear
-        -- ^ Weeks numbered from /0/ to /53/, starting with the first /Sunday/
-        -- of the year as the first day of week /1/.
+        -- ^ Weeks numbered from /00/ to /53/, starting with the first
+        -- /Sunday/ of the year as the first day of week /01/.
     , swDay :: {-# UNPACK #-}!DayOfWeek
-        -- ^ /0 = Sunday, 6 = Saturday/.
+        -- ^ /0 = Sunday/.
     } deriving (INSTANCES_USUAL, Show)
 
 instance Hashable SundayWeek
 instance NFData SundayWeek
 
--- | "Control.Lens.Iso" between 'Day' and 'SundayWeek'.
---
--- ==== Examples
+-- | Conversion between 'Day' and 'SundayWeek'.
 --
 -- @
--- > 'Data.Thyme.Time.Core.fromGregorian' 2016 1 3 '^.' 'sundayWeek'
---   SundayWeek {swYear = 2016, swWeek = 1, swDay = 0}
+-- > 'YearMonthDay' 2016 1 3 '^.' 'from' 'gregorian' '.' 'sundayWeek'
+-- 'SundayWeek' {'swYear' = 2016, 'swWeek' = 1, 'swDay' = 0}
 -- @
 {-# INLINE sundayWeek #-}
 sundayWeek :: Iso' Day SundayWeek
@@ -688,31 +640,30 @@ sundayWeekValid (SundayWeek y w d) = ModifiedJulianDay (firstDay + yd)
 
 ------------------------------------------------------------------------
 
--- | Week-based calendar date with the first /Monday/ of the year as the
--- first day of week /1/.
+-- | Week-based calendar date with the first /Monday/ of the year as the first
+-- day of week /01/. This corresponds to @%W@ and @%u@ of
+-- @<http://www.gnu.org/software/libc/manual/html_node/Formatting-Calendar-Time.html#index-strftime strftime(3)>@.
 --
--- The last week of a given year and week /0/ of the next both refer to
--- the same week, but not all 'DayOfWeek' are valid.
+-- The final week of a given year and week /00/ of the next both refer to
+-- the same week.
 data MondayWeek = MondayWeek
     { mwYear :: {-# UNPACK #-}!Year
         -- ^ Coincides with that of 'gregorian'.
     , mwWeek :: {-# UNPACK #-}!WeekOfYear
-        -- ^ Weeks numbered from /0/ to /53/, starting with the first /Monday/
-        -- of the year as the first day of week /1/.
+        -- ^ Weeks numbered from /00/ to /53/, starting with the first
+        -- /Monday/ of the year as the first day of week /01/.
     , mwDay :: {-# UNPACK #-}!DayOfWeek
-        -- ^ /1 = Monday, 7 = Sunday/.
+        -- ^ /7 = Sunday/.
     } deriving (INSTANCES_USUAL, Show)
 
 instance Hashable MondayWeek
 instance NFData MondayWeek
 
--- | "Control.Lens.Iso" between 'Day' and 'MondayWeek'.
---
--- ==== Examples
+-- | Conversion between 'Day' and 'MondayWeek'.
 --
 -- @
--- > 'Data.Thyme.Time.Core.fromGregorian' 2016 1 3 '^.' 'mondayWeek'
---   'MondayWeek' {mwYear = 2016, mwWeek = 0, mwDay = 7}
+-- > 'YearMonthDay' 2016 1 3 '^.' 'from' 'gregorian' '.' 'mondayWeek'
+-- 'MondayWeek' {'mwYear' = 2016, 'mwWeek' = 0, 'mwDay' = 7}
 -- @
 {-# INLINE mondayWeek #-}
 mondayWeek :: Iso' Day MondayWeek

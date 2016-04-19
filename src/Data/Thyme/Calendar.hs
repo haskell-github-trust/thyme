@@ -8,19 +8,22 @@
 #include "cabal_macros.h"
 #endif
 
--- | 'UTCTime' is not Y294K-compliant, and 'Bounded' instances for the
--- various calendar types reflect this fact. That said, the calendar
+-- | Calendar calculations.
+--
+-- Note that 'UTCTime' is not Y294K-compliant, and 'Bounded' instances for
+-- the various calendar types reflect this fact. That said, the calendar
 -- calculations by themselves work perfectly fine for a wider range of
 -- dates, subject to the size of 'Int' for your platform.
 module Data.Thyme.Calendar
     (
+    -- * Day
+      Day (..), modifiedJulianDay
     -- * Calendar
-      Year, Month, DayOfMonth
+    , Year, Month, DayOfMonth
     , YearMonthDay (..)
     , Years, Months, Days
-    -- * Proleptic Modified Julian Day
-    , Day (..), modifiedJulianDay
-    -- * Proleptic Gregorian Calendar
+    -- * Gregorian calendar
+    -- $proleptic
     , isLeapYear
     , yearMonthDay, gregorian, gregorianValid, showGregorian
     , module Data.Thyme.Calendar
@@ -76,30 +79,34 @@ instance CoArbitrary YearMonthDay where
 
 ------------------------------------------------------------------------
 
--- | The number of days in a given month according to the
--- <https://en.wikipedia.org/wiki/Proleptic_Gregorian_calendar proleptic Gregorian calendar>.
+-- $proleptic
 --
--- ==== Examples
+-- Note that using the
+-- <https://en.wikipedia.org/wiki/Gregorian_calendar Gregorian> calendar for
+-- dates before its adoption (from 1582 onwards, but varies from one country
+-- to the next) produces
+-- <https://en.wikipedia.org/wiki/Gregorian_calendar#Proleptic_Gregorian_calendar a proleptic calendar>,
+-- which may cause some confusion.
+
+-- | The number of days in a given month in the
+-- <https://en.wikipedia.org/wiki/Gregorian_calendar Gregorian> calendar.
 --
 -- @
 -- > 'gregorianMonthLength' 2005 2
---   28
+-- 28
 -- @
 {-# INLINE gregorianMonthLength #-}
 gregorianMonthLength :: Year -> Month -> Days
 gregorianMonthLength = monthLength . isLeapYear
 
--- | Add months, with days past the last day of the month clipped to the last
--- day, according to the
--- <https://en.wikipedia.org/wiki/Proleptic_Gregorian_calendar proleptic Gregorian calendar>.
+-- | Add months, with days past the last day of the month clipped to the
+-- last day.
 --
 -- See also 'Data.Thyme.Time.Core.addGregorianMonthsClip'.
 --
--- ==== Examples
---
 -- @
--- > 'gregorianMonthsClip' 1 $ 'YearMonthDay' 2005 1 30
---   'YearMonthDay' {ymdYear = 2005, ymdMonth = 2, ymdDay = 28}
+-- > 'gregorianMonthsClip' 1 '$' 'YearMonthDay' 2005 1 30
+-- 'YearMonthDay' {'ymdYear' = 2005, 'ymdMonth' = 2, 'ymdDay' = 28}
 -- @
 {-# INLINEABLE gregorianMonthsClip #-}
 gregorianMonthsClip :: Months -> YearMonthDay -> YearMonthDay
@@ -107,17 +114,14 @@ gregorianMonthsClip n (YearMonthDay y m d) = YearMonthDay y' m'
         $ min (gregorianMonthLength y' m') d where
     ((+) y -> y', (+) 1 -> m') = divMod (m + n - 1) 12
 
--- | Add months, with days past the last day of the month rolling over to the
--- next month, according to the
--- <https://en.wikipedia.org/wiki/Proleptic_Gregorian_calendar proleptic Gregorian calendar>.
+-- | Add months, with days past the last day of the month rolling over to
+-- the next month.
 --
 -- See also 'Data.Thyme.Time.Core.addGregorianMonthsRollover'.
 --
--- ==== Examples
---
 -- @
 -- > 'gregorianMonthsRollover' 1 $ 'YearMonthDay' 2005 1 30
---   'YearMonthDay' {ymdYear = 2005, ymdMonth = 3, ymdDay = 2}
+-- 'YearMonthDay' {'ymdYear' = 2005, 'ymdMonth' = 3, 'ymdDay' = 2}
 -- @
 {-# ANN gregorianMonthsRollover "HLint: ignore Use if" #-}
 {-# INLINEABLE gregorianMonthsRollover #-}
@@ -131,17 +135,14 @@ gregorianMonthsRollover n (YearMonthDay y m d) = case d <= len of
     ((+) y -> y', (+) 1 -> m') = divMod (m + n - 1) 12
     len = gregorianMonthLength y' m'
 
--- | Add years, matching month and day, with /Feb 29th/ clipped to /Feb 28th/ if
--- necessary, according to the
--- <https://en.wikipedia.org/wiki/Proleptic_Gregorian_calendar proleptic Gregorian calendar>.
+-- | Add years, matching month and day, with /February 29th/ clipped to the
+-- /28th/ if necessary.
 --
 -- See also 'Data.Thyme.Time.Core.addGregorianYearsClip'.
 --
--- ==== Examples
---
 -- @
 -- > 'gregorianYearsClip' 2 $ 'YearMonthDay' 2004 2 29
---   'YearMonthDay' {ymdYear = 2006, ymdMonth = 2, ymdDay = 28}
+-- 'YearMonthDay' {'ymdYear' = 2006, 'ymdMonth' = 2, 'ymdDay' = 28}
 -- @
 {-# INLINEABLE gregorianYearsClip #-}
 gregorianYearsClip :: Years -> YearMonthDay -> YearMonthDay
@@ -149,17 +150,14 @@ gregorianYearsClip n (YearMonthDay ((+) n -> y') 2 29)
     | not (isLeapYear y') = YearMonthDay y' 2 28
 gregorianYearsClip n (YearMonthDay y m d) = YearMonthDay (y + n) m d
 
--- | Add years, matching month and day, with /Feb 29th/ rolled over to /Mar 1st/ if
--- necessary, according to the
--- <https://en.wikipedia.org/wiki/Proleptic_Gregorian_calendar proleptic Gregorian calendar>.
+-- | Add years, matching month and day, with /February 29th/ rolled over to
+-- /March 1st/ if necessary.
 --
 -- See also 'Data.Thyme.Time.Core.addGregorianYearsRollover'.
 --
--- ==== Examples
---
 -- @
 -- > 'gregorianYearsRollover' 2 $ 'YearMonthDay' 2004 2 29
---   'YearMonthDay' {ymdYear = 2006, ymdMonth = 3, ymdDay = 1}
+-- 'YearMonthDay' {'ymdYear' = 2006, 'ymdMonth' = 3, 'ymdDay' = 1}
 -- @
 {-# INLINEABLE gregorianYearsRollover #-}
 gregorianYearsRollover :: Years -> YearMonthDay -> YearMonthDay
