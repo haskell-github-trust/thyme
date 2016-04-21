@@ -210,7 +210,7 @@ class FormatTime t where
 --
 -- [@%w@] day of week number, @\"0\"@ (= Sunday) – @\"6\"@ (= Saturday)
 --
--- [@%W@] week of year where weeks start on Monday (as 'Data.Thyme.Calendar.WeekDayOfMonth.mondayStartWeek'), 0-padded to two chars, @\"00\"@–@\"53\"@
+-- [@%W@] week of year where weeks start on Monday (as 'Data.Thyme.Calendar.WeekdayOfMonth.mondayStartWeek'), 0-padded to two chars, @\"00\"@–@\"53\"@
 --
 -- == Examples
 --
@@ -218,7 +218,7 @@ class FormatTime t where
 -- @
 -- > import System.Locale
 --
--- > 'formatTime' 'defaultTimeLocale' "%Y-%m-%dT%H:%M:%S%N" $ 'Data.Thyme.Time.Core.mkUTCTime' ('Data.Thyme.Time.Core.fromGregorian' 2015 1 15) ('hhmmss' 12 34 56.78)
+-- > 'formatTime' 'defaultTimeLocale' "%Y-%m-%dT%H:%M:%S%N" $ 'mkUTCTime' 2015 1 15  12 34 56.78
 --   "2015-01-15T12:34:56+00:00"
 -- @
 --
@@ -226,7 +226,7 @@ class FormatTime t where
 -- @
 -- > import System.Locale
 --
--- > 'formatTime' 'defaultTimeLocale' "%a, %_d %b %Y %H:%M:%S %Z" $ 'Data.Thyme.Time.Core.mkUTCTime' ('Data.Thyme.Time.Core.fromGregorian' 2015 1 15) ('hhmmss' 12 34 56.78)
+-- > 'formatTime' 'defaultTimeLocale' "%a, %_d %b %Y %H:%M:%S %Z" $ 'mkUTCTime' 2015 1 15  12 34 56.78
 --   "Thu, 15 Jan 2015 12:34:56 UTC"
 -- @
 --
@@ -234,7 +234,7 @@ class FormatTime t where
 -- @
 -- > import System.Locale
 --
--- > 'formatTime' 'defaultTimeLocale' "%Y-%m-%d %H:%M:%S.%v" $ 'Data.Thyme.Time.Core.mkUTCTime' ('Data.Thyme.Time.Core.fromGregorian' 2015 1 15) ('hhmmss' 12 34 56.78)
+-- > 'formatTime' 'defaultTimeLocale' "%Y-%m-%d %H:%M:%S.%v" $ 'mkUTCTime' 2015 1 15  12 34 56.78
 --   "2015-01-15 12:34:56.780000"
 -- @
 {-# INLINEABLE formatTime #-}
