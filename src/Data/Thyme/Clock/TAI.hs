@@ -65,10 +65,10 @@ import Test.QuickCheck
 
 -- | <https://en.wikipedia.org/wiki/International_Atomic_Time Temps Atomique International>,
 -- defined as the number of elapsed SI seconds since the
--- <http://en.wikipedia.org/wiki/Julian_day#Variants Modified Julian Date epoch>,
+-- <http://en.wikipedia.org/wiki/Julian_day#Variants Modified Julian Date epoch>.
 --
 -- TAI was synchronized with 'UTCTime' at the beginning of 1958, and in the
--- intervening time have diverged due to leap second adjustments.
+-- intervening time they have diverged due to leap second adjustments.
 --
 -- Note that for most applications 'UTCTime' is preferred.
 newtype AbsoluteTime = AbsoluteTime DiffTime deriving (INSTANCES_MICRO)

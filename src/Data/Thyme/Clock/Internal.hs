@@ -267,7 +267,7 @@ instance TimeDiff DiffTime where
 --
 -- @
 -- > let t₀ = 'Data.Thyme.Time.Core.mkUTCTime' ('Data.Thyme.Time.Core.fromGregorian' 2016 1 15) ('hhmmss' 12 0 0)
--- > let t₁ = 'Data.Thyme.Time.Core.mkUTCTime' ('Data.Thyme.Time.Core.fromGregorian' 2016 1 15) ('hhmmss' 12 0 1)
+-- > let t₁ = 'Data.Thyme.Time.Core.mkUTCTime' ('Data.Thyme.Time.Core.fromGregorian' 2016 1 15) ('hhmmss' 12 1 0)
 -- > let δt = t₁ '.-.' t₀
 --
 -- > δt
@@ -327,7 +327,7 @@ posixDayLength = microseconds # 86400000000
 -- 'UniversalTime' is defined by the rotation of the Earth around its axis
 -- relative to the Sun. The length of each UT1 day varies and is never
 -- exactly 86400 SI seconds, unlike
--- 'UTCTime' or 'AbsoluteTime'.
+-- 'UTCTime' or 'Data.Thyme.Clock.TAI.AbsoluteTime'.
 --
 -- The difference between UT1 and UTC is
 -- <http://en.wikipedia.org/wiki/DUT1 DUT1>.
@@ -348,9 +348,9 @@ modJulianDate = iso
 
 -- | <http://en.wikipedia.org/wiki/Coordinated_Universal_Time Coördinated universal time>:
 -- the most common form of universal time for civil timekeeping. It is
--- synchronised with 'AbsoluteTime' and both tick in increments of SI
--- seconds, but UTC includes occasional leap-seconds so that it does not
--- drift too far from 'UniversalTime'.
+-- synchronised with 'Data.Thyme.Clock.TAI.AbsoluteTime' and both tick in
+-- increments of SI seconds, but UTC includes occasional leap-seconds so that
+-- it does not drift too far from 'UniversalTime'.
 --
 -- 'UTCTime' is an instance of 'AffineSpace', with
 --
