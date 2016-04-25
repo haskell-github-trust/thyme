@@ -18,7 +18,10 @@
 {-|
 Time Zones.
 -}
-module Data.Thyme.LocalTime where
+module Data.Thyme.LocalTime
+    ( Hour, Minute
+    , module Data.Thyme.LocalTime
+    ) where
 
 import Prelude hiding ((.))
 #if !MIN_VERSION_base(4,8,0)
@@ -51,10 +54,10 @@ import GHC.Generics (Generic)
 import System.Random
 import Test.QuickCheck hiding ((.&.))
 
--- | Minutes duration.
-type Minutes = Int
 -- | Hours duration.
 type Hours = Int
+-- | Minutes duration.
+type Minutes = Int
 
 ------------------------------------------------------------------------
 -- * Time zones
@@ -181,12 +184,6 @@ getCurrentTimeZone = getCurrentTime >>= getTimeZone
 ------------------------------------------------------------------------
 -- * Time of day
 
--- | Hour time-of-day.
-type Hour = Int
-
--- | Minute time-of-day.
-type Minute = Int
-
 -- | Time of day in hour, minute, second.
 data TimeOfDay = TimeOfDay
     { todHour :: {-# UNPACK #-}!Hour
@@ -265,8 +262,6 @@ midday = TimeOfDay 12 0 zeroV
 -- * /0 ≤ hour ≤ 23/
 -- * /0 ≤ minute ≤ 59/
 -- * /0 ≤ second < 'minuteLength' hour minute/
---
--- See also 'hhmmss'.
 {-# INLINE makeTimeOfDayValid #-}
 makeTimeOfDayValid :: Hour -> Minute -> DiffTime -> Maybe TimeOfDay
 makeTimeOfDayValid h m s = TimeOfDay h m s
@@ -274,8 +269,6 @@ makeTimeOfDayValid h m s = TimeOfDay h m s
     <* guard (zeroV <= s && s < minuteLength h m)
 
 -- | "Control.Lens.Iso" between 'DiffTime' and 'TimeOfDay'.
---
--- See also 'hhmmss'.
 --
 -- ==== Examples
 --

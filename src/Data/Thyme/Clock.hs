@@ -28,6 +28,7 @@ module Data.Thyme.Clock (
 #if __GLASGOW_HASKELL__ >= 708
     , pattern UTCTime
 #endif
+    , mkUTCTime
     , utctDay, utctDayTime
     , UTCView (..)
     , utcTime
@@ -41,7 +42,6 @@ module Data.Thyme.Clock (
     , TimeDiff (..)
     , toSeconds, fromSeconds
     , toSeconds', fromSeconds'
-    , hhmmss
 
     -- * Universal Time
     , UniversalTime

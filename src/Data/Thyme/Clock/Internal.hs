@@ -47,6 +47,11 @@ import Text.ParserCombinators.ReadP (char)
 import Text.Read (readPrec)
 #endif
 
+-- | Hour time-of-day.
+type Hour = Int
+-- | Minute time-of-day.
+type Minute = Int
+
 -- | Time intervals, encompassing both 'DiffTime' and 'NominalDiffTime'.
 --
 -- ==== Issues
@@ -103,50 +108,6 @@ fromSeconds' = (*^ basisValue ())
 picoseconds :: (TimeDiff t) => Iso' t Integer
 picoseconds = microseconds . iso ((*) 1000000 . toInteger)
     (\ ps -> fromInteger $ quot (ps + signum ps * 500000) 1000000)
-
--- | Construct a 'DiffTime' or 'NominalDiffTime' from hour, minute, second.
---
--- To get a 'Data.Thyme.LocalTime.TimeOfDay' back from a 'DiffTime',
--- use @'view' 'Data.Thyme.LocalTime.timeOfDay'@.
---
--- See also 'Data.Thyme.LocalTime.makeTimeOfDayValid'.
---
--- ==== Examples
---
--- @
--- > 'hhmmss' 12 34 56.78 :: 'DiffTime'
---   45296.78s
--- @
---
--- @
--- > 'hhmmss' 12 34 56.78 '^.' 'Data.Thyme.LocalTime.timeOfDay'
---   12:34:56.78
--- @
---
--- @
--- > 'hhmmss' 1 (-60) 0 :: 'DiffTime'
---   0s
--- @
-{-# INLINE hhmmss #-}
-hhmmss :: (TimeDiff t)
--- TODO should this be hhmmss :: Iso' TimeDiff (Hour, Minute, Second) ?
---      Maybe not because then there'd be too much syntactic noise
---      like (hhmmss # (1, 2, 3))
-    => Int
-        -- ^ Hour.
-    -> Int
-        -- ^ Minute. Constraint /0 ≤ minute ≤ 59/ is not checked.
-    -> t
-        -- ^ Second. Constraint /0 ≤ second < 60/ is not checked.
-        --
-        -- See 'fromSeconds'.
-    -> t
-hhmmss hh mm ss =
-    -- We don't use the timeOfDay iso because we want this to work for
-    -- NominalDiffTime also.
-    review microseconds $ view microseconds ss
-                            + (fromIntegral mm * 60000000)
-                            + (fromIntegral hh * 3600000000)
 
 ------------------------------------------------------------------------
 -- not for public consumption
@@ -490,4 +451,17 @@ pattern UTCTime d t <- (view utcTime -> UTCView d t) where
 #elif __GLASGOW_HASKELL__ >= 708
 pattern UTCTime d t <- (view utcTime -> UTCView d t)
 #endif
+
+-- | Construct a 'UTCTime' from a 'gregorian' date and time-of-day.
+--
+-- @
+-- 'mkUTCTime' yy mm dd h m s ≡ 'utcTime' 'Control.Lens.#' 'UTCView'
+--     ('gregorian' 'Control.Lens.#' 'YearMonthDay' yy mm dd)
+--     ('timeOfDay' 'Control.Lens.#' 'TimeOfDay' h m ('fromSeconds' s))
+-- @
+{-# INLINE mkUTCTime #-}
+mkUTCTime :: Year -> Month -> DayOfMonth -> Hour -> Minute -> Double -> UTCTime
+mkUTCTime yy mm dd h m s = utcTime # UTCView
+    (gregorian # YearMonthDay yy mm dd)
+    (fromSeconds (3600 * h + 60 * m) ^+^ fromSeconds s)
 

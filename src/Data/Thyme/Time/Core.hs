@@ -489,18 +489,6 @@ secondsToDiffTime = fromSeconds
 picosecondsToDiffTime :: Int64 -> DiffTime
 picosecondsToDiffTime a = microseconds # quot (a + signum a * 500000) 1000000
 
--- | Constructor for 'UTCTime'.
---
--- @
--- 'mkUTCTime' d t = 'utcTime' 'Control.Lens.#' 'UTCView' d t
--- @
---
--- For GHC 7.8 or later, there is also the pattern synonym
--- @<Data-Thyme-Clock.html#v:UTCTime UTCTime>@.
-{-# INLINE mkUTCTime #-}
-mkUTCTime :: Day -> DiffTime -> UTCTime
-mkUTCTime d t = utcTime # UTCView d t
-
 -- | Decompose a 'UTCTime' into a 'UTCView'.
 --
 -- @
