@@ -2,32 +2,8 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
--- | This module provides compatibility instances and wrappers for the
--- things that @thyme@ does differently from @time@, and allows it to be
--- used as a drop-in replacement for the latter, with the exceptions noted
--- below:
---
---   * When constructing an 'UTCTime' or 'UniversalTime', use 'mkUTCTime' or
---   'mkModJulianDate' in place of @UTCTime@ or @ModJulianDate@.
---
---   * Instead of pattern matching on @UTCTime@, use 'unUTCTime' to get
---   a 'UTCView', which has a constructor @UTCTime@ with the same fields.
---   For @ModJulianDate@, use 'getModJulianDate'. @ViewPatterns@ may make
---   the transition more seamless.
---
---   * Where a third party library uses @time@, you can use 'toThyme' and
---   'fromThyme' to convert between the corresponding types.
---
---   * 'Year's are 'Int's, not 'Integer's: you may need 'fromIntegral'.
---
--- You shouldn't need to use @lens@ or @vector-space@ directly if you don't
--- want to. However if you do use @vector-space@ and wish to avoid the
--- 'RealFrac' instances for 'DiffTime' and 'NominalDiffTime', import
--- "Data.Thyme.Time.Core" instead.
---
--- Anything else is probably not intentional, and you should either contact
--- me via IRC or file an issue at <https://github.com/liyang/thyme/issues>.
-
+-- | This module provides 'Num', 'Real', 'Fractional', and 'RealFrac'
+-- instances for 'DiffTime' and 'NominalDiffTime'.
 module Data.Thyme.Time
     ( module Data.Thyme.Time.Core
     {- instance RealFrac {,Nominal}DiffTime -}
