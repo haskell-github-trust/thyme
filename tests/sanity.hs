@@ -12,6 +12,7 @@ import Control.Lens
 import qualified Data.Attoparsec.ByteString.Char8 as P
 import Data.ByteString (ByteString)
 import Data.Thyme
+import Data.Thyme.Calendar.OrdinalDate
 import Data.Thyme.Time
 import qualified Data.Time as T
 import qualified Data.Time.Calendar.OrdinalDate as T

@@ -10,6 +10,10 @@ module Data.Thyme.Clock.POSIX
     , POSIXTime
     , posixTime
     , getPOSIXTime
+
+    -- * Compatibility
+    , posixSecondsToUTCTime
+    , utcTimeToPOSIXSeconds
     ) where
 
 import Prelude
@@ -80,4 +84,25 @@ foreign import ccall unsafe "time.h gettimeofday"
     gettimeofday :: Ptr () -> Ptr () -> IO CInt
 
 #endif
+
+------------------------------------------------------------------------
+
+-- | Construct a 'UTCTime' from a 'POSIXTime'.
+--
+-- @
+-- 'posixSecondsToUTCTime' = 'review' 'posixTime'
+-- 'posixSecondsToUTCTime' t ≡ 'posixTime' 'Control.Lens.#' t
+-- @
+{-# INLINE posixSecondsToUTCTime #-}
+posixSecondsToUTCTime :: POSIXTime -> UTCTime
+posixSecondsToUTCTime = review posixTime
+
+-- | Convert a 'UTCTime' to a 'POSIXTime'.
+--
+-- @
+-- 'utcTimeToPOSIXSeconds' = 'view' 'posixTime'
+-- @
+{-# INLINE utcTimeToPOSIXSeconds #-}
+utcTimeToPOSIXSeconds :: UTCTime -> POSIXTime
+utcTimeToPOSIXSeconds = view posixTime
 

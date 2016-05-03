@@ -1,5 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 #if __GLASGOW_HASKELL__ == 706
 {-# OPTIONS_GHC -fsimpl-tick-factor=120 #-} -- 7.6.3 only, it seems; fixes #29
@@ -80,6 +81,39 @@ instance CoArbitrary SundayWeek where
 instance CoArbitrary MondayWeek where
     coarbitrary (MondayWeek y w d)
         = coarbitrary y . coarbitrary w . coarbitrary d
+
+-- * Compatibility
+
+-- | Converts a 'Day' to an <https://en.wikipedia.org/wiki/ISO_week_date ISO week date>.
+--
+-- @
+-- 'toWeekDate' ('view' 'weekDate' -> 'WeekDate' y w d) = (y, w, d)
+-- @
+{-# INLINE toWeekDate #-}
+toWeekDate :: Day -> (Year, WeekOfYear, DayOfWeek)
+toWeekDate (view weekDate -> WeekDate y w d) = (y, w, d)
+
+-- | Converts an <https://en.wikipedia.org/wiki/ISO_week_date ISO week date>
+-- to a 'Day'.
+-- Does not validate the input.
+--
+-- @
+-- 'fromWeekDate' y w d = 'weekDate' 'Control.Lens.#' 'WeekDate' y w d
+-- @
+{-# INLINE fromWeekDate #-}
+fromWeekDate :: Year -> WeekOfYear -> DayOfWeek -> Day
+fromWeekDate y w d = weekDate # WeekDate y w d
+
+-- | Converts an <https://en.wikipedia.org/wiki/ISO_week_date ISO week date>
+-- to a 'Day'.
+-- Returns 'Nothing' for invalid input.
+--
+-- @
+-- 'fromWeekDateValid' y w d = 'weekDateValid' ('WeekDate' y w d)
+-- @
+{-# INLINE fromWeekDateValid #-}
+fromWeekDateValid :: Year -> WeekOfYear -> DayOfWeek -> Maybe Day
+fromWeekDateValid y w d = weekDateValid (WeekDate y w d)
 
 -- * Lenses
 

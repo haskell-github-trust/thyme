@@ -38,6 +38,7 @@ import Control.Category
 import Control.Lens
 import Control.Monad
 import Data.AdditiveGroup
+import Data.AffineSpace
 import Data.Thyme.Calendar.Internal
 import Data.Thyme.Clock.Internal
 import System.Random
@@ -102,7 +103,7 @@ gregorianMonthLength = monthLength . isLeapYear
 -- | Add months, with days past the last day of the month clipped to the
 -- last day.
 --
--- See also 'Data.Thyme.Time.Core.addGregorianMonthsClip'.
+-- See also 'addGregorianMonthsClip'.
 --
 -- @
 -- > 'gregorianMonthsClip' 1 '$' 'YearMonthDay' 2005 1 30
@@ -117,7 +118,7 @@ gregorianMonthsClip n (YearMonthDay y m d) = YearMonthDay y' m'
 -- | Add months, with days past the last day of the month rolling over to
 -- the next month.
 --
--- See also 'Data.Thyme.Time.Core.addGregorianMonthsRollover'.
+-- See also 'addGregorianMonthsRollover'.
 --
 -- @
 -- > 'gregorianMonthsRollover' 1 $ 'YearMonthDay' 2005 1 30
@@ -138,7 +139,7 @@ gregorianMonthsRollover n (YearMonthDay y m d) = case d <= len of
 -- | Add years, matching month and day, with /February 29th/ clipped to the
 -- /28th/ if necessary.
 --
--- See also 'Data.Thyme.Time.Core.addGregorianYearsClip'.
+-- See also 'addGregorianYearsClip'.
 --
 -- @
 -- > 'gregorianYearsClip' 2 $ 'YearMonthDay' 2004 2 29
@@ -153,7 +154,7 @@ gregorianYearsClip n (YearMonthDay y m d) = YearMonthDay (y + n) m d
 -- | Add years, matching month and day, with /February 29th/ rolled over to
 -- /March 1st/ if necessary.
 --
--- See also 'Data.Thyme.Time.Core.addGregorianYearsRollover'.
+-- See also 'addGregorianYearsRollover'.
 --
 -- @
 -- > 'gregorianYearsRollover' 2 $ 'YearMonthDay' 2004 2 29
@@ -164,6 +165,103 @@ gregorianYearsRollover :: Years -> YearMonthDay -> YearMonthDay
 gregorianYearsRollover n (YearMonthDay ((+) n -> y') 2 29)
     | not (isLeapYear y') = YearMonthDay y' 3 1
 gregorianYearsRollover n (YearMonthDay y m d) = YearMonthDay (y + n) m d
+
+-- * Compatibility
+
+-- | Add some 'Days' to a calendar 'Day' to get a new 'Day'.
+--
+-- @
+-- 'addDays' = 'flip' ('.+^')
+-- 'addDays' n d ≡ d '.+^' n
+-- @
+--
+-- See also the 'AffineSpace' instance for 'Day'.
+{-# INLINE addDays #-}
+addDays :: Days -> Day -> Day
+addDays = flip (.+^)
+
+-- | Subtract two calendar 'Day's for the difference in 'Days'.
+--
+-- @
+-- 'diffDays' = ('.-.')
+-- 'diffDays' a b = a '.-.' b
+-- @
+--
+-- See also the 'AffineSpace' instance for 'Day'.
+{-# INLINE diffDays #-}
+diffDays :: Day -> Day -> Days
+diffDays = (.-.)
+
+-- | Convert a 'Day' to its Gregorian 'Year', 'Month', and 'DayOfMonth'.
+--
+-- @
+-- 'toGregorian' ('view' 'gregorian' -> 'YearMonthDay' y m d) = (y, m, d)
+-- @
+{-# INLINE toGregorian #-}
+toGregorian :: Day -> (Year, Month, DayOfMonth)
+toGregorian (view gregorian -> YearMonthDay y m d) = (y, m, d)
+
+-- | Construct a 'Day' from a Gregorian calendar date.
+-- Does not validate the input.
+--
+-- @
+-- 'fromGregorian' y m d = 'gregorian' 'Control.Lens.#' 'YearMonthDay' y m d
+-- @
+{-# INLINE fromGregorian #-}
+fromGregorian :: Year -> Month -> DayOfMonth -> Day
+fromGregorian y m d = gregorian # YearMonthDay y m d
+
+-- | Construct a 'Day' from a Gregorian calendar date.
+-- Returns 'Nothing' for invalid input.
+--
+-- @
+-- 'fromGregorianValid' y m d = 'gregorianValid' ('YearMonthDay' y m d)
+-- @
+{-# INLINE fromGregorianValid #-}
+fromGregorianValid :: Year -> Month -> DayOfMonth -> Maybe Day
+fromGregorianValid y m d = gregorianValid (YearMonthDay y m d)
+
+-- | Add some number of 'Months' to the given 'Day'; if the original
+-- 'DayOfMonth' exceeds that of the new 'Month', it will be clipped to the
+-- last day of the new 'Month'.
+--
+-- @
+-- 'addGregorianMonthsClip' n = 'gregorian' '%~' 'gregorianMonthsClip' n
+-- @
+{-# INLINE addGregorianMonthsClip #-}
+addGregorianMonthsClip :: Months -> Day -> Day
+addGregorianMonthsClip n = gregorian %~ gregorianMonthsClip n
+
+-- | Add some number of 'Months' to the given 'Day'; if the original
+-- 'DayOfMonth' exceeds that of the new 'Month', it will be rolled over into
+-- the following 'Month'.
+--
+-- @
+-- 'addGregorianMonthsRollover' n = 'gregorian' '%~' 'gregorianMonthsRollover' n
+-- @
+{-# INLINE addGregorianMonthsRollover #-}
+addGregorianMonthsRollover :: Months -> Day -> Day
+addGregorianMonthsRollover n = gregorian %~ gregorianMonthsRollover n
+
+-- | Add some number of 'Years' to the given 'Day', with /February 29th/
+-- clipped to /February 28th/ if necessary.
+--
+-- @
+-- 'addGregorianYearsClip' n = 'gregorian' '%~' 'gregorianYearsClip' n
+-- @
+{-# INLINE addGregorianYearsClip #-}
+addGregorianYearsClip :: Years -> Day -> Day
+addGregorianYearsClip n = gregorian %~ gregorianYearsClip n
+
+-- | Add some number of 'Years' to the given 'Day', with /February 29th/
+-- rolled over to /March 1st/ if necessary.
+--
+-- @
+-- 'addGregorianYearsRollover' n = 'gregorian' '%~' 'gregorianYearsRollover' n
+-- @
+{-# INLINE addGregorianYearsRollover #-}
+addGregorianYearsRollover :: Years -> Day -> Day
+addGregorianYearsRollover n = gregorian %~ gregorianYearsRollover n
 
 -- * Lenses
 

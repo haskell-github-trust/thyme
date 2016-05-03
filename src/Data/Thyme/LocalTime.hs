@@ -537,6 +537,124 @@ utcToLocalZonedTime time = do
     tz <- getTimeZone time
     return $ (tz, time) ^. zonedTime
 
+-- * Compatibility
+
+-- | Convert a UTC 'TimeOfDay' to a 'TimeOfDay' in some timezone, together
+-- with a day adjustment.
+--
+-- @
+-- 'utcToLocalTimeOfDay' = 'addMinutes' '.' 'timeZoneMinutes'
+-- @
+{-# INLINE utcToLocalTimeOfDay #-}
+utcToLocalTimeOfDay :: TimeZone -> TimeOfDay -> (Days, TimeOfDay)
+utcToLocalTimeOfDay = addMinutes . timeZoneMinutes
+
+-- | Convert a 'TimeOfDay' in some timezone to a UTC 'TimeOfDay', together
+-- with a day adjustment.
+--
+-- @
+-- 'localToUTCTimeOfDay' = 'addMinutes' '.' 'negate' '.' 'timeZoneMinutes'
+-- @
+{-# INLINE localToUTCTimeOfDay #-}
+localToUTCTimeOfDay :: TimeZone -> TimeOfDay -> (Days, TimeOfDay)
+localToUTCTimeOfDay = addMinutes . negate . timeZoneMinutes
+
+-- | Convert a 'DiffTime' of the duration since midnight to a 'TimeOfDay'.
+-- Durations exceeding 24 hours will be treated as leap-seconds.
+--
+-- @
+-- 'timeToTimeOfDay' = 'view' 'timeOfDay'
+-- 'timeToTimeOfDay' d ≡ d '^.' 'timeOfDay'
+-- @
+{-# INLINE timeToTimeOfDay #-}
+timeToTimeOfDay :: DiffTime -> TimeOfDay
+timeToTimeOfDay = view timeOfDay
+
+-- | Convert a 'TimeOfDay' to a 'DiffTime' of the duration since midnight.
+-- 'TimeOfDay' greater than 24 hours will be treated as leap-seconds.
+--
+-- @
+-- 'timeOfDayToTime' = 'review' 'timeOfDay'
+-- 'timeOfDayToTime' tod ≡ 'timeOfDay' 'Control.Lens.#' tod
+-- @
+{-# INLINE timeOfDayToTime #-}
+timeOfDayToTime :: TimeOfDay -> DiffTime
+timeOfDayToTime = review timeOfDay
+
+-- | Convert a fraction of a day since midnight to a 'TimeOfDay'.
+--
+-- @
+-- 'dayFractionToTimeOfDay' = 'review' 'dayFraction'
+-- @
+{-# INLINE dayFractionToTimeOfDay #-}
+dayFractionToTimeOfDay :: Rational -> TimeOfDay
+dayFractionToTimeOfDay = review dayFraction
+
+-- | Convert a 'TimeOfDay' to a fraction of a day since midnight.
+--
+-- @
+-- 'timeOfDayToDayFraction' = 'view' 'dayFraction'
+-- @
+{-# INLINE timeOfDayToDayFraction #-}
+timeOfDayToDayFraction :: TimeOfDay -> Rational
+timeOfDayToDayFraction = view dayFraction
+
+-- | Convert a 'UTCTime' to a 'LocalTime' in the given 'TimeZone'.
+--
+-- @
+-- 'utcToLocalTime' = 'view' '.' 'utcLocalTime'
+-- @
+{-# INLINE utcToLocalTime #-}
+utcToLocalTime :: TimeZone -> UTCTime -> LocalTime
+utcToLocalTime = view . utcLocalTime
+
+-- | Convert a 'LocalTime' in the given 'TimeZone' to a 'UTCTime'.
+--
+-- @
+-- 'localTimeToUTC' = 'review' '.' 'utcLocalTime'
+-- @
+{-# INLINE localTimeToUTC #-}
+localTimeToUTC :: TimeZone -> LocalTime -> UTCTime
+localTimeToUTC = review . utcLocalTime
+
+-- | Convert a 'UniversalTime' to a 'LocalTime' at the given medidian in
+-- degrees East.
+--
+-- @
+-- 'ut1ToLocalTime' = 'view' '.' 'ut1LocalTime'
+-- @
+{-# INLINE ut1ToLocalTime #-}
+ut1ToLocalTime :: Rational -> UniversalTime -> LocalTime
+ut1ToLocalTime = view . ut1LocalTime
+
+-- | Convert a 'LocalTime' at the given meridian in degrees East to
+-- a 'UniversalTime'.
+--
+-- @
+-- 'localTimeToUT1' = 'review' '.' 'ut1LocalTime'
+-- @
+{-# INLINE localTimeToUT1 #-}
+localTimeToUT1 :: Rational -> LocalTime -> UniversalTime
+localTimeToUT1 = review . ut1LocalTime
+
+-- | Convert a 'UTCTime' and the given 'TimeZone' into a 'ZonedTime'.
+--
+-- @
+-- 'utcToZonedTime' z t = 'view' 'zonedTime' (z, t)
+-- @
+{-# INLINE utcToZonedTime #-}
+utcToZonedTime :: TimeZone -> UTCTime -> ZonedTime
+utcToZonedTime z t = view zonedTime (z, t)
+
+-- | Converts a 'ZonedTime' to a 'UTCTime'.
+--
+-- @
+-- 'zonedTimeToUTC' = 'snd' '.' 'review' 'zonedTime'
+-- @
+{-# INLINE zonedTimeToUTC #-}
+zonedTimeToUTC :: ZonedTime -> UTCTime
+zonedTimeToUTC = snd . review zonedTime
+
 -- * Lenses
 
 LENS(TimeZone,timeZoneMinutes,Minutes)

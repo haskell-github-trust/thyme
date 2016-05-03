@@ -29,6 +29,12 @@ module Data.Thyme.Clock.TAI
     , parseTAIUTCRow
     , makeTAIUTCMap
     , parseTAIUTCDAT
+
+    -- * Compatibility
+    , addAbsoluteTime
+    , diffAbsoluteTime
+    , utcToTAITime
+    , taiToUTCTime
     ) where
 
 import Prelude
@@ -304,4 +310,48 @@ makeTAIUTCMap rows = TAIUTCMap (Map.fromList rows)
 parseTAIUTCDAT :: S.ByteString -> Either String TAIUTCMap
 parseTAIUTCDAT = P.parseOnly $ makeTAIUTCMap <$> P.manyTill
     (parseTAIUTCRow <* P.endOfLine) P.endOfInput
+
+------------------------------------------------------------------------
+
+-- | Add a duration to an 'AbsoluteTime'.
+--
+-- @
+-- 'addAbsoluteTime' = 'flip' ('.+^')
+-- 'addAbsoluteTime' d t ≡ t '.+^' d
+-- @
+--
+-- See also the 'AffineSpace' instance for 'AbsoluteTime'.
+{-# INLINE addAbsoluteTime #-}
+addAbsoluteTime :: DiffTime -> AbsoluteTime -> AbsoluteTime
+addAbsoluteTime = flip (.+^)
+
+-- | The duration difference between two 'AbsoluteTime's.
+--
+-- @
+-- 'diffAbsoluteTime' = ('.-.')
+-- 'diffAbsoluteTime' a b ≡ a '.-.' b
+-- @
+--
+-- See also the 'AffineSpace' instance for 'AbsoluteTime'.
+{-# INLINE diffAbsoluteTime #-}
+diffAbsoluteTime :: AbsoluteTime -> AbsoluteTime -> DiffTime
+diffAbsoluteTime = (.-.)
+
+-- | Using a 'TAIUTCMap', convert a 'UTCTime' to 'AbsoluteTime'.
+--
+-- @
+-- 'utcToTAITime' = 'view' '.' 'absoluteTime'
+-- @
+{-# INLINE utcToTAITime #-}
+utcToTAITime :: TAIUTCMap -> UTCTime -> AbsoluteTime
+utcToTAITime = view . absoluteTime
+
+-- | Using a 'TAIUTCMap', convert a 'AbsoluteTime' to 'UTCTime'.
+--
+-- @
+-- 'taiToUTCTime' = 'review' '.' 'absoluteTime'
+-- @
+{-# INLINE taiToUTCTime #-}
+taiToUTCTime :: TAIUTCMap -> AbsoluteTime -> UTCTime
+taiToUTCTime = review . absoluteTime
 

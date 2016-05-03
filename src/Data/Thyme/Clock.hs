@@ -31,7 +31,7 @@ module Data.Thyme.Clock (
     , UTCView (..)
     , utcTime
     , NominalDiffTime
-    , module Data.Thyme.Clock
+    , getCurrentTime
 
     -- * Absolute intervals
     , DiffTime
@@ -45,6 +45,17 @@ module Data.Thyme.Clock (
     , UniversalTime
     , modJulianDate
 
+    -- * Compatibility
+    , getModJulianDate
+    , mkModJulianDate
+    , secondsToDiffTime
+    , picosecondsToDiffTime
+    , unUTCTime
+    , addUTCTime
+    , diffUTCTime
+    , toMicroseconds
+    , fromMicroseconds
+
     -- * Lenses
     , _utcvDay, _utcvDayTime
     , _utctDay, _utctDayTime
@@ -52,6 +63,8 @@ module Data.Thyme.Clock (
 
 import Prelude
 import Control.Lens
+import Data.AffineSpace
+import Data.Int
 import Data.Thyme.Clock.Internal
 import Data.Thyme.Clock.POSIX
 
@@ -65,4 +78,108 @@ import Data.Thyme.Clock.POSIX
 -- See also: 'Data.Thyme.LocalTime.getZonedTime', 'getPOSIXTime'.
 getCurrentTime :: IO UTCTime
 getCurrentTime = fmap (review posixTime) getPOSIXTime
+
+------------------------------------------------------------------------
+
+-- | Convert a 'UniversalTime' to the fractional number of days since the
+-- <http://en.wikipedia.org/wiki/Julian_day#Variants Modified Julian Date epoch>.
+--
+-- @
+-- 'getModJulianDate' = 'view' 'modJulianDate'
+-- @
+{-# INLINE getModJulianDate #-}
+getModJulianDate :: UniversalTime -> Rational
+getModJulianDate = view modJulianDate
+
+-- | Construct a 'UniversalTime' from the fractional number of days since the
+-- <http://en.wikipedia.org/wiki/Julian_day#Variants Modified Julian Date epoch>.
+--
+-- @
+-- 'mkModJulianDate' = 'review' 'modJulianDate'
+-- @
+{-# INLINE mkModJulianDate #-}
+mkModJulianDate :: Rational -> UniversalTime
+mkModJulianDate = review modJulianDate
+
+-- | Construct a 'DiffTime' from some number of seconds.
+--
+-- This is just 'fromSeconds' with a more constrained type.
+--
+-- @
+-- 'secondsToDiffTime' = 'fromSeconds'
+-- @
+{-# INLINE secondsToDiffTime #-}
+secondsToDiffTime :: Int64 -> DiffTime
+secondsToDiffTime = fromSeconds
+
+-- | Construct a 'DiffTime' from some number of picoseconds.
+-- The input will be rounded to the nearest microsecond.
+--
+-- @
+-- 'picosecondsToDiffTime' a = 'microseconds' 'Control.Lens.#' 'quot' (a '+' 'signum' a '*' 500000) 1000000
+-- @
+{-# INLINE picosecondsToDiffTime #-}
+picosecondsToDiffTime :: Int64 -> DiffTime
+picosecondsToDiffTime a = microseconds # quot (a + signum a * 500000) 1000000
+
+-- | Decompose a 'UTCTime' into a 'UTCView'.
+--
+-- @
+-- 'unUTCTime' = 'view' 'utcTime'
+-- @
+--
+-- For GHC 7.8 or later, there is also the pattern synonym
+-- @<Data-Thyme-Clock.html#v:UTCTime UTCTime>@.
+{-# INLINE unUTCTime #-}
+unUTCTime :: UTCTime -> UTCView
+unUTCTime = view utcTime
+
+-- | Add a duration to a point in time.
+--
+-- @
+-- 'addUTCTime' = 'flip' ('.+^')
+-- 'addUTCTime' d t ≡ t '.+^' d
+-- @
+--
+-- See also the 'AffineSpace' instance for 'UTCTime'.
+{-# INLINE addUTCTime #-}
+addUTCTime :: NominalDiffTime -> UTCTime -> UTCTime
+addUTCTime = flip (.+^)
+
+-- | The duration difference between two time points.
+--
+-- @
+-- 'diffUTCTime' = ('.-.')
+-- 'diffUTCTime' a b = a '.-.' b
+-- @
+--
+-- See also the 'AffineSpace' instance for 'UTCTime'.
+{-# INLINE diffUTCTime #-}
+diffUTCTime :: UTCTime -> UTCTime -> NominalDiffTime
+diffUTCTime = (.-.)
+
+-- | The number of microseconds in a 'DiffTime' or 'NominalDiffTime'.
+--
+-- @
+-- 'toMicroseconds' :: 'DiffTime' -> 'Int64'
+-- 'toMicroseconds' :: 'NominalDiffTime' -> 'Int64'
+-- 'toMicroseconds' = 'view' 'microseconds'
+-- 'toMicroseconds' d ≡ d '^.' 'microseconds'
+-- @
+{-# INLINE toMicroseconds #-}
+toMicroseconds :: (TimeDiff t) => t -> Int64
+toMicroseconds = view microseconds
+
+-- | Construct a 'DiffTime' or 'NominalDiffTime' from a number of
+-- microseconds.
+--
+-- @
+-- 'fromMicroseconds' :: 'Int64' -> 'DiffTime'
+-- 'fromMicroseconds' :: 'Int64' -> 'NominalDiffTime'
+-- 'fromMicroseconds' = 'review' 'microseconds'
+-- 'fromMicroseconds' n ≡ 'microseconds' 'Control.Lens.#' n
+-- @
+{-# INLINE fromMicroseconds #-}
+fromMicroseconds :: (TimeDiff t) => Int64 -> t
+fromMicroseconds = review microseconds
 
