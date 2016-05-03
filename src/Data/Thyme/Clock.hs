@@ -40,6 +40,7 @@ module Data.Thyme.Clock (
     , TimeDiff (..)
     , toSeconds, fromSeconds
     , toSeconds', fromSeconds'
+    , picoseconds
 
     -- * Universal Time
     , UniversalTime
@@ -65,6 +66,7 @@ import Prelude
 import Control.Lens
 import Data.AffineSpace
 import Data.Int
+import Data.Ratio ((%))
 import Data.Thyme.Clock.Internal
 import Data.Thyme.Clock.POSIX
 
@@ -78,6 +80,13 @@ import Data.Thyme.Clock.POSIX
 -- See also: 'Data.Thyme.LocalTime.getZonedTime', 'getPOSIXTime'.
 getCurrentTime :: IO UTCTime
 getCurrentTime = fmap (review posixTime) getPOSIXTime
+
+-- | Conversion between 'TimeDiff' and picoseconds. In the reverse
+-- direction, picoseconds are 'round'ed to the nearest microsecond.
+{-# INLINE picoseconds #-}
+picoseconds :: (TimeDiff t) => Iso' t Integer
+picoseconds = microseconds . iso
+    ((*) 1000000 . toInteger) (\ ps -> round (ps % 1000000))
 
 ------------------------------------------------------------------------
 
@@ -119,8 +128,8 @@ secondsToDiffTime = fromSeconds
 -- 'picosecondsToDiffTime' a = 'microseconds' 'Control.Lens.#' 'quot' (a '+' 'signum' a '*' 500000) 1000000
 -- @
 {-# INLINE picosecondsToDiffTime #-}
-picosecondsToDiffTime :: Int64 -> DiffTime
-picosecondsToDiffTime a = microseconds # quot (a + signum a * 500000) 1000000
+picosecondsToDiffTime :: Integer -> DiffTime
+picosecondsToDiffTime = review picoseconds
 
 -- | Decompose a 'UTCTime' into a 'UTCView'.
 --

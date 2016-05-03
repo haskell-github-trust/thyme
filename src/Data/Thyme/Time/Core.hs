@@ -29,7 +29,6 @@ import Data.AffineSpace
 import Data.Fixed
 import Data.Ratio
 import Data.Thyme
-import Data.Thyme.Clock.Internal
 import Data.Thyme.Clock.TAI
 import qualified Data.Time.Calendar as T
 import qualified Data.Time.Clock as T
