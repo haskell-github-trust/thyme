@@ -252,6 +252,14 @@ modJulianDate = iso
     (\ (UniversalRep t) -> toSeconds t / toSeconds posixDayLength)
     (UniversalRep . (*^ posixDayLength))
 
+#if __GLASGOW_HASKELL__ >= 710
+pattern UniversalTime :: Rational -> UniversalTime
+pattern UniversalTime mjd <- (view modJulianDate -> mjd) where
+    UniversalTime mjd = modJulianDate # mjd
+#elif __GLASGOW_HASKELL__ >= 708
+pattern UniversalTime mjd <- (view modJulianDate -> mjd)
+#endif
+
 ------------------------------------------------------------------------
 
 -- | <https://en.wikipedia.org/wiki/Coordinated_Universal_Time Coördinated universal time>

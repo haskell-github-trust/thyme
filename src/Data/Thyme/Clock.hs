@@ -44,6 +44,9 @@ module Data.Thyme.Clock (
 
     -- * Universal Time
     , UniversalTime
+#if __GLASGOW_HASKELL__ >= 708
+    , pattern UniversalTime
+#endif
     , modJulianDate
 
     -- * Compatibility
