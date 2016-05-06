@@ -140,6 +140,13 @@ picosecondsToDiffTime = review picoseconds
 -- 'unUTCTime' = 'view' 'utcTime'
 -- @
 --
+-- With @{-# LANGUAGE ViewPatterns #-}@, you can write: e.g.
+--
+-- @
+-- f :: 'UTCTime' -> ('Day', 'DiffTime')
+-- f ('unUTCTime' -> 'UTCView' day dt) = (day, dt)
+-- @
+--
 -- For GHC 7.8 or later, there is also the pattern synonym
 -- @<Data-Thyme-Clock.html#v:UTCTime UTCTime>@.
 {-# INLINE unUTCTime #-}
