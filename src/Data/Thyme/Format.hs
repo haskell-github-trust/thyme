@@ -6,13 +6,11 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 #include "thyme.h"
 
-{-|
-Formatting and parsing for dates and times.
--}
+-- | Formatting and parsing for dates and times.
 module Data.Thyme.Format
     (
     -- * Formatting Date/Time to String
-    FormatTime (..)
+      FormatTime (..)
     , formatTime
     -- * Parsing Date/Time from String
     , ParseTime (..)
@@ -21,6 +19,10 @@ module Data.Thyme.Format
     , readsTime
     , TimeParse (..)
     , timeParser
+
+    -- * Time Locale
+    , TimeLocale (..)
+    , defaultTimeLocale
     ) where
 
 import Prelude
@@ -46,7 +48,12 @@ import Data.Thyme.Clock.TAI
 import Data.Thyme.Format.Internal
 import Data.Thyme.LocalTime
 import Data.VectorSpace
+
+#if MIN_VERSION_time(1,5,0)
+import Data.Time.Format (TimeLocale (..), defaultTimeLocale)
+#else
 import System.Locale
+#endif
 
 -- | All instances of this class may be formatted by 'formatTime'.
 class FormatTime t where
@@ -216,26 +223,20 @@ class FormatTime t where
 --
 -- ==== <https://en.wikipedia.org/wiki/ISO_8601 ISO 8601>
 -- @
--- > import System.Locale
---
 -- > 'formatTime' 'defaultTimeLocale' "%Y-%m-%dT%H:%M:%S%N" $ 'mkUTCTime' 2015 1 15  12 34 56.78
---   "2015-01-15T12:34:56+00:00"
+-- "2015-01-15T12:34:56+00:00"
 -- @
 --
 -- ==== <http://tools.ietf.org/html/rfc822#section-5 RFC822>
 -- @
--- > import System.Locale
---
 -- > 'formatTime' 'defaultTimeLocale' "%a, %_d %b %Y %H:%M:%S %Z" $ 'mkUTCTime' 2015 1 15  12 34 56.78
---   "Thu, 15 Jan 2015 12:34:56 UTC"
+-- "Thu, 15 Jan 2015 12:34:56 UTC"
 -- @
 --
 -- ==== YYYY-MM-DD hh:mm:ss.000000
 -- @
--- > import System.Locale
---
 -- > 'formatTime' 'defaultTimeLocale' "%Y-%m-%d %H:%M:%S.%v" $ 'mkUTCTime' 2015 1 15  12 34 56.78
---   "2015-01-15 12:34:56.780000"
+-- "2015-01-15 12:34:56.780000"
 -- @
 {-# INLINEABLE formatTime #-}
 formatTime :: (FormatTime t)
@@ -690,8 +691,6 @@ timeParser TimeLocale {..} = flip execStateT unixEpoch . go where
 --
 -- ==== <https://en.wikipedia.org/wiki/ISO_8601 ISO 8601>
 -- @
--- > import System.Locale
---
 -- > 'parseTime' 'defaultTimeLocale' "%Y-%m-%dT%H:%M:%S%N" "2015-01-15T12:34:56+00:00" :: 'Maybe' 'UTCTime'
 --   Just 2015-01-15 12:34:56 UTC
 --
@@ -701,8 +700,6 @@ timeParser TimeLocale {..} = flip execStateT unixEpoch . go where
 --
 -- ==== YYYY-MM-DD hh:mm:ss.0
 -- @
--- > import System.Locale
---
 -- > 'parseTime' 'defaultTimeLocale' "%Y-%m-%d %H:%M:%S%Q" "2015-01-15 12:34:56.78" :: 'Maybe' 'UTCTime'
 --   Just 2015-01-15 12:34:56.78 UTC
 -- @

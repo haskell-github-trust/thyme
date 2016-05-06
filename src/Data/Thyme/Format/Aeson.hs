@@ -25,7 +25,6 @@ import Data.Monoid
 import Data.Text (pack, unpack)
 import qualified Data.Text as T
 import Data.Thyme
-import System.Locale
 
 -- Copyright:   (c) 2011, 2012, 2013 Bryan O'Sullivan
 --              (c) 2011 MailRank, Inc.
