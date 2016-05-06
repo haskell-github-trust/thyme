@@ -6,7 +6,8 @@
 
 -- | Calendar months and day-of-months.
 module Data.Thyme.Calendar.MonthDay
-    ( Month, DayOfMonth, MonthDay (..)
+    ( Month, DayOfMonth
+    , MonthDay (..), _mdMonth, _mdDay
     , monthDay, monthDayValid, monthLength
     , module Data.Thyme.Calendar.MonthDay
     ) where
@@ -59,9 +60,4 @@ monthAndDayToDayOfYearValid
     -> DayOfMonth
     -> Maybe DayOfYear
 monthAndDayToDayOfYearValid leap m d = monthDayValid leap (MonthDay m d)
-
--- * Lenses
-
-LENS(MonthDay,mdMonth,Month)
-LENS(MonthDay,mdDay,DayOfMonth)
 

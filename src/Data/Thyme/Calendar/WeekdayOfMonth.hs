@@ -54,6 +54,11 @@ data WeekdayOfMonth = WeekdayOfMonth
         -- ^ Day of week. /1 = Monday, 7 = Sunday/, like ISO 8601 'WeekDate'.
     } deriving (INSTANCES_USUAL, Show)
 
+LENS(WeekdayOfMonth,womYear,Year)
+LENS(WeekdayOfMonth,womMonth,Month)
+LENS(WeekdayOfMonth,womNth,Int)
+LENS(WeekdayOfMonth,womDayOfWeek,DayOfWeek)
+
 derivingUnbox "WeekdayOfMonth"
     [t| WeekdayOfMonth -> Int |]
     [| \ WeekdayOfMonth {..} -> shiftL womYear 11 .|. shiftL womMonth 7
@@ -140,10 +145,4 @@ weekdayOfMonthValid (WeekdayOfMonth y m n wd) = (refDay .+^ s * offset)
     s = signum n
     wo = s * (wd - wd1)
     offset = (abs n - 1) * 7 + if wo < 0 then wo + 7 else wo
-
--- * Lenses
-LENS(WeekdayOfMonth,womYear,Year)
-LENS(WeekdayOfMonth,womMonth,Month)
-LENS(WeekdayOfMonth,womNth,Int)
-LENS(WeekdayOfMonth,womDayOfWeek,DayOfWeek)
 

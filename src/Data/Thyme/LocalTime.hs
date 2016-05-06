@@ -73,6 +73,10 @@ data TimeZone = TimeZone
     -- ^ The name of the zone, typically a three- or four-letter acronym.
     } deriving (INSTANCES_USUAL)
 
+LENS(TimeZone,timeZoneMinutes,Minutes)
+LENS(TimeZone,timeZoneSummerOnly,Bool)
+LENS(TimeZone,timeZoneName,String)
+
 instance Hashable TimeZone
 instance NFData TimeZone
 
@@ -181,6 +185,10 @@ data TimeOfDay = TimeOfDay
     , todMin :: {-# UNPACK #-}!Minute
     , todSec :: {-# UNPACK #-}!DiffTime -- ^ Second.
     } deriving (INSTANCES_USUAL)
+
+LENS(TimeOfDay,todHour,Hour)
+LENS(TimeOfDay,todMin,Minute)
+LENS(TimeOfDay,todSec,DiffTime)
 
 derivingUnbox "TimeOfDay" [t| TimeOfDay -> Int64 |]
     [| \ TimeOfDay {..} -> fromIntegral (todHour .|. shiftL todMin 8)
@@ -347,6 +355,9 @@ data LocalTime = LocalTime
     -- ^ Local time-of-day.
     } deriving (INSTANCES_USUAL)
 
+LENS(LocalTime,localDay,Day)
+LENS(LocalTime,localTimeOfDay,TimeOfDay)
+
 derivingUnbox "LocalTime" [t| LocalTime -> (Day, TimeOfDay) |]
     [| \ LocalTime {..} -> (localDay, localTimeOfDay) |]
     [| \ (localDay, localTimeOfDay) -> LocalTime {..} |]
@@ -451,6 +462,9 @@ data ZonedTime = ZonedTime
     { zonedTimeToLocalTime :: {-only 4 words…-} {-# UNPACK #-}!LocalTime
     , zonedTimeZone :: !TimeZone
     } deriving (INSTANCES_USUAL)
+
+LENS(ZonedTime,zonedTimeToLocalTime,LocalTime)
+LENS(ZonedTime,zonedTimeZone,TimeZone)
 
 instance Hashable ZonedTime
 instance NFData ZonedTime where
@@ -654,20 +668,4 @@ utcToZonedTime z t = view zonedTime (z, t)
 {-# INLINE zonedTimeToUTC #-}
 zonedTimeToUTC :: ZonedTime -> UTCTime
 zonedTimeToUTC = snd . review zonedTime
-
--- * Lenses
-
-LENS(TimeZone,timeZoneMinutes,Minutes)
-LENS(TimeZone,timeZoneSummerOnly,Bool)
-LENS(TimeZone,timeZoneName,String)
-
-LENS(TimeOfDay,todHour,Hour)
-LENS(TimeOfDay,todMin,Minute)
-LENS(TimeOfDay,todSec,DiffTime)
-
-LENS(LocalTime,localDay,Day)
-LENS(LocalTime,localTimeOfDay,TimeOfDay)
-
-LENS(ZonedTime,zonedTimeToLocalTime,LocalTime)
-LENS(ZonedTime,zonedTimeZone,TimeZone)
 

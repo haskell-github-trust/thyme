@@ -230,6 +230,9 @@ data OrdinalDate = OrdinalDate
     , odDay :: {-# UNPACK #-}!DayOfYear
     } deriving (INSTANCES_USUAL, Show)
 
+LENS(OrdinalDate,odYear,Year)
+LENS(OrdinalDate,odDay,DayOfYear)
+
 instance Hashable OrdinalDate
 instance NFData OrdinalDate
 
@@ -366,6 +369,9 @@ data MonthDay = MonthDay
     { mdMonth :: {-# UNPACK #-}!Month
     , mdDay :: {-# UNPACK #-}!DayOfMonth
     } deriving (INSTANCES_USUAL, Show)
+
+LENS(MonthDay,mdMonth,Month)
+LENS(MonthDay,mdDay,DayOfMonth)
 
 instance Hashable MonthDay
 instance NFData MonthDay
@@ -508,6 +514,10 @@ data WeekDate = WeekDate
         -- ^ /1 = Monday/ … /7 = Sunday/.
     } deriving (INSTANCES_USUAL, Show)
 
+LENS(WeekDate,wdYear,Year)
+LENS(WeekDate,wdWeek,WeekOfYear)
+LENS(WeekDate,wdDay,DayOfWeek)
+
 instance Hashable WeekDate
 instance NFData WeekDate
 
@@ -594,6 +604,10 @@ data SundayWeek = SundayWeek
         -- ^ /0 = Sunday/.
     } deriving (INSTANCES_USUAL, Show)
 
+LENS(SundayWeek,swYear,Year)
+LENS(SundayWeek,swWeek,WeekOfYear)
+LENS(SundayWeek,swDay,DayOfWeek)
+
 instance Hashable SundayWeek
 instance NFData SundayWeek
 
@@ -655,6 +669,10 @@ data MondayWeek = MondayWeek
     , mwDay :: {-# UNPACK #-}!DayOfWeek
         -- ^ /7 = Sunday/.
     } deriving (INSTANCES_USUAL, Show)
+
+LENS(MondayWeek,mwYear,Year)
+LENS(MondayWeek,mwWeek,WeekOfYear)
+LENS(MondayWeek,mwDay,DayOfWeek)
 
 instance Hashable MondayWeek
 instance NFData MondayWeek

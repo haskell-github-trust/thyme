@@ -18,10 +18,12 @@ module Data.Thyme.Calendar
     (
     -- * Day
       Day (..), modifiedJulianDay
+
     -- * Calendar
     , Year, Month, DayOfMonth
-    , YearMonthDay (..)
+    , YearMonthDay (..), _ymdYear, _ymdMonth, _ymdDay
     , Years, Months, Days
+
     -- * Gregorian calendar
     -- $proleptic
     , isLeapYear
@@ -262,10 +264,4 @@ addGregorianYearsClip n = gregorian %~ gregorianYearsClip n
 {-# INLINE addGregorianYearsRollover #-}
 addGregorianYearsRollover :: Years -> Day -> Day
 addGregorianYearsRollover n = gregorian %~ gregorianYearsRollover n
-
--- * Lenses
-
-LENS(YearMonthDay,ymdYear,Year)
-LENS(YearMonthDay,ymdMonth,Month)
-LENS(YearMonthDay,ymdDay,DayOfMonth)
 

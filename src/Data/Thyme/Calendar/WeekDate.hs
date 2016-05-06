@@ -15,11 +15,17 @@
 module Data.Thyme.Calendar.WeekDate
     ( Year, WeekOfYear, DayOfWeek
     -- * ISO 8601 Week Date
-    , WeekDate (..), weekDate, weekDateValid, showWeekDate
+    , WeekDate (..), _wdYear, _wdWeek, _wdDay
+    , weekDate, weekDateValid, showWeekDate
+
     -- * Weeks starting Sunday
-    , SundayWeek (..), sundayWeek, sundayWeekValid
+    , SundayWeek (..), _swYear, _swWeek, _swDay
+    , sundayWeek, sundayWeekValid
+
     -- * Weeks starting Monday
-    , MondayWeek (..), mondayWeek, mondayWeekValid
+    , MondayWeek (..), _mwYear, _mwWeek, _mwDay
+    , mondayWeek, mondayWeekValid
+
     , module Data.Thyme.Calendar.WeekDate
     ) where
 
@@ -114,18 +120,4 @@ fromWeekDate y w d = weekDate # WeekDate y w d
 {-# INLINE fromWeekDateValid #-}
 fromWeekDateValid :: Year -> WeekOfYear -> DayOfWeek -> Maybe Day
 fromWeekDateValid y w d = weekDateValid (WeekDate y w d)
-
--- * Lenses
-
-LENS(WeekDate,wdYear,Year)
-LENS(WeekDate,wdWeek,WeekOfYear)
-LENS(WeekDate,wdDay,DayOfWeek)
-
-LENS(SundayWeek,swYear,Year)
-LENS(SundayWeek,swWeek,WeekOfYear)
-LENS(SundayWeek,swDay,DayOfWeek)
-
-LENS(MondayWeek,mwYear,Year)
-LENS(MondayWeek,mwWeek,WeekOfYear)
-LENS(MondayWeek,mwDay,DayOfWeek)
 

@@ -23,14 +23,17 @@ literals to avoid type defaulting warnings.
 module Data.Thyme.Clock (
     -- * UTC
       UTCTime
+    , utctDay, utctDayTime
+    , _utctDay, _utctDayTime
 #if __GLASGOW_HASKELL__ >= 708
     , pattern UTCTime
 #endif
     , mkUTCTime
-    , utctDay, utctDayTime
-    , UTCView (..)
     , utcTime
+
+    , UTCView (..), _utcvDay, _utcvDayTime
     , NominalDiffTime
+
     , getCurrentTime
 
     -- * Absolute intervals
@@ -59,10 +62,6 @@ module Data.Thyme.Clock (
     , diffUTCTime
     , toMicroseconds
     , fromMicroseconds
-
-    -- * Lenses
-    , _utcvDay, _utcvDayTime
-    , _utctDay, _utctDayTime
     ) where
 
 import Prelude

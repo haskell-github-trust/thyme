@@ -11,7 +11,9 @@
 -- | ISO 8601 Ordinal Date format
 module Data.Thyme.Calendar.OrdinalDate
     ( Year, isLeapYear
-    , DayOfYear, OrdinalDate (..), ordinalDate
+    , DayOfYear
+    , OrdinalDate (..), _odYear, _odDay
+    , ordinalDate
     , module Data.Thyme.Calendar.OrdinalDate
     ) where
 
@@ -165,9 +167,4 @@ fromMondayStartWeek y w d = mondayWeek # MondayWeek y w d
 {-# INLINE fromMondayStartWeekValid #-}
 fromMondayStartWeekValid :: Year -> WeekOfYear -> DayOfWeek -> Maybe Day
 fromMondayStartWeekValid y w d = mondayWeekValid (MondayWeek y w d)
-
--- * Lenses
-
-LENS(OrdinalDate,odYear,Year)
-LENS(OrdinalDate,odDay,DayOfYear)
 
