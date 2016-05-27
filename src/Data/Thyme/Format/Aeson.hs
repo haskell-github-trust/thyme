@@ -23,8 +23,13 @@ import Data.Data
 import Data.Monoid
 #endif
 import Data.Text (pack, unpack)
+import Data.Text.Encoding (decodeUtf8)
 import qualified Data.Text as T
 import Data.Thyme
+import Data.Thyme.Format.DateFast (parseFastUtc)
+import Data.Thyme.Format.DateEncode (utcTimeBuilder, quote)
+import Data.ByteString.Builder (toLazyByteString)
+import Data.ByteString.Lazy (toStrict)
 
 -- Copyright:   (c) 2011, 2012, 2013 Bryan O'Sullivan
 --              (c) 2011 MailRank, Inc.
@@ -94,15 +99,11 @@ instance FromJSON ZonedTime where
     parseJSON v = typeMismatch "ZonedTime" v
 
 instance ToJSON UTCTime where
-    toJSON t = String $ pack $ formatTime defaultTimeLocale format t
-      where
-        format = "%FT%T." ++ formatMillis t ++ "Z"
+    toEncoding t = unsafeToEncoding $ quote (utcTimeBuilder t)
+    {-# INLINE toEncoding #-}
+    toJSON t = String $ decodeUtf8 $ toStrict $ toLazyByteString (utcTimeBuilder t)
     {-# INLINE toJSON #-}
 
 instance FromJSON UTCTime where
-    parseJSON = withText "UTCTime" $ \t ->
-        case parseTime defaultTimeLocale "%FT%T%QZ" (unpack t) of
-          Just d -> pure d
-          _      -> fail "could not parse ISO-8601 date"
+    parseJSON = withText "UTCTime" $ parseFastUtc
     {-# INLINE parseJSON #-}
-

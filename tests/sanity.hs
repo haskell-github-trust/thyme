@@ -17,6 +17,8 @@ import Data.Thyme.Time
 import qualified Data.Time as T
 import qualified Data.Time.Calendar.OrdinalDate as T
 import Test.QuickCheck
+import qualified Data.Aeson as AE
+import Data.Thyme.Format.Aeson ()
 
 import Common
 
@@ -48,6 +50,17 @@ prop_ShowRead a = (a, "") `elem` reads (show a)
 prop_toOrdinalDate :: Day -> Bool
 prop_toOrdinalDate day =
     fromIntegral `first` toOrdinalDate day == T.toOrdinalDate (thyme # day)
+
+newtype AcUTCTime = AcUTCTime { getAc :: UTCTime } deriving (Show)
+instance Arbitrary AcUTCTime where
+  arbitrary = AcUTCTime <$> (arbitrary `suchThat` (\d -> d >= year1 && d < yearMax))
+    where
+      year1 = UTCTime (fromGregorian 1 1 1) 0
+      yearMax = UTCTime (fromGregorian 10000 1 1) 0
+  shrink (AcUTCTime a) = map AcUTCTime (shrink a)
+
+prop_aeson :: AcUTCTime -> Bool
+prop_aeson a = AE.decode (AE.encode (getAc a)) == Just (getAc a)
 
 prop_formatTime :: Spec -> RecentTime -> Property
 prop_formatTime (Spec spec) (RecentTime t@(review thyme -> t'))
@@ -90,9 +103,8 @@ main = exit . all isSuccess =<< sequence
     , qc 10000 prop_toOrdinalDate
     , qc  1000 prop_formatTime
     , qc  1000 prop_parseTime
-
+    , qc  1000 prop_aeson
     ] where
     isSuccess r = case r of Success {} -> True; _ -> False
     qc :: Testable prop => Int -> prop -> IO Result
     qc n = quickCheckWithResult stdArgs {maxSuccess = n, maxSize = n}
-
