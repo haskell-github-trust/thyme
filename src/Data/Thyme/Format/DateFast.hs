@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE NamedFieldPuns    #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_HADDOCK hide #-}
@@ -6,6 +7,9 @@ module Data.Thyme.Format.DateFast (
     parseFastUtc
 ) where
 
+#if !MIN_VERSION_base(4,8,0)
+import           Control.Applicative
+#endif
 import           Control.Lens        (from, view)
 import           Control.Monad       (unless, void)
 import qualified Data.ByteString     as BS
@@ -105,10 +109,10 @@ parserRfc = do
                      - offset * 1000000 :: Int64
         tdiff = view (from microseconds) totalMicro
         tday = fromGregorian year month dayofmonth
-    return $ UTCTime tday tdiff
+    return $ view (from utcTime) (UTCView tday tdiff)
 
 parseFastUtc :: Monad m => T.Text -> m UTCTime
 parseFastUtc t =
   case S.scanOnly parserRfc (encodeUtf8 t) of
-        Right d -> pure d
+        Right d -> return d
         Left err -> fail $ "could not parse ISO-8601 date: " ++ err

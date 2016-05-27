@@ -7,6 +7,9 @@
 
 import Prelude
 
+#if !MIN_VERSION_base(4,8,0)
+import           Control.Applicative
+#endif
 import Control.Arrow
 import Control.Lens
 import qualified Data.Attoparsec.ByteString.Char8 as P
@@ -51,16 +54,24 @@ prop_toOrdinalDate :: Day -> Bool
 prop_toOrdinalDate day =
     fromIntegral `first` toOrdinalDate day == T.toOrdinalDate (thyme # day)
 
-newtype AcUTCTime = AcUTCTime { getAc :: UTCTime } deriving (Show)
+newtype AcUTCTime = AcUTCTime UTCTime deriving (Show)
 instance Arbitrary AcUTCTime where
   arbitrary = AcUTCTime <$> (arbitrary `suchThat` (\d -> d >= year1 && d < yearMax))
     where
-      year1 = UTCTime (fromGregorian 1 1 1) 0
-      yearMax = UTCTime (fromGregorian 10000 1 1) 0
+      year1 = view (from utcTime) $ UTCView (fromGregorian 1 1 1) 0
+      yearMax = view (from utcTime) $ UTCView (fromGregorian 10000 1 1) 0
   shrink (AcUTCTime a) = map AcUTCTime (shrink a)
 
-prop_aeson :: AcUTCTime -> Bool
-prop_aeson a = AE.decode (AE.encode (getAc a)) == Just (getAc a)
+prop_aeson :: AcUTCTime -> Property
+prop_aeson (AcUTCTime t') =
+#if MIN_VERSION_QuickCheck(2,7,0)
+    counterexample desc (t == Just [t'])
+#else
+    printTestCase desc (t == Just [t'])
+#endif
+  where
+    t = AE.decode (AE.encode [t'])
+    desc = "Orig: " ++ show t' ++ ", Aeson: " ++ show (AE.encode t') ++ ", BackOrig: " ++ show t
 
 prop_formatTime :: Spec -> RecentTime -> Property
 prop_formatTime (Spec spec) (RecentTime t@(review thyme -> t'))

@@ -99,11 +99,14 @@ instance FromJSON ZonedTime where
     parseJSON v = typeMismatch "ZonedTime" v
 
 instance ToJSON UTCTime where
+#if MIN_VERSION_aeson(0,11,2)
     toEncoding t = unsafeToEncoding $ quote (utcTimeBuilder t)
     {-# INLINE toEncoding #-}
+#endif
     toJSON t = String $ decodeUtf8 $ toStrict $ toLazyByteString (utcTimeBuilder t)
     {-# INLINE toJSON #-}
 
+-- For some unexaplainable reason the fast Scanner parser doesn't seem to work on 7.6
 instance FromJSON UTCTime where
     parseJSON = withText "UTCTime" $ parseFastUtc
     {-# INLINE parseJSON #-}
