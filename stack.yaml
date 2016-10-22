@@ -1,6 +1,18 @@
+resolver: lts-6.19
+
+compiler: ghcjs-0.2.0.9006019_ghc-7.10.3
+compiler-check: match-exact
+allow-different-user: true
+
+setup-info:
+  ghcjs:
+    source:
+      ghcjs-0.2.0.9006019_ghc-7.10.3:
+        url: http://ghcjs.tolysz.org/lts-6.19-9006019.tar.gz
+        sha1: ef4264d5a93b269ee4ec8f9d5139da030331d65a
+
 flags: {}
 extra-package-dbs: []
 packages:
 - '.'
 extra-deps: []
-resolver: lts-5.11
