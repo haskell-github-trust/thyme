@@ -59,7 +59,7 @@ type Days = Int
 -- <https://en.wikipedia.org/wiki/Julian_day#Variants Modified Julian Day>
 -- (MJD) epoch.
 --
--- To convert a 'Day' to the corresponding 'YearMonthDay' in the W_GREGORIAN
+-- To convert a 'Day' to the corresponding 'YearMonthDay' in the <https://en.wikipedia.org/wiki/Gregorian_calendar Gregorian>
 -- calendar, see 'gregorian'.
 --
 -- @
@@ -84,7 +84,7 @@ type Days = Int
 -- Other ways of viewing a 'Day' include 'ordinalDate', and 'weekDate'.
 newtype Day = ModifiedJulianDay
     { toModifiedJulianDay :: Int
-    } deriving (INSTANCES_NEWTYPE, CoArbitrary)
+    } deriving (Eq, Ord, Data, Typeable, Generic, Enum, Ix, Hashable, NFData, CoArbitrary)
 
 instance AffineSpace Day where
     type Diff Day = Days
@@ -110,7 +110,7 @@ instance AffineSpace Day where
 modifiedJulianDay :: Iso' Day Int
 modifiedJulianDay = iso toModifiedJulianDay ModifiedJulianDay
 
--- | Conversion between a W_GREGORIAN 'OrdinalDate' and the corresponding
+-- | Conversion between a <https://en.wikipedia.org/wiki/Gregorian_calendar Gregorian> 'OrdinalDate' and the corresponding
 -- 'YearMonthDay'.
 --
 -- @
@@ -204,7 +204,7 @@ data YearMonthDay = YearMonthDay
     { ymdYear :: {-# UNPACK #-}!Year
     , ymdMonth :: {-# UNPACK #-}!Month
     , ymdDay :: {-# UNPACK #-}!DayOfMonth
-    } deriving (INSTANCES_USUAL, Show)
+    } deriving (Eq, Ord, Data, Typeable, Generic, Show)
 
 LENS(YearMonthDay,ymdYear,Year)
 LENS(YearMonthDay,ymdMonth,Month)
@@ -215,7 +215,7 @@ instance NFData YearMonthDay
 
 ------------------------------------------------------------------------
 
--- | Is it a leap year according to the W_GREGORIAN calendar?
+-- | Is it a leap year according to the <https://en.wikipedia.org/wiki/Gregorian_calendar Gregorian> calendar?
 isLeapYear :: Year -> Bool
 isLeapYear y = y .&. 3 == 0 && (r100 /= 0 || q100 .&. 3 == 0) where
     (q100, r100) = y `quotRem` 100
@@ -228,7 +228,7 @@ type DayOfYear = Int
 data OrdinalDate = OrdinalDate
     { odYear :: {-# UNPACK #-}!Year
     , odDay :: {-# UNPACK #-}!DayOfYear
-    } deriving (INSTANCES_USUAL, Show)
+    } deriving (Eq, Ord, Data, Typeable, Generic, Show)
 
 LENS(OrdinalDate,odYear,Year)
 LENS(OrdinalDate,odDay,DayOfYear)
@@ -368,7 +368,7 @@ randomIsoR l (x, y) = first (^. l) . randomR (l # x, l # y)
 data MonthDay = MonthDay
     { mdMonth :: {-# UNPACK #-}!Month
     , mdDay :: {-# UNPACK #-}!DayOfMonth
-    } deriving (INSTANCES_USUAL, Show)
+    } deriving (Eq, Ord, Data, Typeable, Generic, Show)
 
 LENS(MonthDay,mdMonth,Month)
 LENS(MonthDay,mdDay,DayOfMonth)
@@ -512,7 +512,7 @@ data WeekDate = WeekDate
         -- belong to the previous year.
     , wdDay :: {-# UNPACK #-}!DayOfWeek
         -- ^ /1 = Monday/ … /7 = Sunday/.
-    } deriving (INSTANCES_USUAL, Show)
+    } deriving (Eq, Ord, Data, Typeable, Generic, Show)
 
 LENS(WeekDate,wdYear,Year)
 LENS(WeekDate,wdWeek,WeekOfYear)
@@ -602,7 +602,7 @@ data SundayWeek = SundayWeek
         -- /Sunday/ of the year as the first day of week /01/.
     , swDay :: {-# UNPACK #-}!DayOfWeek
         -- ^ /0 = Sunday/.
-    } deriving (INSTANCES_USUAL, Show)
+    } deriving (Eq, Ord, Data, Typeable, Generic, Show)
 
 LENS(SundayWeek,swYear,Year)
 LENS(SundayWeek,swWeek,WeekOfYear)
@@ -668,7 +668,7 @@ data MondayWeek = MondayWeek
         -- /Monday/ of the year as the first day of week /01/.
     , mwDay :: {-# UNPACK #-}!DayOfWeek
         -- ^ /7 = Sunday/.
-    } deriving (INSTANCES_USUAL, Show)
+    } deriving (Eq, Ord, Data, Typeable, Generic, Show)
 
 LENS(MondayWeek,mwYear,Year)
 LENS(MondayWeek,mwWeek,WeekOfYear)

@@ -74,7 +74,7 @@ import Test.QuickCheck
 --
 -- Internally this is the number of seconds since 'taiEpoch'. TAI days are
 -- exactly 86400 SI seconds long.
-newtype AbsoluteTime = AbsoluteTime DiffTime deriving (INSTANCES_MICRO)
+newtype AbsoluteTime = AbsoluteTime DiffTime deriving (Eq, Ord, Data, Typeable, Generic, Enum, Ix, Hashable, NFData, Bounded, Random, Arbitrary, CoArbitrary)
 
 derivingUnbox "AbsoluteTime" [t| AbsoluteTime -> DiffTime |]
     [| \ (AbsoluteTime a) -> a |] [| AbsoluteTime |]
@@ -107,7 +107,7 @@ instance AffineSpace AbsoluteTime where
 -- program shipped with such a table could become out-of-date in as little
 -- as 6 months. See 'parseTAIUTCDAT' for details.
 data TAIUTCMap = TAIUTCMap (Map UTCTime TAIUTCRow) (Map AbsoluteTime TAIUTCRow)
-    deriving (INSTANCES_USUAL, Show)
+    deriving (Eq, Ord, Data, Typeable, Generic, Show)
 
 -- | Each line of TAIUTCDAT (see 'parseTAIUTCDAT') specifies the difference
 -- between TAI and UTC for a particular period. For example:
@@ -161,7 +161,7 @@ data TAIUTCMap = TAIUTCMap (Map UTCTime TAIUTCRow) (Map AbsoluteTime TAIUTCRow)
 data TAIUTCRow = TAIUTCRow !DiffTime !UTCTime !Rational
     -- ^ Each row comprises of an /additive/ component, the /base/ of the
     -- scaled component, and the /coefficient/ of the scaled component.
-    deriving (INSTANCES_USUAL, Show)
+    deriving (Eq, Ord, Data, Typeable, Generic, Show)
 
 {-# INLINE lookupLE #-}
 lookupLE :: (Ord k) => k -> Map k TAIUTCRow -> TAIUTCRow

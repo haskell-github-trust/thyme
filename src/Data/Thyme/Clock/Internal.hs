@@ -130,7 +130,7 @@ fromSecondsIntegral _ = review microseconds . (*) 1000000 . fromIntegral
 -- > 'fromSeconds'' 100 '^-^' 'fromSeconds'' 100 '^/' 4
 -- 75s
 -- @
-newtype DiffTime = DiffTime Micro deriving (INSTANCES_MICRO, AdditiveGroup)
+newtype DiffTime = DiffTime Micro deriving (Eq, Ord, Data, Typeable, Generic, Enum, Ix, Hashable, NFData, Bounded, Random, Arbitrary, CoArbitrary, AdditiveGroup)
 
 derivingUnbox "DiffTime" [t| DiffTime -> Micro |]
     [| \ (DiffTime a) -> a |] [| DiffTime |]
@@ -188,7 +188,7 @@ instance TimeDiff DiffTime where
 -- @
 --
 -- See also: 'UTCTime'.
-newtype NominalDiffTime = NominalDiffTime Micro deriving (INSTANCES_MICRO, AdditiveGroup)
+newtype NominalDiffTime = NominalDiffTime Micro deriving (Eq, Ord, Data, Typeable, Generic, Enum, Ix, Hashable, NFData, Bounded, Random, Arbitrary, CoArbitrary, AdditiveGroup)
 
 derivingUnbox "NominalDiffTime" [t| NominalDiffTime -> Micro |]
     [| \ (NominalDiffTime a) -> a |] [| NominalDiffTime |]
@@ -239,7 +239,7 @@ posixDayLength = microseconds # 86400000000
 --
 -- The difference between UT1 and UTC is
 -- <http://en.wikipedia.org/wiki/DUT1 DUT1>.
-newtype UniversalTime = UniversalRep NominalDiffTime deriving (INSTANCES_MICRO)
+newtype UniversalTime = UniversalRep NominalDiffTime deriving (Eq, Ord, Data, Typeable, Generic, Enum, Ix, Hashable, NFData, Bounded, Random, Arbitrary, CoArbitrary)
 
 derivingUnbox "UniversalTime" [t| UniversalTime -> NominalDiffTime |]
     [| \ (UniversalRep a) -> a |] [| UniversalRep |]
@@ -313,7 +313,7 @@ pattern UniversalTime mjd <- (view modJulianDate -> mjd)
 -- If leap seconds matter, use 'Data.Thyme.Clock.TAI.AbsoluteTime' from
 -- "Data.Thyme.Clock.TAI" instead, along with
 -- 'Data.Thyme.Clock.TAI.absoluteTime'' and 'UTCView' for presentation.
-newtype UTCTime = UTCRep NominalDiffTime deriving (INSTANCES_MICRO)
+newtype UTCTime = UTCRep NominalDiffTime deriving (Eq, Ord, Data, Typeable, Generic, Enum, Ix, Hashable, NFData, Bounded, Random, Arbitrary, CoArbitrary)
 
 derivingUnbox "UTCTime" [t| UTCTime -> NominalDiffTime |]
     [| \ (UTCRep a) -> a |] [| UTCRep |]
@@ -326,7 +326,7 @@ data UTCView = UTCView
     -- ^ Calendar date.
     , utcvDayTime :: {-# UNPACK #-}!DiffTime
     -- ^ Time elapsed since midnight; /0/ ≤ 'utcvDayTime' < /86401s/.
-    } deriving (INSTANCES_USUAL, Show)
+    } deriving (Eq, Ord, Data, Typeable, Generic, Show)
 
 -- | 'Lens'' for the calendar 'Day' component of a 'UTCView'.
 LENS(UTCView,utcvDay,Day)

@@ -52,7 +52,7 @@ data WeekdayOfMonth = WeekdayOfMonth
         -- last 'DayOfWeek' of the month.
     , womDayOfWeek :: {-# UNPACK #-}!DayOfWeek
         -- ^ Day of week. /1 = Monday, 7 = Sunday/, like ISO 8601 'WeekDate'.
-    } deriving (INSTANCES_USUAL, Show)
+    } deriving (Eq, Ord, Data, Typeable, Generic, Show)
 
 LENS(WeekdayOfMonth,womYear,Year)
 LENS(WeekdayOfMonth,womMonth,Month)

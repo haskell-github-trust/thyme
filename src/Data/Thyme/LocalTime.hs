@@ -71,7 +71,7 @@ data TimeZone = TimeZone
     -- ^ Is this a summer-only (i.e. daylight savings) time zone?
     , timeZoneName :: String
     -- ^ The name of the zone, typically a three- or four-letter acronym.
-    } deriving (INSTANCES_USUAL)
+    } deriving (Eq, Ord, Data, Typeable, Generic)
 
 LENS(TimeZone,timeZoneMinutes,Minutes)
 LENS(TimeZone,timeZoneSummerOnly,Bool)
@@ -184,7 +184,7 @@ data TimeOfDay = TimeOfDay
     { todHour :: {-# UNPACK #-}!Hour
     , todMin :: {-# UNPACK #-}!Minute
     , todSec :: {-# UNPACK #-}!DiffTime -- ^ Second.
-    } deriving (INSTANCES_USUAL)
+    } deriving (Eq, Ord, Data, Typeable, Generic)
 
 LENS(TimeOfDay,todHour,Hour)
 LENS(TimeOfDay,todMin,Minute)
@@ -353,7 +353,7 @@ data LocalTime = LocalTime
     -- ^ Local calendar date.
     , localTimeOfDay :: {-only 3 words…-} {-# UNPACK #-}!TimeOfDay
     -- ^ Local time-of-day.
-    } deriving (INSTANCES_USUAL)
+    } deriving (Eq, Ord, Data, Typeable, Generic)
 
 LENS(LocalTime,localDay,Day)
 LENS(LocalTime,localTimeOfDay,TimeOfDay)
@@ -461,7 +461,7 @@ ut1LocalTime long = iso localise globalise where
 data ZonedTime = ZonedTime
     { zonedTimeToLocalTime :: {-only 4 words…-} {-# UNPACK #-}!LocalTime
     , zonedTimeZone :: !TimeZone
-    } deriving (INSTANCES_USUAL)
+    } deriving (Eq, Ord, Data, Typeable, Generic)
 
 LENS(ZonedTime,zonedTimeToLocalTime,LocalTime)
 LENS(ZonedTime,zonedTimeZone,TimeZone)

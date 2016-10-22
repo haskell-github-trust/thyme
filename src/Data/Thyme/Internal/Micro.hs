@@ -41,7 +41,7 @@ import Text.ParserCombinators.ReadP
 import Text.Read
 #endif
 
-newtype Micro = Micro Int64 deriving (INSTANCES_MICRO)
+newtype Micro = Micro Int64 deriving (Eq, Ord, Data, Typeable, Generic, Enum, Ix, Hashable, NFData, Bounded, Random, Arbitrary, CoArbitrary)
 
 derivingUnbox "Micro" [t| Micro -> Int64 |]
     [| \ (Micro a) -> a |] [| Micro |]
