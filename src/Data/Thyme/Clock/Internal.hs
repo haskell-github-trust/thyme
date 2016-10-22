@@ -328,11 +328,9 @@ data UTCView = UTCView
 
 -- | 'Lens'' for the calendar 'Day' component of a 'UTCView'.
 makeLensesFor [("utcvDay","_utcvDay")] ''UTCView
-{-# INLINE _utcvDay #-}
 
 -- | 'Lens'' for the time-of-day 'DiffTime' component of a 'UTCView'.
 makeLensesFor [("utcvDayTime","_utcvDayTime")] ''UTCView
-{-# INLINE _utcvDayTime #-}
 
 derivingUnbox "UTCView" [t| UTCView -> (Day, DiffTime) |]
     [| \ UTCView {..} -> (utcvDay, utcvDayTime) |]

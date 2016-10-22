@@ -53,12 +53,6 @@ data WeekdayOfMonth = WeekdayOfMonth
         -- ^ Day of week. /1 = Monday, 7 = Sunday/, like ISO 8601 'WeekDate'.
     } deriving (Eq, Ord, Data, Typeable, Generic, Show)
 
-makeLensesFor [("womYear","_womYear"),("womMonth","_womMonth"),("womNth","_womNth"),("womDayOfWeek","_womDayOfWeek")] ''WeekdayOfMonth
-{-# INLINE _womYear #-}
-{-# INLINE _womMonth #-}
-{-# INLINE _womNth #-}
-{-# INLINE _womDayOfWeek #-}
-
 derivingUnbox "WeekdayOfMonth"
     [t| WeekdayOfMonth -> Int |]
     [| \ WeekdayOfMonth {..} -> shiftL womYear 11 .|. shiftL womMonth 7
@@ -145,3 +139,5 @@ weekdayOfMonthValid (WeekdayOfMonth y m n wd) = (refDay .+^ s * offset)
     s = signum n
     wo = s * (wd - wd1)
     offset = (abs n - 1) * 7 + if wo < 0 then wo + 7 else wo
+
+makeLensesFor [("womYear","_womYear"),("womMonth","_womMonth"),("womNth","_womNth"),("womDayOfWeek","_womDayOfWeek")] ''WeekdayOfMonth

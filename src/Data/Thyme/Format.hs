@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -499,20 +500,6 @@ makeLensesFor [ ("tpCentury","_tpCentury")
               , ("tpSecFrac","_tpSecFrac")
               , ("tpPOSIXTime","_tpPOSIXTime")
               , ("tpTimeZone","_tpTimeZone")] ''TimeParse
-{-# INLINE _tpCentury #-}
-{-# INLINE _tpCenturyYear #-}
-{-# INLINE _tpMonth #-}
-{-# INLINE _tpWeekOfYear #-}
-{-# INLINE _tpDayOfMonth #-}
-{-# INLINE _tpDayOfWeek #-}
-{-# INLINE _tpDayOfYear #-}
-{-# INLINE _tpFlags #-}
-{-# INLINE _tpHour #-}
-{-# INLINE _tpMinute #-}
-{-# INLINE _tpSecond #-}
-{-# INLINE _tpSecFrac #-}
-{-# INLINE _tpPOSIXTime #-}
-{-# INLINE _tpTimeZone #-}
 
 {-# INLINE flag #-}
 flag :: TimeFlag -> Lens' TimeParse Bool

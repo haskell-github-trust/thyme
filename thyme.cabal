@@ -41,11 +41,6 @@ flag HLint
     default: False
     manual: True
 
-flag lens
-    description: use the full lens package
-    default: False
-    manual: True
-
 flag show-internal
     description: instance Show of internal representation
     default: False
@@ -54,8 +49,6 @@ flag show-internal
 library
     default-language: Haskell2010
     hs-source-dirs: src
-    if !(flag(lens) || flag(docs))
-        hs-source-dirs: lens
     exposed-modules:
         Data.Thyme
         Data.Thyme.Docs
@@ -78,8 +71,6 @@ library
         Data.Thyme.Calendar.Internal
         Data.Thyme.Clock.Internal
         Data.Thyme.Format.Internal
-    if !(flag(lens) || flag(docs))
-        other-modules: Control.Lens
     build-depends:
         QuickCheck >= 2.4,
         attoparsec >= 0.10,
@@ -97,16 +88,10 @@ library
         true-name >= 0.1.0.1,
         vector >= 0.9,
         vector-th-unbox >= 0.2.1.0,
-        vector-space >= 0.8
+        vector-space >= 0.8,
+        lens >= 3.9
     if os(windows)
         build-depends: Win32
-    if os(darwin)
-        build-tools: cpphs
-        ghc-options: -pgmP cpphs -optP--cpp
-    if flag(lens) || flag(docs)
-        build-depends: lens >= 3.9
-    else
-        build-depends: profunctors >= 3.1.2
     if flag(docs)
         build-depends: integer-gmp, ghc-prim
     ghc-options: -Wall
@@ -119,12 +104,8 @@ test-suite sanity
     default-language: Haskell2010
     type: exitcode-stdio-1.0
     hs-source-dirs: tests
-    if !flag(lens)
-        hs-source-dirs: lens
     main-is: sanity.hs
     other-modules: Common
-    if !flag(lens)
-        other-modules: Control.Lens
     build-depends:
         QuickCheck,
         attoparsec,
@@ -134,11 +115,8 @@ test-suite sanity
         text,
         thyme,
         time,
-        vector-space
-    if flag(lens)
-        build-depends: lens
-    else
-        build-depends: profunctors, mtl
+        vector-space,
+        lens
     ghc-options: -Wall
 
 test-suite rewrite
@@ -168,12 +146,8 @@ benchmark bench
     default-language: Haskell2010
     type: exitcode-stdio-1.0
     hs-source-dirs: tests
-    if !flag(lens)
-        hs-source-dirs: lens
     main-is: bench.hs
     other-modules: Common
-    if !flag(lens)
-        other-modules: Control.Lens
     build-depends:
         QuickCheck,
         base,
@@ -184,11 +158,8 @@ benchmark bench
         thyme,
         time,
         vector,
-        vector-space
-    if flag(lens)
-        build-depends: lens
-    else
-        build-depends: profunctors
+        vector-space,
+        lens
     ghc-options: -Wall
 
 -- vim: et sw=4 ts=4 sts=4:

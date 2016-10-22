@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -36,7 +37,6 @@ data Unit = Unit
     , plural :: ShowS
     }
 makeLensesFor [("plural","_plural")] ''Unit
-{-# INLINE _plural #-}
 
 -- | Display 'DiffTime' or 'NominalDiffTime' in a human-readable form.
 {-# INLINE humanTimeDiff #-}
