@@ -6,7 +6,7 @@
 {-# OPTIONS_GHC -fsimpl-tick-factor=120 #-} -- 7.6.3 only, it seems; fixes #29
 #endif
 
-#include "thyme.h"
+
 #if HLINT
 #include "cabal_macros.h"
 #endif

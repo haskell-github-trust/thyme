@@ -3,7 +3,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-#include "thyme.h"
+
 #if HLINT
 #include "cabal_macros.h"
 #endif

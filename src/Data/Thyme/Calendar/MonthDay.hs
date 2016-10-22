@@ -2,7 +2,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ViewPatterns #-}
 
-#include "thyme.h"
+
 
 -- | Calendar months and day-of-months.
 module Data.Thyme.Calendar.MonthDay

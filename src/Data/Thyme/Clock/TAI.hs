@@ -9,7 +9,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
 
-#include "thyme.h"
+
 #if HLINT
 #include "cabal_macros.h"
 #endif

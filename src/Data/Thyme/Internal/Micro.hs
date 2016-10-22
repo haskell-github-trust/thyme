@@ -7,7 +7,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 
-#include "thyme.h"
+
 
 -- | FOR INTERNAL USE ONLY.
 module Data.Thyme.Internal.Micro where

@@ -13,7 +13,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_HADDOCK hide #-}
 
-#include "thyme.h"
+
 #if HLINT
 #include "cabal_macros.h"
 #endif
