@@ -3,7 +3,6 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ViewPatterns #-}
 
-#include "thyme.h"
 #if HLINT
 #include "cabal_macros.h"
 #endif
@@ -36,7 +35,8 @@ data Unit = Unit
     , single :: ShowS
     , plural :: ShowS
     }
-LENS(Unit,plural,ShowS)
+makeLensesFor [("plural","_plural")] ''Unit
+{-# INLINE _plural #-}
 
 -- | Display 'DiffTime' or 'NominalDiffTime' in a human-readable form.
 {-# INLINE humanTimeDiff #-}
@@ -91,4 +91,3 @@ units = scanl (&)
     times :: String -> Rational -> Unit -> Unit
     times ((++) . (:) ' ' -> single) r Unit {unit}
         = Unit {unit = r *^ unit, plural = single . (:) 's', ..}
-

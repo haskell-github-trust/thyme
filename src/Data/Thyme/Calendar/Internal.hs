@@ -206,9 +206,10 @@ data YearMonthDay = YearMonthDay
     , ymdDay :: {-# UNPACK #-}!DayOfMonth
     } deriving (Eq, Ord, Data, Typeable, Generic, Show)
 
-LENS(YearMonthDay,ymdYear,Year)
-LENS(YearMonthDay,ymdMonth,Month)
-LENS(YearMonthDay,ymdDay,DayOfMonth)
+makeLensesFor [("ymdYear","_ymdYear"),("ymdMonth","_ymdMonth"),("ymdDay","_ymdDay")] ''YearMonthDay
+{-# INLINE _ymdYear #-}
+{-# INLINE _ymdMonth #-}
+{-# INLINE _ymdDay #-}
 
 instance Hashable YearMonthDay
 instance NFData YearMonthDay
@@ -230,8 +231,9 @@ data OrdinalDate = OrdinalDate
     , odDay :: {-# UNPACK #-}!DayOfYear
     } deriving (Eq, Ord, Data, Typeable, Generic, Show)
 
-LENS(OrdinalDate,odYear,Year)
-LENS(OrdinalDate,odDay,DayOfYear)
+makeLensesFor [("odYear","_odYear"),("odDay","_odDay")] ''OrdinalDate
+{-# INLINE _odYear #-}
+{-# INLINE _odDay #-}
 
 instance Hashable OrdinalDate
 instance NFData OrdinalDate
@@ -370,8 +372,9 @@ data MonthDay = MonthDay
     , mdDay :: {-# UNPACK #-}!DayOfMonth
     } deriving (Eq, Ord, Data, Typeable, Generic, Show)
 
-LENS(MonthDay,mdMonth,Month)
-LENS(MonthDay,mdDay,DayOfMonth)
+makeLensesFor [("mdMonth","_mdMonth"),("mdDay","_mdDay")] ''MonthDay
+{-# INLINE _mdMonth #-}
+{-# INLINE _mdDay #-}
 
 instance Hashable MonthDay
 instance NFData MonthDay
@@ -514,9 +517,10 @@ data WeekDate = WeekDate
         -- ^ /1 = Monday/ … /7 = Sunday/.
     } deriving (Eq, Ord, Data, Typeable, Generic, Show)
 
-LENS(WeekDate,wdYear,Year)
-LENS(WeekDate,wdWeek,WeekOfYear)
-LENS(WeekDate,wdDay,DayOfWeek)
+makeLensesFor [("wdYear","_wdYear"),("wdWeek","_wdWeek"),("wdDay","_wdDay")] ''WeekDate
+{-# INLINE _wdYear #-}
+{-# INLINE _wdWeek #-}
+{-# INLINE _wdDay #-}
 
 instance Hashable WeekDate
 instance NFData WeekDate
@@ -604,9 +608,10 @@ data SundayWeek = SundayWeek
         -- ^ /0 = Sunday/.
     } deriving (Eq, Ord, Data, Typeable, Generic, Show)
 
-LENS(SundayWeek,swYear,Year)
-LENS(SundayWeek,swWeek,WeekOfYear)
-LENS(SundayWeek,swDay,DayOfWeek)
+makeLensesFor [("swYear","_swYear"),("swWeek","_swWeek"),("swDay","_swDay")] ''SundayWeek
+{-# INLINE _swYear #-}
+{-# INLINE _swWeek #-}
+{-# INLINE _swDay #-}
 
 instance Hashable SundayWeek
 instance NFData SundayWeek
@@ -670,9 +675,10 @@ data MondayWeek = MondayWeek
         -- ^ /7 = Sunday/.
     } deriving (Eq, Ord, Data, Typeable, Generic, Show)
 
-LENS(MondayWeek,mwYear,Year)
-LENS(MondayWeek,mwWeek,WeekOfYear)
-LENS(MondayWeek,mwDay,DayOfWeek)
+makeLensesFor [("mwYear","_mwYear"),("mwWeek","_mwWeek"),("mwDay","_mwDay")] ''MondayWeek
+{-# INLINE _mwYear #-}
+{-# INLINE _mwWeek #-}
+{-# INLINE _mwDay #-}
 
 instance Hashable MondayWeek
 instance NFData MondayWeek
@@ -747,4 +753,3 @@ derivingUnbox "SundayWeek" [t| SundayWeek -> Int |]
 derivingUnbox "MondayWeek" [t| MondayWeek -> Int |]
     [| \ MondayWeek {..} -> shiftL mwYear 9 .|. shiftL mwWeek 3 .|. mwDay |]
     [| \ n -> MondayWeek (shiftR n 9) (shiftR n 3 .&. 0x3f) (n .&. 0x7) |]
-

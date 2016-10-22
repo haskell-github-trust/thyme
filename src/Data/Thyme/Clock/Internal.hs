@@ -14,8 +14,6 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_HADDOCK hide #-}
 
-#include "thyme.h"
-
 module Data.Thyme.Clock.Internal where
 
 import Prelude
@@ -329,10 +327,12 @@ data UTCView = UTCView
     } deriving (Eq, Ord, Data, Typeable, Generic, Show)
 
 -- | 'Lens'' for the calendar 'Day' component of a 'UTCView'.
-LENS(UTCView,utcvDay,Day)
+makeLensesFor [("utcvDay","_utcvDay")] ''UTCView
+{-# INLINE _utcvDay #-}
 
 -- | 'Lens'' for the time-of-day 'DiffTime' component of a 'UTCView'.
-LENS(UTCView,utcvDayTime,DiffTime)
+makeLensesFor [("utcvDayTime","_utcvDayTime")] ''UTCView
+{-# INLINE _utcvDayTime #-}
 
 derivingUnbox "UTCView" [t| UTCView -> (Day, DiffTime) |]
     [| \ UTCView {..} -> (utcvDay, utcvDayTime) |]
@@ -431,4 +431,3 @@ mkUTCTime :: Year -> Month -> DayOfMonth -> Hour -> Minute -> Double -> UTCTime
 mkUTCTime yy mm dd h m s = utcTime # UTCView
     (gregorian # YearMonthDay yy mm dd)
     (fromSeconds (3600 * h + 60 * m) ^+^ fromSeconds s)
-

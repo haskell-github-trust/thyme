@@ -10,7 +10,6 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-#include "thyme.h"
 #if HLINT
 #include "cabal_macros.h"
 #endif
@@ -73,9 +72,10 @@ data TimeZone = TimeZone
     -- ^ The name of the zone, typically a three- or four-letter acronym.
     } deriving (Eq, Ord, Data, Typeable, Generic)
 
-LENS(TimeZone,timeZoneMinutes,Minutes)
-LENS(TimeZone,timeZoneSummerOnly,Bool)
-LENS(TimeZone,timeZoneName,String)
+makeLensesFor [("timeZoneMinutes","_timeZoneMinutes"),("timeZoneSummerOnly","_timeZoneSummerOnly"),("timeZoneName","_timeZoneName")] ''TimeZone
+{-# INLINE _timeZoneMinutes #-}
+{-# INLINE _timeZoneSummerOnly #-}
+{-# INLINE _timeZoneName #-}
 
 instance Hashable TimeZone
 instance NFData TimeZone
@@ -186,9 +186,10 @@ data TimeOfDay = TimeOfDay
     , todSec :: {-# UNPACK #-}!DiffTime -- ^ Second.
     } deriving (Eq, Ord, Data, Typeable, Generic)
 
-LENS(TimeOfDay,todHour,Hour)
-LENS(TimeOfDay,todMin,Minute)
-LENS(TimeOfDay,todSec,DiffTime)
+makeLensesFor [("todHour","_todHour"),("todMin","_todMin"),("todSec","_todSec")] ''TimeOfDay
+{-# INLINE _todHour #-}
+{-# INLINE _todMin #-}
+{-# INLINE _todSec #-}
 
 derivingUnbox "TimeOfDay" [t| TimeOfDay -> Int64 |]
     [| \ TimeOfDay {..} -> fromIntegral (todHour .|. shiftL todMin 8)
@@ -355,8 +356,9 @@ data LocalTime = LocalTime
     -- ^ Local time-of-day.
     } deriving (Eq, Ord, Data, Typeable, Generic)
 
-LENS(LocalTime,localDay,Day)
-LENS(LocalTime,localTimeOfDay,TimeOfDay)
+makeLensesFor [("localDay","_localDay"),("localTimeOfDay","_localTimeOfDay")] ''LocalTime
+{-# INLINE _localDay #-}
+{-# INLINE _localTimeOfDay #-}
 
 derivingUnbox "LocalTime" [t| LocalTime -> (Day, TimeOfDay) |]
     [| \ LocalTime {..} -> (localDay, localTimeOfDay) |]
@@ -463,8 +465,9 @@ data ZonedTime = ZonedTime
     , zonedTimeZone :: !TimeZone
     } deriving (Eq, Ord, Data, Typeable, Generic)
 
-LENS(ZonedTime,zonedTimeToLocalTime,LocalTime)
-LENS(ZonedTime,zonedTimeZone,TimeZone)
+makeLensesFor [("zonedTimeToLocalTime","_zonedTimeToLocalTime"),("zonedTimeZone","_zonedTimeZone")] ''ZonedTime
+{-# INLINE _zonedTimeToLocalTime #-}
+{-# INLINE _zonedTimeZone #-}
 
 instance Hashable ZonedTime
 instance NFData ZonedTime where
@@ -668,4 +671,3 @@ utcToZonedTime z t = view zonedTime (z, t)
 {-# INLINE zonedTimeToUTC #-}
 zonedTimeToUTC :: ZonedTime -> UTCTime
 zonedTimeToUTC = snd . review zonedTime
-
