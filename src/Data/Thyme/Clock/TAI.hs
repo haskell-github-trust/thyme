@@ -9,7 +9,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
 
-#include "thyme.h"
+
 #if HLINT
 #include "cabal_macros.h"
 #endif
@@ -40,6 +40,9 @@ module Data.Thyme.Clock.TAI
 import Prelude
 #if !MIN_VERSION_base(4,8,0)
 import Control.Applicative
+#endif
+#if __GLASGOW_HASKELL__ < 710
+import Data.Monoid (mempty)
 #endif
 import Control.DeepSeq
 import Control.Lens
@@ -74,7 +77,7 @@ import Test.QuickCheck
 --
 -- Internally this is the number of seconds since 'taiEpoch'. TAI days are
 -- exactly 86400 SI seconds long.
-newtype AbsoluteTime = AbsoluteTime DiffTime deriving (INSTANCES_MICRO)
+newtype AbsoluteTime = AbsoluteTime DiffTime deriving (Eq, Ord, Data, Typeable, Generic, Enum, Ix, Hashable, NFData, Bounded, Random, Arbitrary, CoArbitrary)
 
 derivingUnbox "AbsoluteTime" [t| AbsoluteTime -> DiffTime |]
     [| \ (AbsoluteTime a) -> a |] [| AbsoluteTime |]
@@ -107,7 +110,7 @@ instance AffineSpace AbsoluteTime where
 -- program shipped with such a table could become out-of-date in as little
 -- as 6 months. See 'parseTAIUTCDAT' for details.
 data TAIUTCMap = TAIUTCMap (Map UTCTime TAIUTCRow) (Map AbsoluteTime TAIUTCRow)
-    deriving (INSTANCES_USUAL, Show)
+    deriving (Eq, Ord, Data, Typeable, Generic, Show)
 
 -- | Each line of TAIUTCDAT (see 'parseTAIUTCDAT') specifies the difference
 -- between TAI and UTC for a particular period. For example:
@@ -161,7 +164,7 @@ data TAIUTCMap = TAIUTCMap (Map UTCTime TAIUTCRow) (Map AbsoluteTime TAIUTCRow)
 data TAIUTCRow = TAIUTCRow !DiffTime !UTCTime !Rational
     -- ^ Each row comprises of an /additive/ component, the /base/ of the
     -- scaled component, and the /coefficient/ of the scaled component.
-    deriving (INSTANCES_USUAL, Show)
+    deriving (Eq, Ord, Data, Typeable, Generic, Show)
 
 {-# INLINE lookupLE #-}
 lookupLE :: (Ord k) => k -> Map k TAIUTCRow -> TAIUTCRow
@@ -354,4 +357,3 @@ utcToTAITime = view . absoluteTime
 {-# INLINE taiToUTCTime #-}
 taiToUTCTime :: TAIUTCMap -> AbsoluteTime -> UTCTime
 taiToUTCTime = review . absoluteTime
-

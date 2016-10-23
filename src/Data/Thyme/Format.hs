@@ -1,10 +1,10 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-#include "thyme.h"
 
 -- | Formatting and parsing for dates and times.
 module Data.Thyme.Format
@@ -29,6 +29,9 @@ import Prelude
 import Control.Applicative
 #if SHOW_INTERNAL
 import Control.Arrow
+#endif
+#if __GLASGOW_HASKELL__ < 710
+import Data.Monoid (mempty)
 #endif
 import Control.Lens
 import Control.Monad.Trans
@@ -486,20 +489,20 @@ data TimeParse = TimeParse
     , tpTimeZone :: !TimeZone
     } deriving (Show)
 
-LENS(TimeParse,tpCentury,Int)
-LENS(TimeParse,tpCenturyYear,Int{-YearOfCentury-})
-LENS(TimeParse,tpMonth,Month)
-LENS(TimeParse,tpWeekOfYear,WeekOfYear)
-LENS(TimeParse,tpDayOfMonth,DayOfMonth)
-LENS(TimeParse,tpDayOfWeek,DayOfWeek)
-LENS(TimeParse,tpDayOfYear,DayOfYear)
-LENS(TimeParse,tpFlags,Int{-BitSet TimeFlag-})
-LENS(TimeParse,tpHour,Hour)
-LENS(TimeParse,tpMinute,Minute)
-LENS(TimeParse,tpSecond,Int)
-LENS(TimeParse,tpSecFrac,DiffTime)
-LENS(TimeParse,tpPOSIXTime,POSIXTime)
-LENS(TimeParse,tpTimeZone,TimeZone)
+makeLensesFor [ ("tpCentury","_tpCentury")
+              , ("tpCenturyYear","_tpCenturyYear")
+              , ("tpMonth","_tpMonth")
+              , ("tpWeekOfYear","_tpWeekOfYear")
+              , ("tpDayOfMonth","_tpDayOfMonth")
+              , ("tpDayOfWeek","_tpDayOfWeek")
+              , ("tpDayOfYear","_tpDayOfYear")
+              , ("tpFlags","_tpFlags")
+              , ("tpHour","_tpHour")
+              , ("tpMinute","_tpMinute")
+              , ("tpSecond","_tpSecond")
+              , ("tpSecFrac","_tpSecFrac")
+              , ("tpPOSIXTime","_tpPOSIXTime")
+              , ("tpTimeZone","_tpTimeZone")] ''TimeParse
 
 {-# INLINE flag #-}
 flag :: TimeFlag -> Lens' TimeParse Bool
@@ -985,4 +988,3 @@ timeZoneParser = zone "TAI" 0 False <|> zone "UT1" 0 False
     zone name offset dst = TimeZone offset dst name <$ P.string (S.pack name)
     ($+) h m = h * 60 + m
     ($-) h m = negate (h * 60 + m)
-
