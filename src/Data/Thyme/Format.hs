@@ -30,6 +30,9 @@ import Control.Applicative
 #if SHOW_INTERNAL
 import Control.Arrow
 #endif
+#if __GLASGOW_HASKELL__ < 710
+import Data.Monoid (mempty)
+#endif
 import Control.Lens
 import Control.Monad.Trans
 import Control.Monad.State.Strict

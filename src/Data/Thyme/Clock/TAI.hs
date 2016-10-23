@@ -41,6 +41,9 @@ import Prelude
 #if !MIN_VERSION_base(4,8,0)
 import Control.Applicative
 #endif
+#if __GLASGOW_HASKELL__ < 710
+import Data.Monoid (mempty)
+#endif
 import Control.DeepSeq
 import Control.Lens
 import Control.Monad
@@ -354,4 +357,3 @@ utcToTAITime = view . absoluteTime
 {-# INLINE taiToUTCTime #-}
 taiToUTCTime :: TAIUTCMap -> AbsoluteTime -> UTCTime
 taiToUTCTime = review . absoluteTime
-

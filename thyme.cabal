@@ -32,7 +32,7 @@ flag bug-for-bug
     manual: True
 
 flag docs
-    description: include extra packages for Data.Thyme.Docs; implies -flens
+    description: include extra packages for Data.Thyme.Docs
     default: False
     manual: True
 
