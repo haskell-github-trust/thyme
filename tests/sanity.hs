@@ -7,6 +7,9 @@
 
 import Prelude
 
+#if !MIN_VERSION_base(4,8,0)
+import Control.Applicative
+#endif
 import Control.Arrow
 import Control.Lens
 import qualified Data.Attoparsec.ByteString.Char8 as P
@@ -95,4 +98,3 @@ main = exit . all isSuccess =<< sequence
     isSuccess r = case r of Success {} -> True; _ -> False
     qc :: Testable prop => Int -> prop -> IO Result
     qc n = quickCheckWithResult stdArgs {maxSuccess = n, maxSize = n}
-
