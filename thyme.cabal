@@ -60,6 +60,7 @@ library
     if !(flag(lens) || flag(docs))
         hs-source-dirs: lens
     exposed-modules:
+        Control.Monad.Thyme
         Data.Thyme
         Data.Thyme.Docs
         Data.Thyme.Calendar
@@ -167,6 +168,17 @@ test-suite hlint
     else
         buildable: False
 
+test-suite monad
+  default-language: Haskell2010
+  type: exitcode-stdio-1.0
+  hs-source-dirs: tests
+  main-is: Monad.hs
+  build-depends:
+      base,
+      mtl,
+      thyme
+  ghc-options: -Wall
+
 benchmark bench
     default-language: Haskell2010
     type: exitcode-stdio-1.0
@@ -195,4 +207,3 @@ benchmark bench
     ghc-options: -Wall
 
 -- vim: et sw=4 ts=4 sts=4:
-
