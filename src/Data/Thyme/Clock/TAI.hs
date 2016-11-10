@@ -53,6 +53,9 @@ import Data.Hashable
 import Data.Ix
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
+#if __GLASGOW_HASKELL__ < 710
+import Data.Monoid (mempty)
+#endif
 import Data.Thyme.Calendar
 import Data.Thyme.Clock.Internal
 import Data.Thyme.Format.Internal (indexOf)
@@ -354,4 +357,3 @@ utcToTAITime = view . absoluteTime
 {-# INLINE taiToUTCTime #-}
 taiToUTCTime :: TAIUTCMap -> AbsoluteTime -> UTCTime
 taiToUTCTime = review . absoluteTime
-
