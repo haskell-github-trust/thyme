@@ -39,6 +39,9 @@ import Data.Bits
 import qualified Data.ByteString.Char8 as S
 import Data.Char
 import Data.Int
+#if __GLASGOW_HASKELL__ < 710
+import Data.Monoid (mempty)
+#endif
 import Data.Thyme.Internal.Micro
 import Data.Thyme.Calendar
 import Data.Thyme.Calendar.Internal
@@ -985,4 +988,3 @@ timeZoneParser = zone "TAI" 0 False <|> zone "UT1" 0 False
     zone name offset dst = TimeZone offset dst name <$ P.string (S.pack name)
     ($+) h m = h * 60 + m
     ($-) h m = negate (h * 60 + m)
-
