@@ -60,6 +60,7 @@ library
     if !(flag(lens) || flag(docs))
         hs-source-dirs: lens
     exposed-modules:
+        Control.Monad.Thyme
         Data.Thyme
         Data.Thyme.Docs
         Data.Thyme.Calendar
