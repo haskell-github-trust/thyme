@@ -11,7 +11,7 @@ module Data.Thyme.Format.DateFast (
 import           Control.Applicative
 #endif
 import           Control.Lens        (from, view)
-import           Control.Monad       (unless, void)
+import           Control.Monad       (unless, when, void)
 import qualified Data.ByteString     as BS
 import           Data.Int            (Int64)
 import           Data.List           (foldl1')
@@ -71,7 +71,9 @@ parseNumber4 = do -- Specialized version for 2 digits
 toffset :: Scanner Int64
 toffset = do
   hours <- parseNumber2
-  S.char8 ':'
+  -- optional ':'
+  colon <- S.lookAheadChar8
+  when (colon == Just ':') (S.char8 ':')
   minutes <- parseNumber2
   return $ fromIntegral $ hours * 3600 + minutes * 60
 {-# INLINE toffset #-}
