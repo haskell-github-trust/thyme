@@ -2,6 +2,7 @@
 
 #ifndef mingw32_HOST_OS
 #include <sys/time.h>
+#include <stdlib.h>
 #endif
 
 -- | <https://en.wikipedia.org/wiki/Unix_time POSIX time>
@@ -74,6 +75,7 @@ getPOSIXTime = do
 #else
 
 getPOSIXTime = allocaBytes #{size struct timeval} $ \ ptv -> do
+    memset ptv 0 #{size struct timeval}
     throwErrnoIfMinus1_ "gettimeofday" $ gettimeofday ptv nullPtr
     CTime sec <- #{peek struct timeval, tv_sec} ptv
     CSUSeconds usec <- #{peek struct timeval, tv_usec} ptv
@@ -82,6 +84,9 @@ getPOSIXTime = allocaBytes #{size struct timeval} $ \ ptv -> do
 
 foreign import ccall unsafe "time.h gettimeofday"
     gettimeofday :: Ptr () -> Ptr () -> IO CInt
+
+foreign import ccall unsafe "stdlib.h memset"
+    memset :: Ptr () -> CInt -> CSize -> IO ()
 
 #endif
 
