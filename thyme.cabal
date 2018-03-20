@@ -105,11 +105,15 @@ library
         vector-th-unbox >= 0.2.1.0,
         vector-space >= 0.8
     if flag(old-time)
+<<<<<<< HEAD
         build-depends:
         time < 1.5,
         old-locale >= 1.0
     else
         build-depends: time >= 1.5   
+=======
+        build-depends: old-locale >= 1.0
+>>>>>>> 9370811c3304fd6d816f1493a190001e7be39b33
     if os(windows)
         build-depends: Win32
     if os(darwin) || os(freebsd)
