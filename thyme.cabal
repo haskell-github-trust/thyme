@@ -54,7 +54,7 @@ flag show-internal
     manual: True
 
 flag old-time
-    description: pre-1.5 time library
+    description: pre-1.5 Time library
     default: False
     manual: False
 
