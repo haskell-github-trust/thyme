@@ -93,7 +93,6 @@ library
         deepseq >= 1.2,
         hashable >= 1.2,
         mtl >= 1.1,
-        old-locale >= 1.0,
         random,
         text >= 0.11,
         time >= 1.4,
@@ -101,6 +100,8 @@ library
         vector >= 0.9,
         vector-th-unbox >= 0.2.1.0,
         vector-space >= 0.8
+    if flag(old-time)
+        build-depends: old-locale >= 1.0
     if os(windows)
         build-depends: Win32
     if os(darwin) || os(freebsd)
