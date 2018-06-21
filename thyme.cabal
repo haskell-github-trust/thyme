@@ -178,14 +178,18 @@ benchmark bench
     if !flag(lens)
         other-modules: Control.Lens
     build-depends:
+        attoparsec,
         QuickCheck,
         base,
+        bytestring,
         criterion,
+        deepseq,
         mtl,
         old-locale,
         random,
         thyme,
         time,
+        QuickCheck,
         vector,
         vector-space
     if flag(lens)
