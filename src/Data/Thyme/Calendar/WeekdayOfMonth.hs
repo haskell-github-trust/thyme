@@ -39,7 +39,9 @@ import qualified Data.Vector.Generic.Mutable
 import Data.Vector.Unboxed.Deriving
 import GHC.Generics (Generic)
 import System.Random
+#ifdef QUICKCHECK
 import Test.QuickCheck hiding ((.&.))
+#endif
 
 -- | Calendar date with year, month-of-year, and n-th day-of-week.
 data WeekdayOfMonth = WeekdayOfMonth
@@ -77,6 +79,7 @@ instance Random WeekdayOfMonth where
     randomR = randomIsoR weekdayOfMonth
     random = first (^. weekdayOfMonth) . random
 
+#ifdef QUICKCHECK
 instance Arbitrary WeekdayOfMonth where
     arbitrary = view weekdayOfMonth <$> arbitrary
     shrink wom = view weekdayOfMonth <$> shrink (weekdayOfMonth # wom)
@@ -85,6 +88,7 @@ instance CoArbitrary WeekdayOfMonth where
     coarbitrary (WeekdayOfMonth y m n d)
         = coarbitrary y . coarbitrary m
         . coarbitrary n . coarbitrary d
+#endif
 
 -- | Conversion between a 'Day' and and 'WeekdayOfMonth'.
 --

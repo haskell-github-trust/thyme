@@ -43,7 +43,9 @@ import qualified Data.Vector.Unboxed as VU
 import Data.Vector.Unboxed.Deriving
 import GHC.Generics (Generic)
 import System.Random
+#ifdef QUICKCHECK
 import Test.QuickCheck hiding ((.&.))
+#endif
 
 -- | A duration/count of years.
 type Years = Int
@@ -82,9 +84,15 @@ type Days = Int
 -- @
 --
 -- Other ways of viewing a 'Day' include 'ordinalDate', and 'weekDate'.
+#ifdef QUICKCHECK
 newtype Day = ModifiedJulianDay
     { toModifiedJulianDay :: Int
     } deriving (INSTANCES_NEWTYPE, CoArbitrary)
+#else
+newtype Day = ModifiedJulianDay
+    { toModifiedJulianDay :: Int
+    } deriving (INSTANCES_NEWTYPE)
+#endif
 
 instance AffineSpace Day where
     type Diff Day = Days
@@ -385,12 +393,14 @@ instance Random MonthDay where
         (isLeapYear -> leap, g') = random g
     random = randomR (minBound, maxBound)
 
+#ifdef QUICKCHECK
 instance Arbitrary MonthDay where
     arbitrary = choose (minBound, maxBound)
     shrink md = view (monthDay True) <$> shrink (monthDay True # md)
 
 instance CoArbitrary MonthDay where
     coarbitrary (MonthDay m d) = coarbitrary m . coarbitrary d
+#endif
 
 -- | Predicated on whether or not it's a leap year, convert between an
 -- ordinal 'DayOfYear' and the corresponding 'Month' and 'DayOfMonth'.

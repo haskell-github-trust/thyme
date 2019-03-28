@@ -50,7 +50,9 @@ import Data.Vector.Unboxed.Deriving
 import Data.VectorSpace
 import GHC.Generics (Generic)
 import System.Random
+#ifdef QUICKCHECK
 import Test.QuickCheck hiding ((.&.))
+#endif
 
 -- | Hours duration.
 type Hours = Int
@@ -102,6 +104,7 @@ instance Random TimeZone where
         randChar nR (ns, g) = (: ns) `first` randomR nR g
     random = randomR (minBound, maxBound)
 
+#ifdef QUICKCHECK
 instance Arbitrary TimeZone where
     arbitrary = choose (minBound, maxBound)
     shrink tz@TimeZone {..}
@@ -112,6 +115,7 @@ instance Arbitrary TimeZone where
 instance CoArbitrary TimeZone where
     coarbitrary (TimeZone m s n)
         = coarbitrary m . coarbitrary s . coarbitrary n
+#endif
 
 -- | Text representing the offset of this timezone, e.g. \"-0800\" or
 -- \"+0400\" (like @%z@ in 'Data.Thyme.Format.formatTime')
@@ -218,6 +222,7 @@ instance Random TimeOfDay where
     randomR = randomIsoR timeOfDay
     random = first (^. timeOfDay) . random
 
+#ifdef QUICKCHECK
 instance Arbitrary TimeOfDay where
     arbitrary = do
         h <- choose (0, 23)
@@ -231,6 +236,7 @@ instance Arbitrary TimeOfDay where
 instance CoArbitrary TimeOfDay where
     coarbitrary (TimeOfDay h m s)
         = coarbitrary h . coarbitrary m . coarbitrary s
+#endif
 
 -- | The maximum possible length of a minute. Always /60s/, except at
 -- /23:59/ due to leap seconds.
@@ -380,6 +386,7 @@ instance Random LocalTime where
     randomR = randomIsoR (utcLocalTime utc)
     random = randomR (minBound, maxBound)
 
+#ifdef QUICKCHECK
 instance Arbitrary LocalTime where
     arbitrary = choose (minBound, maxBound)
     shrink lt@LocalTime {..}
@@ -388,6 +395,7 @@ instance Arbitrary LocalTime where
 
 instance CoArbitrary LocalTime where
     coarbitrary (LocalTime d t) = coarbitrary d . coarbitrary t
+#endif
 
 -- | Conversion between 'UTCTime' and 'LocalTime'.
 --
@@ -482,6 +490,7 @@ instance Random ZonedTime where
         u' = snd $ zonedTime # u
     random = randomR (minBound, maxBound)
 
+#ifdef QUICKCHECK
 instance Arbitrary ZonedTime where
     arbitrary = choose (minBound, maxBound)
     shrink zt@ZonedTime {..}
@@ -490,6 +499,7 @@ instance Arbitrary ZonedTime where
 
 instance CoArbitrary ZonedTime where
     coarbitrary (ZonedTime lt tz) = coarbitrary lt . coarbitrary tz
+#endif
 
 -- | Conversion between ('TimeZone', 'UTCTime') and 'ZonedTime'.
 --

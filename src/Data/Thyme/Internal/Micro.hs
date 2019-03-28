@@ -29,7 +29,9 @@ import Data.Vector.Unboxed.Deriving
 import Data.VectorSpace
 import GHC.Generics (Generic)
 import System.Random
+#ifdef QUICKCHECK
 import Test.QuickCheck
+#endif
 
 #if !SHOW_INTERNAL
 import Control.Monad

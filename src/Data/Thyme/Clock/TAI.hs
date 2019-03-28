@@ -66,7 +66,9 @@ import Data.Vector.Unboxed.Deriving
 import Data.VectorSpace
 import GHC.Generics (Generic)
 import System.Random (Random)
+#ifdef QUICKCHECK
 import Test.QuickCheck
+#endif
 
 -- | <https://en.wikipedia.org/wiki/International_Atomic_Time Temps Atomique International>
 -- (TAI). Note that for most applications 'UTCTime' is perfectly sufficient,
