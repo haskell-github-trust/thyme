@@ -38,7 +38,9 @@ import Control.Lens
 import Data.Thyme.Calendar.OrdinalDate
 import Data.Thyme.Calendar.Internal
 import System.Random
+#ifdef QUICKCHECK
 import Test.QuickCheck
+#endif
 
 instance Bounded WeekDate where
     minBound = minBound ^. weekDate
@@ -64,6 +66,7 @@ instance Random MondayWeek where
     randomR = randomIsoR mondayWeek
     random = first (^. mondayWeek) . random
 
+#ifdef QUICKCHECK
 instance Arbitrary WeekDate where
     arbitrary = view weekDate <$> arbitrary
     shrink wd = view weekDate <$> shrink (weekDate # wd)
@@ -87,6 +90,7 @@ instance CoArbitrary SundayWeek where
 instance CoArbitrary MondayWeek where
     coarbitrary (MondayWeek y w d)
         = coarbitrary y . coarbitrary w . coarbitrary d
+#endif
 
 -- * Compatibility
 

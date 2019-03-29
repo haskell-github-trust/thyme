@@ -27,7 +27,9 @@ import Control.Monad
 import Data.Thyme.Calendar
 import Data.Thyme.Calendar.Internal
 import System.Random
+#ifdef QUICKCHECK
 import Test.QuickCheck
+#endif
 
 instance Bounded OrdinalDate where
     minBound = minBound ^. ordinalDate
@@ -37,12 +39,14 @@ instance Random OrdinalDate where
     randomR = randomIsoR ordinalDate
     random = first (^. ordinalDate) . random
 
+#ifdef QUICKCHECK
 instance Arbitrary OrdinalDate where
     arbitrary = view ordinalDate <$> arbitrary
     shrink od = view ordinalDate <$> shrink (ordinalDate # od)
 
 instance CoArbitrary OrdinalDate where
     coarbitrary (OrdinalDate y d) = coarbitrary y . coarbitrary d
+#endif
 
 -- | Convert an 'OrdinalDate' to a 'Day', or 'Nothing' for invalid input.
 --

@@ -38,13 +38,15 @@ import Control.Applicative
 import Control.Arrow
 import Control.Category
 import Control.Lens
-import Control.Monad
 import Data.AdditiveGroup
 import Data.AffineSpace
 import Data.Thyme.Calendar.Internal
 import Data.Thyme.Clock.Internal
 import System.Random
+#ifdef QUICKCHECK
+import Control.Monad
 import Test.QuickCheck
+#endif
 
 -- "Data.Thyme.Calendar.Internal" cannot import "Data.Thyme.Clock.Internal",
 -- therefore these orphan 'Bounded' instances must live here.
@@ -67,6 +69,7 @@ instance Random YearMonthDay where
     randomR = randomIsoR gregorian
     random = first (^. gregorian) . random
 
+#ifdef QUICKCHECK
 instance Arbitrary Day where
     arbitrary = ModifiedJulianDay
         <$> choose (join (***) toModifiedJulianDay (minBound, maxBound))
@@ -79,6 +82,7 @@ instance Arbitrary YearMonthDay where
 instance CoArbitrary YearMonthDay where
     coarbitrary (YearMonthDay y m d)
         = coarbitrary y . coarbitrary m . coarbitrary d
+#endif
 
 ------------------------------------------------------------------------
 
