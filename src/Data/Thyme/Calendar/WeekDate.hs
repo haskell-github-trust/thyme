@@ -3,7 +3,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 #if __GLASGOW_HASKELL__ == 706
-{-# OPTIONS_GHC -fsimpl-tick-factor=120 #-} -- 7.6.3 only, it seems; fixes #29
+{-# OPTIONS_GHC -fsimpl-tick-factor=180 #-} -- 7.6.3 only, it seems; fixes #29
 #endif
 
 #include "thyme.h"
@@ -120,4 +120,3 @@ fromWeekDate y w d = weekDate # WeekDate y w d
 {-# INLINE fromWeekDateValid #-}
 fromWeekDateValid :: Year -> WeekOfYear -> DayOfWeek -> Maybe Day
 fromWeekDateValid y w d = weekDateValid (WeekDate y w d)
-

@@ -40,7 +40,9 @@ module Data.Thyme.Clock.TAI
 import Prelude
 #if !MIN_VERSION_base(4,8,0)
 import Control.Applicative
+import Data.Monoid (mempty)
 #endif
+
 import Control.DeepSeq
 import Control.Lens
 import Control.Monad
@@ -354,4 +356,3 @@ utcToTAITime = view . absoluteTime
 {-# INLINE taiToUTCTime #-}
 taiToUTCTime :: TAIUTCMap -> AbsoluteTime -> UTCTime
 taiToUTCTime = review . absoluteTime
-
