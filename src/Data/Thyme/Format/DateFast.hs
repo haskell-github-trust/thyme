@@ -113,7 +113,7 @@ parserRfc = do
         tday = fromGregorian year month dayofmonth
     return $ view (from utcTime) (UTCView tday tdiff)
 
-parseFastUtc :: Monad m => T.Text -> m UTCTime
+parseFastUtc :: MonadFail m => T.Text -> m UTCTime
 parseFastUtc t =
   case S.scanOnly parserRfc (encodeUtf8 t) of
         Right d -> return d
