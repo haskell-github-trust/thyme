@@ -1,5 +1,5 @@
 name:           thyme
-version:        0.4.0
+version:        0.4.0.1
 synopsis:       A faster time library
 description:
     @thyme@ is a performance-optimized rewrite of the excellent
@@ -20,6 +20,7 @@ stability:      experimental
 extra-source-files:
     include/thyme.h
 tested-with:
+    GHC == 8.8.4
     GHC == 7.6.3, GHC == 7.8.4,
     GHC == 7.10.2, GHC == 7.10.3,
     GHC >= 8.0 && < 8.2
@@ -105,7 +106,7 @@ library
         build-depends: Win32
     if os(darwin) || os(freebsd)
         build-tools: cpphs
-        ghc-options: -pgmP cpphs -optP--cpp
+        ghc-options: -pgmP "cpphs --nomacro --cpp"
     if flag(lens) || flag(docs)
         build-depends: lens >= 3.9
     else
@@ -195,4 +196,3 @@ benchmark bench
     ghc-options: -Wall
 
 -- vim: et sw=4 ts=4 sts=4:
-
