@@ -3,7 +3,8 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE ViewPatterns #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# OPTIONS_GHC -fno-warn-orphans -Wno-unused-record-wildcards #-}
+
 #include "thyme.h"
 
 -- | Formatting and parsing for dates and times.

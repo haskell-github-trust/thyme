@@ -101,11 +101,12 @@ library
         vector >= 0.9,
         vector-th-unbox >= 0.2.1.0,
         vector-space >= 0.8
+
     if os(windows)
         build-depends: Win32
     if os(darwin) || os(freebsd)
         build-tools: cpphs
-        ghc-options: -pgmP cpphs -optP--cpp
+        ghc-options: "-pgmP cpphs --cpp"
     if flag(lens) || flag(docs)
         build-depends: lens >= 3.9
     else
