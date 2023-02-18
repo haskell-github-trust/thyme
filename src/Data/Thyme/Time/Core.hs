@@ -34,7 +34,7 @@ import qualified Data.Time.Calendar as T
 import qualified Data.Time.Clock as T
 import qualified Data.Time.Clock.TAI as T
 import qualified Data.Time.LocalTime as T
-import Unsafe.TrueName
+import Data.Thyme.TrueName
 
 ------------------------------------------------------------------------
 -- * Type conversion
