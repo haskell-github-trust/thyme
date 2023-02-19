@@ -45,16 +45,15 @@ useless = do
 
 wanted :: Set String
 wanted = Set.fromList
-    [ "fromSeconds/Float"
-    , "fromSeconds/Double"
-    , "fromSeconds/Int"
-    , "fromSeconds/Int64"
-    , "fromSeconds/Integer"
-    , "realToFrac/DiffTime-NominalDiffTime"
-    , "realToFrac/NominalDiffTime-DiffTime"
-    , "realToFrac/DiffTime-Fractional"
-    , "realToFrac/NominalDiffTime-Fractional"
-    , "realToFrac/Real-DiffTime"
-    , "realToFrac/Real-NominalDiffTime"
+    [ "fromSeconds/Float (Data.Thyme.Clock.Internal)"
+    , "fromSeconds/Double (Data.Thyme.Clock.Internal)"
+    , "fromSeconds/Int (Data.Thyme.Clock.Internal)"
+    , "fromSeconds/Int64 (Data.Thyme.Clock.Internal)"
+    , "fromSeconds/Integer (Data.Thyme.Clock.Internal)"
+    , "realToFrac/DiffTime-NominalDiffTime (Data.Thyme.Time)"
+    , "realToFrac/NominalDiffTime-DiffTime (Data.Thyme.Time)"
+    , "realToFrac/DiffTime-Fractional (Data.Thyme.Time)"
+    , "realToFrac/NominalDiffTime-Fractional (Data.Thyme.Time)"
+    , "realToFrac/Real-DiffTime (Data.Thyme.Time)"
+    , "realToFrac/Real-NominalDiffTime (Data.Thyme.Time)"
     ]
-
