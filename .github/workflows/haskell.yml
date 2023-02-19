@@ -13,8 +13,8 @@ jobs:
       fail-fast: false
       matrix:
         os:    [macos-latest, ubuntu-latest]
-        cabal: ["3.4"]
-        ghc:   ["8.10.7"]
+        cabal: ["3.8"]
+        ghc:   ["8.10.7", "9.0.2", "9.2.6", "9.4.4"]
 
     runs-on: ${{ matrix.os }}
 
