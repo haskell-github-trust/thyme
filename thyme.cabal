@@ -81,6 +81,7 @@ library
         Data.Thyme.Calendar.Internal
         Data.Thyme.Clock.Internal
         Data.Thyme.Format.Internal
+        Data.Thyme.TrueName
     if !(flag(lens) || flag(docs))
         other-modules: Control.Lens
     build-depends:
@@ -96,16 +97,17 @@ library
         old-locale >= 1.0,
         random,
         text >= 0.11,
+        template-haskell >= 2.7 && < 2.20,
         time >= 1.4,
-        true-name >= 0.1.0.1,
         vector >= 0.9,
         vector-th-unbox >= 0.2.1.0,
         vector-space >= 0.8
+
     if os(windows)
         build-depends: Win32
     if os(darwin) || os(freebsd)
         build-tools: cpphs
-        ghc-options: -pgmP cpphs -optP--cpp
+        ghc-options: "-pgmP cpphs --cpp"
     if flag(lens) || flag(docs)
         build-depends: lens >= 3.9
     else
