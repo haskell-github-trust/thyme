@@ -11,7 +11,7 @@ homepage:       https://github.com/liyang/thyme
 license:        BSD3
 license-file:   LICENSE
 author:         Liyang HU, Ashley Yakeley
-maintainer:     thyme@liyang.hu
+maintainer:     Fumiaki Kinoshita <fumiexcel@gmail.com>
 copyright:      © 2013−2014 Liyang HU
 category:       Data, System
 build-type:     Simple
@@ -26,7 +26,7 @@ tested-with:
 
 source-repository head
     type:       git
-    location:   https://github.com/liyang/thyme
+    location:   https://github.com/fumieval/thyme
 
 flag bug-for-bug
     description: bug-for-bug compatibility with time
