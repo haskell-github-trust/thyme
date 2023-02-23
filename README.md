@@ -1,6 +1,6 @@
 # thyme
 
-[![Status](https://travis-ci.org/liyang/thyme.png)][travis] [Hackage][]
+[![CI](https://github.com/fumieval/thyme/actions/workflows/haskell.yml/badge.svg)](https://github.com/fumieval/thyme/actions/workflows/haskell.yml) [![Hackage](https://img.shields.io/hackage/v/thyme.svg?logo=haskell)](http://hackage.haskell.org/package/thyme)
 
 A faster date and time library based on [time][].
 
@@ -14,19 +14,17 @@ A faster date and time library based on [time][].
 ### Library
 
 ```
-stack build --flag thyme:lens
+cabal build
 ```
 
 ### Haddock
 
 ```
-stack haddock --flag thyme:lens
+cabal haddock
 ```
 
-[Hackage]: http://hackage.haskell.org/package/thyme
 [Iso']: http://hackage.haskell.org/package/lens/docs/Control-Lens-Iso.html#t:Iso-39-
 [Lens']: http://hackage.haskell.org/package/lens/docs/Control-Lens-Lens.html#t:Lens-39-
 [lens]: http://hackage.haskell.org/package/lens
 [time]: http://hackage.haskell.org/package/time
-[travis]: https://travis-ci.org/liyang/thyme
 
