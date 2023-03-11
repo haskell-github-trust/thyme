@@ -83,6 +83,7 @@ library
         Data.Thyme.Format.Internal
         Data.Thyme.Format.DateFast
         Data.Thyme.Format.DateEncode
+        Data.Thyme.TrueName
     if !(flag(lens) || flag(docs))
         other-modules: Control.Lens
     build-depends:
