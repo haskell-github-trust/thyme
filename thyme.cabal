@@ -1,5 +1,5 @@
 name:           thyme
-version:        0.3.6
+version:        0.4
 synopsis:       A faster time library
 description:
     @thyme@ is a performance-optimized rewrite of the excellent
