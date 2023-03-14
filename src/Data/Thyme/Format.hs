@@ -3,7 +3,10 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE ViewPatterns #-}
-{-# OPTIONS_GHC -fno-warn-orphans -Wno-unused-record-wildcards #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+#if __GLASGOW_HASKELL__ >= 810
+{-# OPTIONS_GHC -Wno-unused-record-wildcards #-}
+#endif
 
 #include "thyme.h"
 
@@ -285,7 +288,7 @@ showsY = showsYear
 
 instance FormatTime TimeOfDay where
     {-# INLINEABLE showsTime #-}
-    showsTime TimeLocale {..} (TimeOfDay h m (DiffTime s)) = \ def c -> case c of
+    showsTime TimeLocale{..} (TimeOfDay h m (DiffTime s)) = \ def c -> case c of
         -- aggregate
         'R' -> shows02 h . (:) ':' . shows02 m
         'T' -> shows02 h . (:) ':' . shows02 m . (:) ':' . shows02 si
@@ -839,7 +842,7 @@ instance ParseTime LocalTime where
 
 instance ParseTime Day where
     {-# INLINE buildTime #-}
-    buildTime tp@TimeParse {..}
+    buildTime tp
         | tp ^. flag IsOrdinalDate = ordinalDate # buildTime tp
         | tp ^. flag IsGregorian = gregorian # buildTime tp
         | tp ^. flag IsWeekDate = weekDate # buildTime tp
