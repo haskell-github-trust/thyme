@@ -1,6 +1,6 @@
 # thyme
 
-[![CI](https://github.com/fumieval/thyme/actions/workflows/haskell.yml/badge.svg)](https://github.com/fumieval/thyme/actions/workflows/haskell.yml) [![Hackage](https://img.shields.io/hackage/v/thyme.svg?logo=haskell)](http://hackage.haskell.org/package/thyme)
+[![CI](https://github.com/haskell-github-trust/thyme/actions/workflows/haskell.yml/badge.svg)](https://github.com/haskell-github-trust/thyme/actions/workflows/haskell.yml) [![Hackage](https://img.shields.io/hackage/v/thyme.svg?logo=haskell)](http://hackage.haskell.org/package/thyme)
 
 A faster date and time library based on [time][].
 
