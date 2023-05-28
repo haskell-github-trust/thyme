@@ -101,7 +101,7 @@ library
         random,
         text >= 0.11,
         template-haskell >= 2.7 && < 2.20,
-        time >= 1.4,
+        time >= 1.4 && < 1.10,
         vector >= 0.9,
         vector-th-unbox >= 0.2.1.0,
         vector-space >= 0.8,
