@@ -81,6 +81,8 @@ library
         Data.Thyme.Calendar.Internal
         Data.Thyme.Clock.Internal
         Data.Thyme.Format.Internal
+        Data.Thyme.Format.DateFast
+        Data.Thyme.Format.DateEncode
         Data.Thyme.TrueName
     if !(flag(lens) || flag(docs))
         other-modules: Control.Lens
@@ -90,6 +92,7 @@ library
         aeson >= 0.6,
         base >= 4.5 && < 5,
         bytestring >= 0.9,
+        bytestring-builder,
         containers >= 0.5,
         deepseq >= 1.2,
         hashable >= 1.2,
@@ -98,11 +101,12 @@ library
         random,
         text >= 0.11,
         template-haskell >= 2.7 && < 2.20,
-        time >= 1.4,
+        time >= 1.4 && < 1.10,
         vector >= 0.9,
         vector-th-unbox >= 0.2.1.0,
-        vector-space >= 0.8
-
+        vector-space >= 0.8,
+        scanner
+    build-tools: hsc2hs
     if os(windows)
         build-depends: Win32
     if os(darwin) || os(freebsd)
@@ -139,6 +143,7 @@ test-suite sanity
         text,
         thyme,
         time,
+        aeson,
         vector-space
     if flag(lens)
         build-depends: lens
@@ -189,7 +194,9 @@ benchmark bench
         thyme,
         time,
         vector,
-        vector-space
+        vector-space,
+        aeson,
+        bytestring
     if flag(lens)
         build-depends: lens
     else
@@ -197,4 +204,3 @@ benchmark bench
     ghc-options: -Wall
 
 -- vim: et sw=4 ts=4 sts=4:
-

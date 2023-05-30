@@ -34,6 +34,9 @@ import Control.Applicative
 #if SHOW_INTERNAL
 import Control.Arrow
 #endif
+#if !MIN_VERSION_base(4,8,0)
+import Data.Monoid (mempty)
+#endif
 import Control.Lens
 import Control.Monad.Trans
 import Control.Monad.State.Strict
@@ -989,4 +992,3 @@ timeZoneParser = zone "TAI" 0 False <|> zone "UT1" 0 False
     zone name offset dst = TimeZone offset dst name <$ P.string (S.pack name)
     ($+) h m = h * 60 + m
     ($-) h m = negate (h * 60 + m)
-
