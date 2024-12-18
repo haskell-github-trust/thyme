@@ -1,5 +1,5 @@
 name:           thyme
-version:        0.4
+version:        0.4.1
 synopsis:       A faster time library
 description:
     @thyme@ is a performance-optimized rewrite of the excellent
@@ -22,7 +22,7 @@ extra-source-files:
     README.md
     include/thyme.h
 tested-with:
-    GHC >= 8.4 && < 9.6
+    GHC >= 8.4 && < 9.12
 
 source-repository head
     type:       git
@@ -133,7 +133,7 @@ test-suite sanity
     build-depends:
         QuickCheck,
         attoparsec,
-        base,
+        base < 5,
         bytestring,
         old-locale,
         text,
@@ -152,7 +152,7 @@ test-suite rewrite
     hs-source-dirs: tests
     main-is: rewrite.hs
     build-depends:
-        base,
+        base < 5,
         containers,
         random,
         thyme
@@ -165,7 +165,7 @@ test-suite hlint
     main-is: hlint.hs
     ghc-options: -threaded -rtsopts -with-rtsopts=-N
     if flag(HLint)
-        build-depends: base, hlint >= 1.9
+        build-depends: base < 5, hlint >= 1.9
     else
         buildable: False
 
@@ -181,7 +181,7 @@ benchmark bench
         other-modules: Control.Lens
     build-depends:
         QuickCheck,
-        base,
+        base < 5,
         criterion,
         mtl,
         old-locale,
