@@ -65,7 +65,9 @@ decNames dec = case dec of
     PatSynSigD _name typ -> typNames typ
 #endif
 
-#if MIN_VERSION_template_haskell(2,8,0)
+#if MIN_VERSION_template_haskell(2,22,0)
+    InfixD _ _ _ -> []
+#elif MIN_VERSION_template_haskell(2,8,0)
     InfixD _ _ -> []
 #endif
 
@@ -121,6 +123,11 @@ decNames dec = case dec of
 
 #if MIN_VERSION_template_haskell(2,15,0)
     ImplicitParamBindD _ _ -> []
+#endif
+
+#if MIN_VERSION_template_haskell(2,22,0)
+    TypeDataD _ _ _ _ -> []
+    DefaultD _ -> []
 #endif
 
 {- }}} -}

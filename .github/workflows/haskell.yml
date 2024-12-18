@@ -13,14 +13,25 @@ jobs:
       fail-fast: false
       matrix:
         os:    [macos-latest, ubuntu-latest]
-        cabal: ["3.8"]
-        ghc:   ["8.4.4", "8.6.5", "8.8.4", "8.10.7", "9.0.2", "9.2.6", "9.4.4"]
+        cabal: ["3.12"]
+        ghc:   ["8.4.4", "8.6.5", "8.8.4", "8.10.7", "9.0.2", "9.2.8", "9.4.8", "9.6.6", "9.8.4", "9.10.1"]
+        exclude:
+          - os: macos-latest
+            ghc: "8.4.4"
+          - os: macos-latest
+            ghc: "8.6.5"
+          - os: macos-latest
+            ghc: "8.8.4"
+          - os: macos-latest
+            ghc: "8.10.7"
+          - os: macos-latest
+            ghc: "9.0.2"
 
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: haskell/actions/setup@v2
+      - uses: actions/checkout@v4
+      - uses: haskell-actions/setup@v2
         id: setup-haskell-cabal
         with:
           ghc-version: ${{ matrix.ghc }}
@@ -29,7 +40,7 @@ jobs:
         run: |
           cabal v2-update
           cabal v2-freeze $CONFIG
-      - uses: actions/cache@v2.1.5
+      - uses: actions/cache@v4
         with:
           path: |
             ${{ steps.setup-haskell-cabal.outputs.cabal-store }}
